@@ -70,7 +70,7 @@ class Route {
 
 	private function setRegex () {
 		if (substr($this->path, -2) === '/*') {
-			$this->path = substr($this->path, 0, -2).'/{:__wildcard__:(.*)}';
+			$this->path = substr($this->path, 0, -2).'(/{:__wildcard__:(.*)})?';
 			$this->wildcard = '__wildcard__';
 		}
 
