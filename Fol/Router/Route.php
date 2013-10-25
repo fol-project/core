@@ -212,7 +212,7 @@ class Route {
 	}
 
 
-	public function execute ($app, $request) {
+	public function execute ($request) {
 		ob_start();
 
 		$return = '';
@@ -227,7 +227,7 @@ class Route {
 
 			$class = new \ReflectionClass($class);
 			$controller = $class->newInstanceWithoutConstructor();
-			$controller->app = $app;
+			$controller->app = $this->app;
 			$controller->route = $this;
 
 			if (($constructor = $class->getConstructor())) {

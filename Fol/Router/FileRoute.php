@@ -10,6 +10,7 @@ namespace Fol\Router;
 use Fol\Http\Request;
 use Fol\Http\Response;
 use Fol\Http\HttpException;
+use Fol\App;
 
 class FileRoute {
 	private $path;
@@ -38,7 +39,7 @@ class FileRoute {
 		return (strpos($request->getPath(true), $this->path) === 0);
 	}
 
-	public function execute ($app, $request) {
+	public function execute ($request) {
 		ob_start();
 
 		$return = '';
@@ -51,7 +52,7 @@ class FileRoute {
 
 			$class = new \ReflectionClass($class);
 			$controller = $class->newInstanceWithoutConstructor();
-			$controller->app = $app;
+			$controller->app = $this->app;
 			$controller->route = $this;
 
 			if (($constructor = $class->getConstructor())) {

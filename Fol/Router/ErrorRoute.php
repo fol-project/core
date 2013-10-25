@@ -28,7 +28,7 @@ class ErrorRoute {
 		return $this->target;
 	}
 
-	public function execute ($app, $exception, $request) {
+	public function execute ($exception, $request) {
 		ob_start();
 
 		$return = '';
@@ -39,7 +39,7 @@ class ErrorRoute {
 
 		$class = new \ReflectionClass($class);
 		$controller = $class->newInstanceWithoutConstructor();
-		$controller->app = $app;
+		$controller->app = $this->app;
 		$controller->route = $this;
 
 		$request->parameters->set('exception', $exception);
