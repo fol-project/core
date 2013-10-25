@@ -71,8 +71,22 @@ class FileSystem {
 	 * 
 	 * @see  SplFileObject class
 	 */
-	public function openFile ($path, $openMode = 'r') {
+	public function openFile ($path = null, $openMode = 'r') {
 		return new \SplFileObject($this->getPath($path));
+	}
+
+
+	/**
+	 * Returns a SplFileInfo instance to access to the file info
+	 * 
+	 * @param  string $path The file path (relative to the current path)
+	 * 
+	 * @return SplFileInfo
+	 *
+	 * @see  SplFileInfo class
+	 */
+	public function getInfo ($path = null) {
+		return new \SplFileInfo($this->getPath($path));
 	}
 
 
@@ -100,8 +114,8 @@ class FileSystem {
 	 * 
 	 * @return RecursiveIteratorIterator
 	 */
-	public function getRecursiveIterator () {
-		return new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($this->path, \FilesystemIterator::SKIP_DOTS), \RecursiveIteratorIterator::CHILD_FIRST);
+	public function getRecursiveIterator ($path = null) {
+		return new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($this->getPath($path), \FilesystemIterator::SKIP_DOTS), \RecursiveIteratorIterator::CHILD_FIRST);
 	}
 
 
@@ -110,8 +124,8 @@ class FileSystem {
 	 * 
 	 * @return FilesystemIterator
 	 */
-	public function getIterator () {
-		return new \FilesystemIterator($this->path);
+	public function getIterator ($path = null) {
+		return new \FilesystemIterator($this->getPath($path));
 	}
 
 
@@ -120,8 +134,8 @@ class FileSystem {
 	 * 
 	 * @return $this
 	 */
-	public function clear () {
-		foreach ($this->getRecursiveIterator() as $file) {
+	public function clear ($path = null) {
+		foreach ($this->getRecursiveIterator($path) as $file) {
 			if ($file->isDir()) {
 				rmdir($file->getPathname());
 			} else {
@@ -138,10 +152,14 @@ class FileSystem {
 	 * 
 	 * @return $this
 	 */
-	public function remove () {
-		$this->clear();
+	public function remove ($path) {
+		if ($this->getInfo($path)->isDir()) {
+			$this->clear($path);
 
-		rmdir($this->path);
+			rmdir($this->getPath($path));
+		} else {
+			unlink($this->getPath($path));
+		}
 
 		return $this;
 	}
@@ -188,7 +206,13 @@ class FileSystem {
 			return $this->saveFromUrl($original, $name);
 		}
 
-		return @copy($original, $this->getPath($name)) ? $name : false;
+		$destination = $this->getPath($name);
+
+		if (!@copy($original, $destination)) {
+			throw new \Exception("Unable to copy '$original' to '$destination'");
+		}
+
+		return $name;
 	}
 
 
@@ -211,7 +235,13 @@ class FileSystem {
 			$name .= ".$extension";
 		}
 
-		return @rename($original, $this->getPath($name)) ? $name : false;
+		$destination = $this->getPath($name);
+
+		if (!@rename($original, $destination)) {
+			throw new \Exception("Unable to copy '$original' to '$destination'");
+		}
+
+		return $name;
 	}
 
 
@@ -234,7 +264,13 @@ class FileSystem {
 			$name .= '.'.$match[1];
 		}
 
-		return @file_put_contents($this->getPath($name), base64_decode($fileData[1])) ? $name : false;
+		$destination = $this->getPath($name);
+
+		if (!@file_put_contents($destination, base64_decode($fileData[1]))) {
+			throw new \Exception("Unable to copy base64 to '$destination'");
+		}
+
+		return $name;
 	}
 
 
@@ -253,6 +289,12 @@ class FileSystem {
 			$name .= ".$extension";
 		}
 
-		return (($content = @file_get_contents($original)) && @file_put_contents($this->getPath($name), $content)) ? $name : false;
+		$destination = $this->getPath($name);
+
+		if (!($content = @file_get_contents($original)) || !@file_put_contents($destination, $content)) {
+			throw new \Exception("Unable to copy '$original' to '$destination'");
+		}
+
+		return $name;
 	}
 }
