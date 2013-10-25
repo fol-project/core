@@ -14,10 +14,12 @@ use Fol\Http\HttpException;
 class FileRoute {
 	private $path;
 	private $target;
+	private $app;
 
-	public function __construct ($path, $target) {
+	public function __construct ($path, $target, App $app = null) {
 		$this->path = $path;
 		$this->target = $target;
+		$this->app = $app;
 	}
 
 	public function getType () {

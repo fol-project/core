@@ -10,6 +10,7 @@ namespace Fol\Router;
 use Fol\Http\Request;
 use Fol\Http\Response;
 use Fol\Http\HttpException;
+use Fol\App;
 
 class Route {
 	private $name;
@@ -26,9 +27,11 @@ class Route {
 
 	private $target;
 	private $wildcard;
+	private $app;
 
-	public function __construct ($name, array $config = array()) {
+	public function __construct ($name, array $config = array(), App $app = null) {
 		$this->name = $name;
+		$this->app = $app;
 
 		$this->path = $config['path'];
 		$this->target = $config['target'];

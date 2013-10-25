@@ -35,24 +35,14 @@ abstract class App {
 			return $this->namespace = (new \ReflectionClass($this))->getNameSpaceName();
 		}
 
-		//The app path. (/sites/my-site/web)
+		//The app path (relative to root). (/web)
 		if ($name === 'path') {
-			return $this->path = str_replace('\\', '/', dirname((new \ReflectionClass($this))->getFileName()));
+			return $this->path = preg_replace('|^'.BASE_PATH.'|', '', str_replace('\\', '/', dirname((new \ReflectionClass($this))->getFileName())));
 		}
 
 		//The app base url
 		if ($name === 'url') {
 			return $this->url = '';
-		}
-
-		//The assets app path. (/sites/my-site/web/assets)
-		if ($name === 'assetsPath') {
-			return $this->assetsPath = $this->path.'/assets';
-		}
-
-		//The assets app url (/web/assets)
-		if ($name === 'assetsUrl') {
-			return $this->assetsUrl = preg_replace('|^'.BASE_PATH.'|', '', $this->path).'/assets';
 		}
 	}
 

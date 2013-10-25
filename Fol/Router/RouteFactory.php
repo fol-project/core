@@ -16,6 +16,10 @@ class RouteFactory {
 		$this->app = $app;
 	}
 
+	public function getApp () {
+		return $this->app;
+	}
+
 	private function getTarget ($target) {
 		if (strpos($target, '::') === false) {
 			$class = $target;
@@ -32,14 +36,14 @@ class RouteFactory {
 	public function createRoute ($name, array $config = array()) {
 		$config['target'] = $this->getTarget($config['target']);
 
-		return new Route($name, $config);
+		return new Route($name, $config, $app);
 	}
 
 	public function createFileRoute ($path, $target) {
-		return new FileRoute($path, $this->getTarget($target));
+		return new FileRoute($path, $this->getTarget($target), $app);
 	}
 
 	public function createErrorRoute ($target) {
-		return new ErrorRoute($this->getTarget($target));
+		return new ErrorRoute($this->getTarget($target), $app);
 	}
 }

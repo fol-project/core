@@ -10,12 +10,14 @@ namespace Fol\Router;
 use Fol\Http\Request;
 use Fol\Http\Response;
 use Fol\Http\HttpException;
+use Fol\App;
 
 class ErrorRoute {
 	private $target;
 
-	public function __construct ($target) {
+	public function __construct ($target, App $app = null) {
 		$this->target = $target;
+		$this->app = $app;
 	}
 
 	public function getType () {

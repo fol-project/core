@@ -9,7 +9,6 @@ namespace Fol\Router;
 
 use Fol\Http\Response;
 use Fol\Http\HttpException;
-use Fol\App;
 
 class Router {
 	private $routes = array();
@@ -151,19 +150,18 @@ class Router {
 	 * Handle a request
 	 * 
 	 * @param Fol\Request $request
-	 * @param Fol\App $app The app context of the request
 	 *
 	 * @throws Exception If no errorController is defined and an exception is thrown
 	 * 
 	 * @return Fol\Response
 	 */
-	public function handle ($request, App $app) {
+	public function handle ($request) {
 		if (($route = $this->match($request))) {
 			try {
-				$response = $route->execute($app, $request);
+				$response = $route->execute($request);
 			} catch (HttpException $exception) {
 				if ($this->errorController) {
-					return $this->errorController->execute($app, $exception, $request);
+					return $this->errorController->execute($exception, $request);
 				}
 
 				throw $exception;
@@ -175,7 +173,7 @@ class Router {
 		$exception = new HttpException('Not found', 404);
 
 		if ($this->errorController) {
-			return $this->errorController->execute($app, $exception, $request);
+			return $this->errorController->execute($exception, $request);
 		}
 
 		throw $exception;
