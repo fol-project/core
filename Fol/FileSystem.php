@@ -36,7 +36,7 @@ class FileSystem {
 		$this->path = BASE_PATH;
 
 		if ($path !== null) {
-			$this->moveTo($path);
+			$this->cd($path);
 		}
 	}
 
@@ -77,14 +77,19 @@ class FileSystem {
 
 
 	/**
-	 * Move the base path to other position
+	 * Change the current directory
 	 * 
 	 * @param string $path Relative path with the new position
+	 * @param  bool $create Create the directory if doesn't exist
 	 * 
 	 * @return $this
 	 */
-	public function moveTo ($path) {
+	public function cd ($path, $create = false) {
 		$this->path = $this->getPath($path);
+
+		if ($create === true) {
+			$this->mkdir();
+		}
 
 		return $this;
 	}
@@ -129,11 +134,11 @@ class FileSystem {
 
 
 	/**
-	 * Delete the current path and all its content
+	 * Remove the current path and all its content
 	 * 
 	 * @return $this
 	 */
-	public function delete () {
+	public function remove () {
 		$this->clear();
 
 		rmdir($this->path);
@@ -151,7 +156,7 @@ class FileSystem {
 	 * 
 	 * @return $this
 	 */
-	public function createDirectory ($name = '', $mode = 0777, $recursive = true) {
+	public function mkdir ($name = '', $mode = 0777, $recursive = true) {
 		$path = $this->getPath($name);
 
 		if (!is_dir($path)) {
