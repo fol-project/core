@@ -127,6 +127,7 @@ class Route {
 		}
 
 		$this->regex = "#^{$this->regex}$#";
+		$this->path = str_replace(['(', ')', '?', '*'], '', $this->path);
 	}
 
 
