@@ -131,7 +131,7 @@ class Session {
 			$this->start();
 		}
 
-		$this->remove();
+		$this->delete();
 
 		return session_destroy();
 	}
