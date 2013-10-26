@@ -104,7 +104,7 @@ class Request {
 			'SERVER_NAME' => 'localhost',
 			'SERVER_PORT' => 80,
 			'HTTP_HOST' => 'localhost',
-			'HTTP_USER_AGENT' => 'FOL/'.FOL_VERSION,
+			'HTTP_USER_AGENT' => 'FOL',
 			'HTTP_ACCEPT' => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
 			'HTTP_ACCEPT_LANGUAGE' => 'gl-es,es,en;q=0.5',
 			'HTTP_ACCEPT_CHARSET' => 'utf-8;q=0.7,*;q=0.7',
