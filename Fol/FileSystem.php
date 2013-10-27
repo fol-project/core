@@ -135,6 +135,10 @@ class FileSystem {
 	 * @return $this
 	 */
 	public function clear ($path = null) {
+		if (!$this->getInfo($path)->isDir()) {
+			return $this;
+		}
+
 		foreach ($this->getRecursiveIterator($path) as $file) {
 			if ($file->isDir()) {
 				rmdir($file->getPathname());
