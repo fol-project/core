@@ -12,10 +12,6 @@ use Fol\Http\Files;
 use Fol\Http\Headers;
 
 class Request {
-	const TYPE_GLOBAL_REQUEST = 0;
-	const TYPE_MASTER_REQUEST = 1;
-	const TYPE_SUB_REQUEST = 2;
-
 	public $parameters;
 	public $get;
 	public $post;
@@ -27,7 +23,6 @@ class Request {
 
 	private $path;
 	private $format = 'html';
-	private $type;
 
 
 	/**
@@ -44,7 +39,7 @@ class Request {
 
 		$path = parse_url(preg_replace('|^'.preg_quote(BASE_URL).'|i', '', urldecode($_SERVER['REQUEST_URI'])), PHP_URL_PATH);
 
-		$request = new static($path, array(), (array)filter_input_array(INPUT_GET), (array)filter_input_array(INPUT_POST), $_FILES, (array)filter_input_array(INPUT_COOKIE), (array)filter_input_array(INPUT_SERVER), static::TYPE_GLOBAL_REQUEST);
+		$request = new static($path, array(), (array)filter_input_array(INPUT_GET), (array)filter_input_array(INPUT_POST), $_FILES, (array)filter_input_array(INPUT_COOKIE), (array)filter_input_array(INPUT_SERVER));
 
 		$contentType = $request->headers->get('Content-Type');
 
@@ -71,21 +66,21 @@ class Request {
 
 		$method = ($args && preg_match('#^[A-Z]+$#', $args[0])) ? array_shift($args) : 'GET';
 		$url = $args ? array_shift($args) : '/';
-		$parameters = [];
+		$vars = [];
 
 		if ($args) {
 			while ($args) {
 				$option = array_shift($args);
 
 				if (preg_match('#^(-+)([\w]+)$#', $option, $match)) {
-					$parameters[$match[2]] = $args ? array_shift($args) : true;
+					$vars[$match[2]] = $args ? array_shift($args) : true;
 				} else {
-					$parameters[] = $option;
+					$vars[] = $option;
 				}
 			}
 		}
 
-		return static::create($url, $method, $parameters, [], static::TYPE_GLOBAL_REQUEST);
+		return static::create($url, $method, $vars);
 	}
 
 
@@ -99,7 +94,7 @@ class Request {
 	 * 
 	 * @return Fol\Http\Request The object with the specified data
 	 */
-	static public function create ($url, $method = 'GET', array $vars = array(), array $parameters = array(), $type = null) {
+	static public function create ($url, $method = 'GET', array $vars = array(), array $parameters = array()) {
 		list($defaultScheme, $defaultHost) = explode('://', BASE_ABSOLUTE_URL, 2);
 
 		$defaults = array(
@@ -163,7 +158,7 @@ class Request {
 			'QUERY_STRING' => $components['query'],
 		));
 
-		return new static($components['path'], $parameters, $get, $post, array(), array(), $server, $type);
+		return new static($components['path'], $parameters, $get, $post, array(), array(), $server);
 	}
 
 
@@ -179,7 +174,7 @@ class Request {
 	 * @param array $cookies The cookies of the request
 	 * @param array $server The SERVER parameters
 	 */
-	public function __construct ($path = '', array $parameters = array(), array $get = array(), array $post = array(), array $files = array(), array $cookies = array(), array $server = array(), $type = null) {
+	public function __construct ($path = '', array $parameters = array(), array $get = array(), array $post = array(), array $files = array(), array $cookies = array(), array $server = array()) {
 		$this->parameters = new Container($parameters);
 		$this->get = new Input($get);
 		$this->post = new Input($post);
@@ -187,8 +182,6 @@ class Request {
 		$this->cookies = new Input($cookies);
 		$this->server = new Container($server);
 		$this->headers = new RequestHeaders(RequestHeaders::getHeadersFromServer($server));
-
-		$this->type = ($type === null) ? static::TYPE_MASTER_REQUEST : $type;
 
 		foreach (array_keys($this->headers->getParsed('Accept')) as $mimetype) {
 			if ($format = Headers::getFormat($mimetype)) {
@@ -231,26 +224,6 @@ class Request {
 		$text .= "\nHeaders:\n".$this->headers;
 
 		return $text;
-	}
-
-
-	/**
-	 * Returns true if the request is a subrequest
-	 * 
-	 * @return boolean
-	 */
-	public function isSubrequest () {
-		return ($this->type === static::TYPE_SUB_REQUEST);
-	}
-
-
-	/**
-	 * Returns true if the request is created from global
-	 * 
-	 * @return boolean
-	 */
-	public function isGlobal () {
-		return ($this->type === static::TYPE_GLOBAL_REQUEST);
 	}
 
 
