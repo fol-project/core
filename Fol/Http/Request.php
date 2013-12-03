@@ -70,7 +70,7 @@ class Request {
 		$file = array_shift($args);
 
 		$method = ($args && preg_match('#^[A-Z]+$#', $args[0])) ? array_shift($args) : 'GET';
-		$path = ($args && $args[0][0] === '/') ? array_shift($args) : '/';
+		$url = $args ? array_shift($args) : '/';
 		$parameters = [];
 
 		if ($args) {
@@ -85,12 +85,12 @@ class Request {
 			}
 		}
 
-		return static::create($path, $method, $parameters, [], static::TYPE_GLOBAL_REQUEST);
+		return static::create($url, $method, $parameters, [], static::TYPE_GLOBAL_REQUEST);
 	}
 
 
 	/**
-	 * Creates a new request object from specified values
+	 * Creates a new custom request object
 	 * 
 	 * @param string $url The url request
 	 * @param string $method The method of the request (GET, POST, PUT, DELETE)
@@ -100,10 +100,12 @@ class Request {
 	 * @return Fol\Http\Request The object with the specified data
 	 */
 	static public function create ($url, $method = 'GET', array $vars = array(), array $parameters = array(), $type = null) {
+		list($defaultScheme, $defaultHost) = explode('://', BASE_ABSOLUTE_URL, 2);
+
 		$defaults = array(
-			'SERVER_NAME' => 'localhost',
+			'SERVER_NAME' => $defaultHost,
 			'SERVER_PORT' => 80,
-			'HTTP_HOST' => 'localhost',
+			'HTTP_HOST' => $defaultHost,
 			'HTTP_USER_AGENT' => 'FOL',
 			'HTTP_ACCEPT' => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
 			'HTTP_ACCEPT_LANGUAGE' => 'gl-es,es,en;q=0.5',
@@ -121,7 +123,7 @@ class Request {
 			$defaults['SERVER_NAME'] = $defaults['HTTP_HOST'] = $components['host'];
 		}
 
-		if (isset($components['scheme']) && ($components['scheme'] === 'https')) {
+		if ((isset($components['scheme']) && ($components['scheme'] === 'https')) || ($defaultScheme === 'https')) {
 			$defaults['HTTPS'] = 'on';
 			$defaults['SERVER_PORT'] = 443;
 		}
@@ -131,7 +133,9 @@ class Request {
 			$defaults['HTTP_HOST'] = $defaults['HTTP_HOST'].':'.$components['port'];
 		}
 
-		if (!isset($components['path'])) {
+		if (isset($components['path'])) {
+			$components['path'] = preg_replace('|^'.preg_quote(BASE_URL, '|').'|i', '', urldecode($components['path']));
+		} else {
 			$components['path'] = '';
 		}
 
