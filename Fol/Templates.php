@@ -9,11 +9,13 @@ namespace Fol;
 use Fol\Container;
 
 class Templates {
+	private $sections = [];
+	private $wrapper;
+
 	protected $renders = [];
 	protected $templates = [];
 	protected $templatesPaths = [];
 	protected $currentPath;
-
 
 
 	/**
@@ -24,7 +26,6 @@ class Templates {
 	public function __construct ($paths) {
 		$this->addFolders($paths);
 	}
-
 
 
 	/**
@@ -50,7 +51,6 @@ class Templates {
 	}
 
 
-
 	/**
 	 * Register a new template file with a name
 	 * You can define an array of name => file
@@ -61,7 +61,6 @@ class Templates {
 	public function registerFile ($name, $file = null) {
 		$this->templates[$name] = $file;
 	}
-
 
 
 	/**
@@ -75,6 +74,73 @@ class Templates {
 		$this->renders[$name] = $this->render($file, $data);
 	}
 
+
+	/**
+	 * Load an object as extension
+	 * 
+	 * @param  Object $class Any object with public methods
+	 */
+	public function loadExtension ($class) {
+		if (!is_object($class)) {
+			throw new \InvalidArgumentException("The extension must be an object");
+		}
+
+		$class->templates = $this;
+
+		foreach (get_class_methods($class) as $name) {
+			$this->functions[$name] = [$class, $name];
+		}
+	}
+
+
+	/**
+	 * Magic method to execute the extensions functions
+	 */
+	public function __call ($name, $arguments) {
+		if (!isset($this->functions[$name])) {
+			throw new \LogicException("This extension function does not exist");
+		}
+
+		$function = $this->functions[$name];
+
+		return call_user_func_array($function, $arguments);
+	}
+
+
+	/**
+	 * Init a new section capture
+	 * 
+	 * @param  string $name Section name
+	 */
+	public function start ($name) {
+		$this->sections[] = $name;
+		ob_start();
+	}
+
+
+	/**
+	 * Stops and save the latest section capture
+	 */
+	public function end () {
+		if (empty($this->sections)) {
+			throw new \LogicException('You must start a section before end it.');
+		}
+
+		$name = array_pop($this->sections);
+
+		$this->renders[$name] = ob_get_clean();
+	}
+
+
+	/**
+	 * Define a wrapper for the current template
+	 * 
+	 * @param string $template Template or file name
+	 * @param string $childName Name used in the wrapper to render the current template
+	 */
+	public function wrapper ($template = null, $childName = 'content') {
+		return $this->wrapper = [$template, $childName];
+	}
 
 
 	/**
@@ -92,8 +158,12 @@ class Templates {
 			$template = $this->templates[$template];
 		}
 
-		if (($template[0] !== '/') && !empty($this->currentPath) && is_file($this->currentPath.'/'.$template)) {
-			return $this->currentPath.'/'.$template;
+		if ($template[0] !== '/') {
+			$template = "/$template";
+
+			if (!empty($this->currentPath) && is_file($this->currentPath.$template)) {
+				return $this->currentPath.$template;
+			}
 		}
 
 		foreach ($this->templatesPaths as $path) {
@@ -106,19 +176,48 @@ class Templates {
 	}
 
 
-
 	/**
 	 * Private function that renders a template file and returns its content
 	 * 
-	 * @param string $_file The file path
-	 * @param array $_data An array of variables used in the template.
+	 * @param string $file The template file
+	 * @param array $data An array of variables used locally in the template.
 	 *
 	 * @return string The file content
 	 */
-	protected function renderFile ($_file, array $_data = null) {
-		$_previousPath = $this->currentPath;
-		$this->currentPath = dirname($_file);
+	protected function renderTemplateFile ($file, array $data = null) {
+		$previousPath = $this->currentPath;
+		$previousWrapper = $this->wrapper;
 
+		$this->currentPath = dirname($file);
+		$this->wrapper = null;
+
+		$content = $this->renderFile($file, $data);
+
+		if ($this->wrapper) {
+			list($wrapper, $childName) = $this->wrapper;
+
+			$previousContent = isset($this->renders[$childName]) ? $this->renders[$childName] : null;
+			$this->renders[$childName] = $content;
+			$content = $this->render($wrapper);
+			$this->renders[$childName] = $previousContent;
+		}
+
+		$this->currentPath = $previousPath;
+		$this->wrapper = $previousWrapper;
+
+		return $content;
+	}
+
+
+	/**
+	 * Render a file and returns its content
+	 * 
+	 * @param string $_file The file path
+	 * @param array $_data An array of variables used locally in the file.
+	 * 
+	 * @return string
+	 */
+	protected function renderFile ($_file, array $_data = null) {
 		if ($_data !== null) {
 			extract((array)$_data, EXTR_SKIP);
 		}
@@ -129,11 +228,8 @@ class Templates {
 
 		include($_file);
 
-		$this->currentPath = $_previousPath;
-
 		return ob_get_clean();
 	}
-
 
 
 	/**
@@ -155,32 +251,32 @@ class Templates {
 				return '';
 			}
 
-			throw new \Exception("The template $template does not exists");
+			throw new \InvalidArgumentException("The template $template does not exists");
 		}
 
 		if (($data !== null) && static::isIterable($data)) {
 			$result = '';
 
 			foreach ($data as $value) {
-				$result .= "\n".$this->renderFile($template, $value);
+				$result .= "\n".$this->renderTemplateFile($file, $value);
 			}
 
 			return $result;
 		}
 
-		return $this->renderFile($file, $data);
+		return $this->renderTemplateFile($file, $data);
 	}
 
 
 	/**
 	 * Simple method to detect if a value must be iterabled or not
 	 */
-	private static function isIterable ($items) {
-		if (is_array($items)) {
-			return (empty($items) || isset($data[0]));
+	private static function isIterable ($data) {
+		if (is_array($data)) {
+			return (empty($data) || isset($data[0]));
 		}
 
-		if (($items instanceof \Iterator) || ($items instanceof \IteratorAggregate)) {
+		if (($data instanceof \Iterator) || ($data instanceof \IteratorAggregate)) {
 			return true;
 		}
 
