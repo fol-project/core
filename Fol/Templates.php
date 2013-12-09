@@ -138,8 +138,8 @@ class Templates {
 	 * @param string $template Template or file name
 	 * @param string $childName Name used in the wrapper to render the current template
 	 */
-	public function wrapper ($template = null, $childName = 'content') {
-		return $this->wrapper = [$template, $childName];
+	public function wrapper ($template, $data = null, $childName = 'content') {
+		return $this->wrapper = [$template, $data, $childName];
 	}
 
 
@@ -194,11 +194,11 @@ class Templates {
 		$content = $this->renderFile($file, $data);
 
 		if ($this->wrapper) {
-			list($wrapper, $childName) = $this->wrapper;
+			list($wrapper, $dataWrapper, $childName) = $this->wrapper;
 
 			$previousContent = isset($this->renders[$childName]) ? $this->renders[$childName] : null;
 			$this->renders[$childName] = $content;
-			$content = $this->render($wrapper);
+			$content = $this->render($wrapper, $dataWrapper);
 			$this->renders[$childName] = $previousContent;
 		}
 
