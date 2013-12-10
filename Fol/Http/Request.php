@@ -353,6 +353,10 @@ class Request {
 			$path = substr($path, 0, -1);
 		}
 
+		if ($path[0] !== '/') {
+			$path = "/$path";
+		}
+
 		$this->path = $path;
 	}
 
@@ -456,7 +460,7 @@ class Request {
 	 * @return string The client IP
 	 */
 	public function getIp () {
-		return $this->server->get('HTTP_CLIENT_IP', $this->server->get('HTTP_X_FORWARDED_FOR', $this->server->get('REMOTE_ADDR')));
+		return $this->headers->get('Http-Client-Ip', $this->headers->get('Http-X-Forwarded-For', $this->server->get('REMOTE_ADDR')));
 	}
 
 
@@ -466,7 +470,7 @@ class Request {
 	 * @return boolean TRUE if the request if ajax, FALSE if not
 	 */
 	public function isAjax () {
-		return (strtolower($this->server->get('HTTP_X_REQUESTED_WITH')) === 'xmlhttprequest') ? true : false;
+		return (strtolower($this->headers->get('Http-X-Requested-With')) === 'xmlhttprequest') ? true : false;
 	}
 
 

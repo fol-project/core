@@ -159,7 +159,7 @@ class Config {
 	 * 
 	 * @param string $name The name of the data
 	 */
-	public function delete ($name, $key = null) {
+	public function delete ($name) {
 		unset($this->items[$name]);
 	}
 }
