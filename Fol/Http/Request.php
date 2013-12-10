@@ -460,7 +460,7 @@ class Request {
 	 * @return string The client IP
 	 */
 	public function getIp () {
-		return $this->headers->get('Http-Client-Ip', $this->headers->get('Http-X-Forwarded-For', $this->server->get('REMOTE_ADDR')));
+		return $this->headers->get('Client-Ip', $this->headers->get('X-Forwarded-For', $this->server->get('REMOTE_ADDR')));
 	}
 
 
@@ -470,7 +470,7 @@ class Request {
 	 * @return boolean TRUE if the request if ajax, FALSE if not
 	 */
 	public function isAjax () {
-		return (strtolower($this->headers->get('Http-X-Requested-With')) === 'xmlhttprequest') ? true : false;
+		return (strtolower($this->headers->get('X-Requested-With')) === 'xmlhttprequest') ? true : false;
 	}
 
 
