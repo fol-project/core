@@ -13,12 +13,15 @@ use Fol\Http\HttpException;
 use Fol\App;
 
 class FileRoute {
-	private $path;
+	private $cachedPath;
+	private $originPath;
+	private $filename;
 	private $target;
 	private $app;
 
-	public function __construct ($path, $target, App $app = null) {
-		$this->path = $path;
+	public function __construct ($cachedPath, $originPath, $target, App $app = null) {
+		$this->cachedPath = $cachedPath;
+		$this->originPath = $originPath;
 		$this->target = $target;
 		$this->app = $app;
 	}
@@ -27,17 +30,24 @@ class FileRoute {
 		return 'file';
 	}
 
-	public function getPath () {
-		return $this->path;
-	}
-
 	public function getTarget () {
 		return $this->target;
 	}
 
-	public function match ($request) {
-		return (strpos($request->getPath(true), $this->path) === 0);
+	public function checkPath ($request) {
+		return (strpos($request->getPath(true), $this->cachedPath) === 0);
 	}
+
+	public function match ($request) {
+		if (strpos($request->getPath(true), $this->cachedPath) !== 0) {
+			return false;
+		}
+
+		$this->filename = substr($request->getPath(true), strlen($this->cachedPath));
+
+		return is_file(BASE_PATH.$this->originPath.$this->filename);
+	}
+
 
 	public function execute ($request) {
 		ob_start();
@@ -45,7 +55,11 @@ class FileRoute {
 		$return = '';
 		$response = $request->generateResponse();
 
-		$request->parameters->set('file', substr($request->getPath(true), strlen($this->path)));
+		$request->parameters->set('file', [
+			'name' => $this->filename,
+			'origin' => $this->originPath.$this->filename,
+			'cached' => $this->cachedPath.$this->filename
+		]);
 
 		try {
 			list($class, $method) = $this->target;

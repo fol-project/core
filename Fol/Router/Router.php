@@ -65,16 +65,8 @@ class Router {
 	* @param string $path string
 	* @param mixed $target The target of this route
 	*/
-	public function mapFile ($path, $target = '') {
-		if (is_array($path)) {
-			foreach ($path as $path => $target) {
-				$this->fileRoutes[] = $this->routeFactory->createFileRoute($path, $target);
-			}
-
-			return;
-		}
-
-		$this->fileRoutes[] = $this->routeFactory->createFileRoute($path, $target);
+	public function mapFile ($cachedPath, $originPath, $target = '') {
+		$this->fileRoutes[] = $this->routeFactory->createFileRoute($cachedPath, $originPath, $target);
 	}
 
 
