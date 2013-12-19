@@ -57,21 +57,26 @@ class Templates {
 	 * 
 	 * @param string $name The template name (for example: menu)
 	 * @param string $file The file path of the template (for example: menu.php)
+	 * @param bool/array $data Set null or an array to save the rendered file
+	 * @param bool $failSilent Set true to do not throw the exception if the template does not exists
 	 */
-	public function registerFile ($name, $file = null) {
+	public function register ($name, $file = null, $data = false, $failSilent = false) {
 		$this->templates[$name] = $file;
+
+		if ($data !== false) {
+			$this->renders[$name] = $this->render($name, $data, $failSilent);
+		}
 	}
 
 
 	/**
-	 * Render a file and save the result
+	 * Save a rendered code to use it later
 	 * 
-	 * @param string $name The template name (for example: menu)
-	 * @param string $file The file path of the template (for example: menu.php)
-	 * @param array $data An optional array of data used in the template. If the array is numerical, renders the template once for each item
+	 * @param string $name The render name (for example: menu)
+	 * @param string $render The rendered code
 	 */
-	public function registerRender ($name, $file = null, array $data = null) {
-		$this->renders[$name] = $this->render($file, $data);
+	public function saveRender ($name, $render) {
+		$this->renders[$name] = $render;
 	}
 
 
