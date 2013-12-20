@@ -409,7 +409,7 @@ class Request {
 
 		$common_languages = array_values(array_intersect($user_languages, $valid_languages));
 
-		return $common_languages[0] ?: $valid_languages[0];
+		return isset($common_languages[0]) ? $common_languages[0] : $valid_languages[0];
 	}
 
 
