@@ -32,7 +32,7 @@ class ErrorRoute {
 		ob_start();
 
 		$return = '';
-		$response = $request->generateResponse();
+		$response = new Response;
 		$response->setStatus($exception->getCode() ?: 500);
 
 		list($class, $method) = $this->target;
@@ -56,11 +56,15 @@ class ErrorRoute {
 
 		if ($return instanceof Response) {
 			$return->appendContent(ob_get_clean());
+
+			$return->prepare($request);
 			
 			return $return;
 		}
 
 		$response->appendContent(ob_get_clean().$return);
+
+		$response->prepare($request);
 
 		return $response;
 	}

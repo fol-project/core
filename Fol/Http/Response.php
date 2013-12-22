@@ -40,7 +40,6 @@ class Response {
 	public function __construct ($content = '', $status = 200, array $headers = array()) {
 		$this->setContent($content);
 		$this->setStatus($status);
-		$this->setContentType('text/html');
 
 		$this->headers = new ResponseHeaders($headers);
 		$this->cookies = new Cookies();
@@ -67,6 +66,27 @@ class Response {
 	 */
 	public function __toString () {
 		return (string)$this->content;
+	}
+
+
+
+	/**
+	 * Prepare the Response according a request
+	 *
+	 * @param Fol\Http\Request $request The original request
+	 */
+	public function prepare (Request $request) {
+		if (!$this->headers->has('Content-Type') && ($format = $request->getFormat()) && ($mimetype = Headers::getMimeType($format))) {
+			$this->headers->set('Content-Type', "$mimetype; charset=UTF-8");
+		}
+
+		if ($this->headers->has('Transfer-Encoding')) {
+			$this->headers->remove('Content-Length');
+		}
+
+		if ($request->getMethod() === 'HEAD') {
+			$this->setContent(null);
+		}
 	}
 
 
@@ -139,27 +159,6 @@ class Response {
 	}
 
 
-
-	/**
-	 * Sets the content type header to output
-	 * 
-	 * @param string $type The mimetype or format of the output (for example "css" or "text/css")
-	 */
-	public function setContentType ($type) {
-		$this->content_type = Headers::getMimeType($type) ?: $type;
-	}
-
-
-	/**
-	 * Gets the content type header to output
-	 * 
-	 * @return string The mime type
-	 */
-	public function getContentType () {
-		return $this->content_type;
-	}
-
-
 	/**
 	 * Set the status code and header needle to redirect to another url
 	 * 
@@ -221,7 +220,6 @@ class Response {
 	 */
 	public function sendHeaders () {
 		header(sprintf('HTTP/1.1 %s', $this->status[0], $this->status[1]));
-		header(sprintf('Content-Type:%s;charset=utf-8', $this->content_type));
 
 		$this->headers->send();
 		$this->cookies->send();

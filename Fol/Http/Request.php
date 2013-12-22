@@ -524,19 +524,6 @@ class Request {
 
 
 	/**
-	 * Generate a response instance for this request
-	 * 
-	 * @return Fol\Http\Response
-	 */
-	public function generateResponse ($content = '', $status = 200, array $headers = array()) {
-		$Response = new Response($content, $status, $headers);
-		$Response->setContentType($this->getFormat());
-
-		return $Response;
-	}
-
-
-	/**
 	 * Defines a If-Modified-Since header
 	 * 
 	 * @param string/Datetime $datetime
