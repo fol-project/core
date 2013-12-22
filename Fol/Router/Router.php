@@ -12,7 +12,6 @@ use Fol\Http\HttpException;
 
 class Router {
 	private $routes = array();
-	private $fileRoutes = array();
 	private $errorController;
 	private $routeFactory;
 	private $absoluteUrl;
@@ -30,14 +29,14 @@ class Router {
 
 
 	/**
-	* Route factory method
-	*
-	* Maps the given URL to the given target.
-	* @param string $name string The route name.
-	* @param string $path string
-	* @param mixed $target The target of this route.
-	* @param array $config Array of optional arguments.
-	*/
+	 * Route factory method
+	 *
+	 * Maps the given URL to the given target.
+	 * @param string $name string The route name.
+	 * @param string $path string
+	 * @param mixed $target The target of this route.
+	 * @param array $config Array of optional arguments.
+	 */
 	public function map ($name, $path = null, $target = null, array $config = array()) {
 		if (is_array($name)) {
 			foreach ($name as $name => $config) {
@@ -59,17 +58,11 @@ class Router {
 
 
 	/**
-	* FileRoute factory method
-	*
-	* Maps the given URL to the given target.
-	* @param string $path string
-	* @param mixed $target The target of this route
-	*/
-	public function mapFile ($cachedPath, $originPath, $target = '') {
-		$this->fileRoutes[] = $this->routeFactory->createFileRoute($cachedPath, $originPath, $target);
-	}
-
-
+	 * Error factory method
+	 *
+	 * Define the router used on errors
+	 * @param mixed $target The target of this route
+	 */
 	public function setError ($target) {
 		$this->errorController = $this->routeFactory->createErrorRoute($target);
 	}
@@ -81,12 +74,6 @@ class Router {
 	 * If called multiple times
 	 */
 	public function match ($request) {
-		foreach ($this->fileRoutes as $route) {
-			if ($route->match($request)) {
-				return $route;
-			}
-		}
-
 		foreach ($this->routes as $route) {
 			if ($route->match($request)) {
 				return $route;

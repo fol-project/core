@@ -35,10 +35,6 @@ class RouteFactory {
 		return new Route($name, $config, $this->app);
 	}
 
-	public function createFileRoute ($cachedPath, $originPath, $target) {
-		return new FileRoute($cachedPath, $originPath, $this->getTarget($target), $this->app);
-	}
-
 	public function createErrorRoute ($target) {
 		return new ErrorRoute($this->getTarget($target), $this->app);
 	}
