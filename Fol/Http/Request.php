@@ -95,7 +95,7 @@ class Request {
 	 * @return Fol\Http\Request The object with the specified data
 	 */
 	static public function create ($url, $method = 'GET', array $vars = array(), array $parameters = array()) {
-		list($defaultScheme, $defaultHost) = explode('://', BASE_ABSOLUTE_URL, 2);
+		list($defaultScheme, $defaultHost) = explode('://', BASE_HOST, 2);
 
 		$defaults = array(
 			'SERVER_NAME' => $defaultHost,

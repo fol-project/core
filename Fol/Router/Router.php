@@ -24,7 +24,7 @@ class Router {
 	 */
 	public function __construct (RouteFactory $routeFactory) {
 		$this->routeFactory = $routeFactory;
-		$this->absoluteUrl = BASE_ABSOLUTE_URL;
+		$this->absoluteUrl = BASE_HOST;
 	}
 
 
