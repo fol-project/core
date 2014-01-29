@@ -82,7 +82,35 @@ abstract class App {
 
 
 	/**
-	 * Returns a service
+	 * Returns the absolute path of the app
+	 * 
+	 * @param string $path1, $path2, ... Optional paths to append
+	 */
+	public function getPath () {
+		if (func_num_args() === 0) {
+			return BASE_PATH.$this->path.$path;
+		}
+
+		return BASE_PATH.$this->path.str_replace('//', '/', '/'.implode('/', func_get_args()));
+	}
+
+
+	/**
+	 * Returns the absolute url of the app
+	 * 
+	 * @param string $path1, $path2, ... Optional paths to append
+	 */
+	public function getUrl () {
+		if (func_num_args() === 0) {
+			return BASE_HOST.BASE_URL.$this->path.$path;
+		}
+
+		return BASE_HOST.BASE_URL.$this->path.str_replace('//', '/', '/'.implode('/', func_get_args()));
+	}
+
+
+	/**
+	 * Returns a registered service or a class instance 
 	 *
 	 * @param  string $name The service name
 	 *
@@ -90,7 +118,17 @@ abstract class App {
 	 */
 	public function get ($name) {
 		if (!isset($this->services[$name])) {
-			return null;
+			$className = $this->namespace.'\\'.$className;
+
+			if (!class_exists($className)) {
+				throw new \Exception("The class '$name' does not exist and it not registered");
+			}
+
+			if (func_num_args() === 1) {
+				return new $className;
+			}
+
+			return (new \ReflectionClass($className))->newInstanceArgs(array_slice(func_get_args(), 1));
 		}
 
 		if (func_num_args() === 1) {
@@ -98,23 +136,5 @@ abstract class App {
 		}
 
 		return call_user_func_array($this->services[$name], array_slice(func_get_args(), 1));
-	}
-
-
-	/**
-	 * Returns a class instance
-	 *
-	 * @param string $className The class name (must be in the same namespace than the app, for example: 'Controllers\Index' referers to 'Apps\Web\Controllers\Index');
-	 *
-	 * @return object A new instance of this class
-	 */
-	public function getClassInstance ($className) {
-		$className = $this->namespace.'\\'.$className;
-
-		if (func_num_args() === 1) {
-			return new $className;
-		}
-
-		return (new \ReflectionClass($className))->newInstanceArgs(array_slice(func_get_args(), 1));
 	}
 }
