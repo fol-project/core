@@ -20,11 +20,6 @@ abstract class App {
 	 * @return string The property value or null
 	 */
 	public function __get ($name) {
-		//Registered services
-		if (($service = $this->get($name)) !== null) {
-			return $this->$name = $service;
-		}
-
 		//The app name. (Web)
 		if ($name === 'name') {
 			return $this->name = substr(strrchr($this->namespace, '\\'), 1);
@@ -43,6 +38,11 @@ abstract class App {
 		//The app base url
 		if ($name === 'url') {
 			return $this->url = '';
+		}
+
+		//Registered services
+		if (($service = $this->get($name)) !== null) {
+			return $this->$name = $service;
 		}
 	}
 
@@ -121,7 +121,7 @@ abstract class App {
 			$className = $this->namespace.'\\'.$className;
 
 			if (!class_exists($className)) {
-				throw new \Exception("The class '$name' does not exist and it not registered");
+				throw new \Exception("'$name' does not exist and it not registered");
 			}
 
 			if (func_num_args() === 1) {
