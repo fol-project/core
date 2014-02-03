@@ -51,10 +51,6 @@ class FileSystem {
 			return $this->path;
 		}
 
-		if ($path[0] === '/') {
-			return self::fixPath($path);
-		}
-
 		return self::fixPath($this->path.'/'.$path);
 	}
 
