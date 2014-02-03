@@ -33,8 +33,6 @@ class FileSystem {
 	 * @param string $path Base path
 	 */
 	public function __construct ($path = null) {
-		$this->path = BASE_PATH;
-
 		if ($path !== null) {
 			$this->cd($path);
 		}

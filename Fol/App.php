@@ -7,6 +7,8 @@
 
 namespace Fol;
 
+use Fol\FileSystem;
+
 abstract class App {
 	private $services;
 
@@ -88,10 +90,10 @@ abstract class App {
 	 */
 	public function getPath () {
 		if (func_num_args() === 0) {
-			return BASE_PATH.$this->path.$path;
+			return BASE_PATH.$this->path;
 		}
 
-		return BASE_PATH.$this->path.str_replace('//', '/', '/'.implode('/', func_get_args()));
+		return FileSystem::fixPath(BASE_PATH.$this->path.'/'.implode('/', func_get_args()));
 	}
 
 
@@ -102,10 +104,10 @@ abstract class App {
 	 */
 	public function getUrl () {
 		if (func_num_args() === 0) {
-			return BASE_HOST.BASE_URL.$this->path.$path;
+			return BASE_HOST.BASE_URL.$this->path;
 		}
 
-		return BASE_HOST.BASE_URL.$this->path.str_replace('//', '/', '/'.implode('/', func_get_args()));
+		return BASE_HOST.FileSystem::fixPath(BASE_URL.$this->path.'/'.implode('/', func_get_args()));
 	}
 
 
