@@ -12,6 +12,7 @@ namespace Fol;
 class Config {
 	protected $configPaths = [];
 	protected $items = [];
+	protected $environment;
 
 
 	/**
@@ -21,7 +22,21 @@ class Config {
 	 */
 	public function __construct ($paths) {
 		$this->addFolders($paths);
+
+		if (defined('ENVIRONMENT')) {
+			$this->setEnvironment(ENVIRONMENT);
+		}
 	}
+
+
+	/**
+	 * Changes the environment name
+	 * 
+	 * @param string $environment The new environment name
+	 */
+	public function setEnvironment ($environment) {
+		$this->environment = $environment;
+ 	}
 
 
 	/**
