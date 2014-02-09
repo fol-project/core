@@ -13,19 +13,19 @@ use Composer\IO\IOInterface;
 class Composer {
 
 	/**
-	 * Define the environment variables (for example the constants ENVIRONMET and BASE_URL)
+	 * Define the constants (for example the constants ENVIRONMET and BASE_URL)
 	 *
 	 * @param Composer\IO\IOInterface $io The IO class to ask the questions
 	 */
-	private static function setEnvironment (IOInterface $io) {
-		$defaults = require 'environment.php';
-		$environment = [];
+	private static function setConstants (IOInterface $io) {
+		$defaults = require 'constants.php';
+		$constants = [];
 
 		foreach ($defaults as $name => $default) {
-			$environment[$name] = $io->ask("Config > {$name} = '{$default}' ?: ", $default);
+			$constants[$name] = $io->ask("Constant > {$name} = '{$default}' > ", $default);
 		}
 
-		file_put_contents('environment.php', "<?php\n\nreturn ".var_export($environment, true).';');
+		file_put_contents('constants.php', "<?php\n\nreturn ".var_export($constants, true).';');
 	}
 
 
@@ -42,7 +42,7 @@ class Composer {
 			return;
 		}
 
-		$environment = require 'environment.php';
+		$environment = require 'constants.php';
 		$environment = $environment['ENVIRONMENT'];
 
 		foreach ($extra['config'] as $configFile) {
@@ -54,7 +54,7 @@ class Composer {
 			$config = [];
 
 			foreach ($defaults as $name => $default) {
-				$config[$name] = $io->ask("Config > {$base}.{$name} = '{$default}' ?: ", $default);
+				$config[$name] = $io->ask("Config > {$base}.{$name} = '{$default}' > ", $default);
 			}
 
 			if (!is_dir($envDir)) {
@@ -72,7 +72,7 @@ class Composer {
 	 * @param Composer\Script\Event $event The event object
 	 */
 	public static function postCreateProject (Event $event) {
-		self::setEnvironment($event->getIO());
+		self::setConstants($event->getIO());
 		self::setConfig($event->getComposer()->getPackage(), $event->getIO());
 	}
 }

@@ -97,6 +97,10 @@ class Config {
 		}
 
 		foreach ($this->configPaths as $path) {
+			if ($this->environment && is_file($path.$this->environment.'/'.$name)) {
+				return include($path.$this->environment.'/'.$name);
+			}
+
 			if (is_file($path.$name)) {
 				return include($path.$name);
 			}
