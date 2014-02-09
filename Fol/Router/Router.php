@@ -140,7 +140,7 @@ class Router {
 			throw new \Exception("No route with the name $name has been found.");
 		}
 
-		return ($absolute ? $this->baseurl['host'] : '').$this->baseurl['path'].$this->routes[$name]->generate($params);
+		return ($absolute ? $this->baseurl['host'] : '').$this->routes[$name]->generate($params);
 	}
 
 
