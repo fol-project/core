@@ -7,31 +7,53 @@
  */
 namespace Fol\Router;
 
+use Fol\App;
+use Fol\Http\Request;
 use Fol\Http\Response;
 use Fol\Http\HttpException;
 
 class Router {
-	private $routes = array();
+	private $routes = [];
 	private $errorController;
 	private $routeFactory;
-	private $absoluteUrl;
+	private $baseurl;
 
 
 	/**
 	 * Constructor function. Defines the base url
 	 * 
-	 * @param string $baseUrl
+	 * @param Fol\Router\RouteFactory $routeFactory
 	 */
 	public function __construct (RouteFactory $routeFactory) {
 		$this->routeFactory = $routeFactory;
-		$this->absoluteUrl = BASE_HOST;
+
+		$this->setBaseUrl(BASE_URL);
+	}
+
+
+	/**
+	 * Change the current base url
+	 *
+	 * @param string $baseurl The new baseurl
+	 */
+	public function setBaseUrl ($baseurl) {
+		$components = parse_url($baseurl);
+
+		$this->baseurl = [
+			'host' => $components['scheme'].'://'.$components['host'].(isset($components['port']) ? ':'.$components['port'] : ''),
+			'path' => isset($components['path']) ? $components['path'] : ''
+		];
+
+		foreach ($this->routes as $route) {
+			$route->base = $this->baseurl['path'];
+		}
 	}
 
 
 	/**
 	 * Route factory method
-	 *
 	 * Maps the given URL to the given target.
+	 *
 	 * @param string $name string The route name.
 	 * @param string $path string
 	 * @param mixed $target The target of this route.
@@ -40,6 +62,8 @@ class Router {
 	public function map ($name, $path = null, $target = null, array $config = array()) {
 		if (is_array($name)) {
 			foreach ($name as $name => $config) {
+				$config['base'] = $this->baseurl['path'];
+
 				$this->routes[$name] = $this->routeFactory->createRoute($name, $config);
 			}
 
@@ -48,6 +72,7 @@ class Router {
 
 		$config['path'] = $path;
 		$config['target'] = $target;
+		$config['base'] = $this->baseurl['path'];
 
 		if ($name === null) {
 			$this->routes[] = $this->routeFactory->createRoute($name, $config);
@@ -73,7 +98,7 @@ class Router {
 	 * If so, return route's target
 	 * If called multiple times
 	 */
-	public function match ($request) {
+	public function match (Request $request) {
 		foreach ($this->routes as $route) {
 			if ($route->match($request)) {
 				return $route;
@@ -106,7 +131,7 @@ class Router {
 	 * 
 	 * @param string $name The name of the route to reverse route.
 	 * @param array $params Optional array of parameters to use in URL
-	 * @param boolean $absolute Set true to generate absolute urls
+	 * @param bool $absolute Set true to get the absolute path (with basehost)
 	 * 
 	 * @return string The url to the route
 	 */
@@ -115,13 +140,7 @@ class Router {
 			throw new \Exception("No route with the name $name has been found.");
 		}
 
-		$route = $this->routes[$name];
-
-		if ($absolute === true) {
-			return $this->absoluteUrl.BASE_URL.$route->generate($params);
-		}
-
-		return BASE_URL.$route->generate($params);
+		return ($absolute ? $this->baseurl['host'] : '').$this->baseurl['path'].$this->routes[$name]->generate($params);
 	}
 
 
@@ -134,13 +153,13 @@ class Router {
 	 * 
 	 * @return Fol\Response
 	 */
-	public function handle ($request) {
+	public function handle (Request $request, App $app) {
 		if (($route = $this->match($request))) {
 			try {
-				$response = $route->execute($request);
+				$response = $route->execute($request, $app);
 			} catch (HttpException $exception) {
 				if ($this->errorController) {
-					return $this->errorController->execute($exception, $request);
+					return $this->errorController->execute($exception, $request, $app);
 				}
 
 				throw $exception;
@@ -152,7 +171,7 @@ class Router {
 		$exception = new HttpException('Not found', 404);
 
 		if ($this->errorController) {
-			return $this->errorController->execute($exception, $request);
+			return $this->errorController->execute($exception, $request, $app);
 		}
 
 		throw $exception;

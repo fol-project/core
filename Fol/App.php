@@ -11,38 +11,19 @@ use Fol\FileSystem;
 
 abstract class App {
 	private $services;
+	private $url;
+	private $path;
+	private $namespace;
 
 
 	/**
-	 * Magic function to get some special properties.
-	 * Instead calculate this on the __constructor, is better use __get to do not obligate to call this constructor in the extensions of this class
+	 * Magic function to get registered services.
 	 * 
-	 * @param string $name The name of the property
+	 * @param string $name The name of the service
 	 * 
-	 * @return string The property value or null
+	 * @return string The service instance or null
 	 */
 	public function __get ($name) {
-		//The app name. (Web)
-		if ($name === 'name') {
-			return $this->name = substr(strrchr($this->namespace, '\\'), 1);
-		}
-
-		//The app namespace. (Apps\Web)
-		if ($name === 'namespace') {
-			return $this->namespace = (new \ReflectionClass($this))->getNameSpaceName();
-		}
-
-		//The app path (relative to root). (/web)
-		if ($name === 'path') {
-			return $this->path = preg_replace('|^'.BASE_PATH.'|', '', str_replace('\\', '/', dirname((new \ReflectionClass($this))->getFileName())));
-		}
-
-		//The app base url
-		if ($name === 'url') {
-			return $this->url = '';
-		}
-
-		//Registered services
 		if (($service = $this->get($name)) !== null) {
 			return $this->$name = $service;
 		}
@@ -74,12 +55,20 @@ abstract class App {
 
 
 	/**
-	 * Deletes a service
+	 * Returns the namespace of the app
 	 * 
-	 * @param string $name The service name
+	 * @param string $namespace Optional namespace to append
 	 */
-	public function unregister ($name) {
-		unset($this->services[$name]);
+	public function getNamespace ($namespace = null) {
+		if ($this->namespace === null) {
+			$this->namespace = (new \ReflectionClass($this))->getNameSpaceName();
+		}
+
+		if ($namespace === null) {
+			return $this->namespace;
+		}
+
+		return $this->namespace.(($namespace[0] === '\\') ? '' : '\\').$namespace;
 	}
 
 
@@ -89,11 +78,15 @@ abstract class App {
 	 * @param string $path1, $path2, ... Optional paths to append
 	 */
 	public function getPath () {
-		if (func_num_args() === 0) {
-			return BASE_PATH.$this->path;
+		if ($this->path === null) {
+			$this->path = str_replace('\\', '/', dirname((new \ReflectionClass($this))->getFileName()));
 		}
 
-		return FileSystem::fixPath(BASE_PATH.$this->path.'/'.implode('/', func_get_args()));
+		if (func_num_args() === 0) {
+			return $this->path;
+		}
+
+		return FileSystem::fixPath($this->path.'/'.implode('/', func_get_args()));
 	}
 
 
@@ -103,11 +96,15 @@ abstract class App {
 	 * @param string $path1, $path2, ... Optional paths to append
 	 */
 	public function getUrl () {
-		if (func_num_args() === 0) {
-			return BASE_HOST.BASE_URL.$this->path;
+		if ($this->url === null) {
+			$this->url = BASE_URL.preg_replace('|^'.BASE_PATH.'|', '', $this->getPath());
 		}
 
-		return BASE_HOST.FileSystem::fixPath(BASE_URL.$this->path.'/'.implode('/', func_get_args()));
+		if (func_num_args() === 0) {
+			return $this->url;
+		}
+
+		return $this->url.FileSystem::fixPath('/'.implode('/', func_get_args()));
 	}
 
 
@@ -120,7 +117,7 @@ abstract class App {
 	 */
 	public function get ($name) {
 		if (!isset($this->services[$name])) {
-			$className = $this->namespace.'\\'.$className;
+			$className = $this->getNamespace($name);
 
 			if (!class_exists($className)) {
 				throw new \Exception("'$name' does not exist and it not registered");

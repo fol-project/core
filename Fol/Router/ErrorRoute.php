@@ -7,28 +7,32 @@
  */
 namespace Fol\Router;
 
+use Fol\App;
 use Fol\Http\Request;
 use Fol\Http\Response;
 use Fol\Http\HttpException;
-use Fol\App;
 
 class ErrorRoute {
-	private $target;
+	public $target;
 
-	public function __construct ($target, App $app = null) {
-		$this->target = $target;
-		$this->app = $app;
+
+	/**
+	 * Constructor
+	 *
+	 * @param array $options One available option: target
+	 */
+	public function __construct (array $config) {
+		$this->target = $config['target'];
 	}
 
-	public function getType () {
-		return 'error';
-	}
 
-	public function getTarget () {
-		return $this->target;
-	}
-
-	public function execute ($exception, $request) {
+	/**
+	 * Execute the route
+	 *
+	 * @param Fol\Http\HttpException
+	 * @param Fol\Http\Request
+	 */
+	public function execute (HttpException $exception, Request $request, App $app) {
 		ob_start();
 
 		$return = '';
@@ -39,7 +43,7 @@ class ErrorRoute {
 
 		$class = new \ReflectionClass($class);
 		$controller = $class->newInstanceWithoutConstructor();
-		$controller->app = $this->app;
+		$controller->app = $app;
 		$controller->route = $this;
 
 		$request->parameters->set('exception', $exception);

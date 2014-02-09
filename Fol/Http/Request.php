@@ -37,8 +37,7 @@ class Request {
 			return Request::createFromCli($argv);
 		}
 
-		$path = parse_url(preg_replace('|^'.preg_quote(BASE_URL).'|i', '', urldecode($_SERVER['REQUEST_URI'])), PHP_URL_PATH);
-
+		$path = parse_url(urldecode($_SERVER['REQUEST_URI']), PHP_URL_PATH);
 		$request = new static($path, array(), (array)filter_input_array(INPUT_GET), (array)filter_input_array(INPUT_POST), $_FILES, (array)filter_input_array(INPUT_COOKIE), (array)filter_input_array(INPUT_SERVER));
 
 		$contentType = $request->headers->get('Content-Type');
@@ -95,12 +94,12 @@ class Request {
 	 * @return Fol\Http\Request The object with the specified data
 	 */
 	static public function create ($url, $method = 'GET', array $vars = array(), array $parameters = array()) {
-		list($defaultScheme, $defaultHost) = explode('://', BASE_HOST, 2);
+		$components = array_replace(parse_url(BASE_URL), parse_url($url));
 
 		$defaults = array(
-			'SERVER_NAME' => $defaultHost,
+			'SERVER_NAME' => $components['host'],
 			'SERVER_PORT' => 80,
-			'HTTP_HOST' => $defaultHost,
+			'HTTP_HOST' => $components['host'],
 			'HTTP_USER_AGENT' => 'FOL',
 			'HTTP_ACCEPT' => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
 			'HTTP_ACCEPT_LANGUAGE' => 'gl-es,es,en;q=0.5',
@@ -112,13 +111,8 @@ class Request {
 			'REQUEST_TIME' => time(),
 		);
 
-		$components = parse_url($url);
 
-		if (isset($components['host'])) {
-			$defaults['SERVER_NAME'] = $defaults['HTTP_HOST'] = $components['host'];
-		}
-
-		if ((isset($components['scheme']) && ($components['scheme'] === 'https')) || ($defaultScheme === 'https')) {
+		if ($components['scheme'] === 'https') {
 			$defaults['HTTPS'] = 'on';
 			$defaults['SERVER_PORT'] = 443;
 		}
@@ -128,12 +122,7 @@ class Request {
 			$defaults['HTTP_HOST'] = $defaults['HTTP_HOST'].':'.$components['port'];
 		}
 
-		if (isset($components['path'])) {
-			$components['path'] = preg_replace('|^'.preg_quote(BASE_URL, '|').'|i', '', urldecode($components['path']));
-		} else {
-			$components['path'] = '';
-		}
-
+		$components['path'] = isset($components['path']) ? urldecode($components['path']) : '';
 		$components['query'] = isset($components['query']) ? html_entity_decode($components['query']) : '';
 
 		$post = $get = [];
@@ -151,14 +140,14 @@ class Request {
 			$get = array_replace($query, $get);
 		}
 
-		$server = array_replace($defaults, array(
+		$server = array_replace($defaults, [
 			'REQUEST_METHOD' => strtoupper($method),
 			'PATH_INFO' => '',
 			'REQUEST_URI' => $url,
 			'QUERY_STRING' => $components['query'],
-		));
+		]);
 
-		return new static($components['path'], $parameters, $get, $post, array(), array(), $server);
+		return new static($components['path'], $parameters, $get, $post, [], [], $server);
 	}
 
 
@@ -309,7 +298,7 @@ class Request {
 			}
 		}
 
-		$url .= BASE_URL.$this->getPath($format);
+		$url .= $this->getPath($format);
 
 		if (($query === true) && ($query = $this->get->get())) {
 			$url .= '?'.http_build_query($query);

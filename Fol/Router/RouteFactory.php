@@ -10,12 +10,26 @@ namespace Fol\Router;
 use Fol\App;
 
 class RouteFactory {
-	private $app;
+	private $namespace;
 
-	public function __construct (App $app) {
-		$this->app = $app;
+
+	/**
+	 * Constructor
+	 *
+	 * @param string $namespace The namespace where the controllers are
+	 */
+	public function __construct ($namespace = '') {
+		$this->namespace = $namespace;
 	}
 
+
+	/**
+	 * Generates the target of the route
+	 *
+	 * @param string $target (For example: ControllerClass::method)
+	 *
+	 * @return array
+	 */
 	private function getTarget ($target) {
 		if (strpos($target, '::') === false) {
 			$class = $target;
@@ -24,18 +38,35 @@ class RouteFactory {
 			list($class, $method) = explode('::', $target, 2);
 		}
 
-		$class = $this->app->namespace.'\\Controllers\\'.$class;
+		$class = "{$this->namespace}\\{$class}";
 
 		return [$class, $method];
 	}
 
+
+	/**
+	 * Creates a new route instance
+	 *
+	 * @param string $name Route name
+	 * @param array $config Route configuration (path, target, etc)
+	 *
+	 * @return Fol\Router\Route
+	 */
 	public function createRoute ($name, array $config = array()) {
 		$config['target'] = $this->getTarget($config['target']);
 
-		return new Route($name, $config, $this->app);
+		return new Route($name, $config);
 	}
 
+
+	/**
+	 * Creates a new error route instance
+	 *
+	 * @param string $target The error target (ControllerClass::method)
+	 *
+	 * @return Fol\Router\ErrorRoute
+	 */
 	public function createErrorRoute ($target) {
-		return new ErrorRoute($this->getTarget($target), $this->app);
+		return new ErrorRoute(['target' => $this->getTarget($target)]);
 	}
 }

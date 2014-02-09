@@ -7,33 +7,40 @@
  */
 namespace Fol\Router;
 
+use Fol\App;
 use Fol\Http\Request;
 use Fol\Http\Response;
 use Fol\Http\HttpException;
-use Fol\App;
 
 class Route {
-	private $name;
-	private $path;
-	private $method;
-	private $filters;
-	private $parameters = array();
-	private $secure;
-	
+	public $name;
+	public $path;
+	public $base;
+	public $method;
+	public $target;
+	public $filters;
+	public $parameters = array();
+	public $secure;
+
 	private $match;
 	private $matches;
 	private $generate;
 	private $regex = null;
-
-	private $target;
 	private $wildcard;
-	private $app;
 
-	public function __construct ($name, array $config = array(), App $app = null) {
+
+
+	/**
+	 * Constructor
+	 *
+	 * @param string $name The route name
+	 * @param array $config Six available options: path, target, method, filters, parameters, secure
+	 */
+	public function __construct ($name, array $config = array()) {
 		$this->name = $name;
-		$this->app = $app;
 
 		$this->path = $config['path'];
+		$this->base = $config['base'];
 		$this->target = $config['target'];
 
 		if (isset($config['method'])) {
@@ -55,22 +62,11 @@ class Route {
 		$this->setRegex();
 	}
 
-	public function getType () {
-		return 'url';
-	}
 
-	public function getName () {
-		return $this->name;
-	}
 
-	public function getPath () {
-		return $this->path;
-	}
-
-	public function getTarget () {
-		return $this->target;
-	}
-
+	/**
+	 * Generates the path regex
+	 */
 	private function setRegex () {
 		if (substr($this->path, -2) === '/*') {
 			$this->path = substr($this->path, 0, -2).'(/{:__wildcard__:(.*)})?';
@@ -126,12 +122,19 @@ class Route {
 			$this->regex = str_replace($keys, $vals, $this->regex);
 		}
 
-		$this->regex = "#^{$this->regex}$#";
 		$this->path = str_replace(['(', ')', '?', '*'], '', $this->path);
 	}
 
 
-	public function checkMethod ($request) {
+
+	/**
+	 * Check the method of the request
+	 *
+	 * @param Fol\Http\Request $request The request to check
+	 *
+	 * @return bool
+	 */
+	public function checkMethod (Request $request) {
 		if (!$this->method || in_array($request->getMethod(), $this->method)) {
 			return true;
 		}
@@ -139,7 +142,16 @@ class Route {
 		return false;
 	}
 
-	public function checkSecure ($request) {
+
+
+	/**
+	 * Check if the method is secure
+	 *
+	 * @param Fol\Http\Request $request The request to check
+	 *
+	 * @return bool
+	 */
+	public function checkSecure (Request $request) {
 		if ($this->secure === null) {
 			return true;
 		}
@@ -149,9 +161,21 @@ class Route {
 		return ($this->secure === $secure);
 	}
 
+
+
+	/**
+	 * Check the regex of the request
+	 *
+	 * @param Fol\Http\Request $request The request to check
+	 *
+	 * @return bool
+	 */
 	public function checkRegex ($request) {
-		return preg_match($this->regex, $request->getPath(), $this->matches);
+		$regex = $this->base.(($this->base && $this->regex === '/') ? '' : $this->regex);
+		
+		return preg_match("#^{$regex}$#", $request->getPath(), $this->matches);
 	}
+
 
 
 	/**
@@ -175,7 +199,7 @@ class Route {
 			}
 		}
 
-		$path = strtr($this->path, $replace);
+		$path = $this->base.strtr($this->path, $replace);
 
 		if ($parameters) {
 			return "$path?".http_build_query($parameters);
@@ -185,8 +209,15 @@ class Route {
 	}
 
 
-	public function match ($request) {
-		if (!($this->checkMethod($request) && $this->checkSecure($request) && $this->checkRegex($request))) {
+	/**
+	 * Check if the route match with the request
+	 *
+	 * @param Fol\Http\Request The request to check
+	 *
+	 * @return bool
+	 */
+	public function match (Request $request) {
+		if (!$this->checkMethod($request) || !$this->checkSecure($request) || !$this->checkRegex($request)) {
 			return false;
 		}
 
@@ -213,7 +244,16 @@ class Route {
 	}
 
 
-	public function execute ($request) {
+
+	/**
+	 * Execute the route and returns the response object
+	 *
+	 * @param Fol\Http\Request The request to send to controller
+	 * @param Fol\App The app to send to controller
+	 *
+	 * @return Fol\Http\Response
+	 */
+	public function execute (Request $request, App $app = null) {
 		ob_start();
 
 		$return = '';
@@ -228,7 +268,7 @@ class Route {
 
 			$class = new \ReflectionClass($class);
 			$controller = $class->newInstanceWithoutConstructor();
-			$controller->app = $this->app;
+			$controller->app = $app;
 			$controller->route = $this;
 
 			if (($constructor = $class->getConstructor())) {
