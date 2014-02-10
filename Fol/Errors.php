@@ -124,11 +124,7 @@ class Errors {
 		}
 
 		if (static::$displayErrors) {
-			if (php_sapi_name() === 'cli') {
-				echo static::getTextException($exception);
-			} else {
-				echo static::getHtmlException($exception);
-			}
+			echo static::exceptionToString($exception);
 		}
 
 		if (isset(static::$logger)) {
@@ -138,7 +134,21 @@ class Errors {
 
 
 	/**
-	 * Returns a exception info as HTML
+	 * Returns an exception info as a string according with the ACCESS_INTERFACE
+	 *
+	 * @param Exception $exception
+	 */
+	static public function exceptionToString (\Exception $exception) {
+		if (ACCESS_INTERFACE === 'cli') {
+			return Errors::getTextException($exception);
+		}
+
+		return Errors::getHtmlException($exception);
+	}
+
+
+	/**
+	 * Returns as exception info as HTML
 	 * 
 	 * @param Exception $exception
 	 */
@@ -163,7 +173,7 @@ EOT;
 
 
 	/**
-	 * Returns a exception info as text (for CLI)
+	 * Returns as exception info as text (for CLI)
 	 * 
 	 * @param Exception $exception
 	 */
