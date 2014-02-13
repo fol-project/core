@@ -37,12 +37,6 @@ class Templates {
 	public function addFolders ($paths, $prepend = true) {
 		$paths = (array)$paths;
 
-		foreach ($paths as &$path) {
-			if (substr($path, -1) !== '/') {
-				$path .= '/';
-			}
-		}
-
 		if ($prepend === true) {
 			$this->templatesPaths = array_merge($paths, $this->templatesPaths);
 		} else {
@@ -61,10 +55,10 @@ class Templates {
 	 * @param bool $failSilent Set true to do not throw the exception if the template does not exists
 	 */
 	public function register ($name, $file = null, $data = false, $failSilent = false) {
-		$this->templates[$name] = $file;
+		$this->templates[$name] = isset($this->templates[$file]) ? $this->templates[$file] : $file;
 
 		if ($data !== false) {
-			$this->renders[$name] = $this->render($name, $data, $failSilent);
+			$this->saveRender($name, $this->render($name, $data, $failSilent));
 		}
 	}
 
@@ -263,7 +257,7 @@ class Templates {
 			$result = '';
 
 			foreach ($data as $value) {
-				$result .= "\n".$this->renderTemplateFile($file, $value);
+				$result .= $this->renderTemplateFile($file, $value);
 			}
 
 			return $result;
