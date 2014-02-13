@@ -15,7 +15,7 @@ class Session {
 	 * 
 	 * @throws an Exception is the session is disabled
 	 */
-	public function __construct (array $cookies, $id = null, $name = null) {
+	public function __construct (array $cookies) {
 		switch (session_status()) {
 			case PHP_SESSION_DISABLED:
 				throw new \Exception('Session are disabled');
@@ -30,8 +30,6 @@ class Session {
 					'httponly' => true,
 					'path' => BASE_URL ?: '/'
 				]);
-
-				$this->start($id, $name);
 				break;
 		}
 
