@@ -11,7 +11,7 @@ use Fol\FileSystem;
 
 abstract class App {
 	private $services;
-	private $url;
+	private $publicUrl;
 	private $path;
 	private $namespace;
 
@@ -91,20 +91,20 @@ abstract class App {
 
 
 	/**
-	 * Returns the absolute url of the app
+	 * Returns the absolute url of the public directory of the path
 	 * 
 	 * @param string $path1, $path2, ... Optional paths to append
 	 */
-	public function getUrl () {
-		if ($this->url === null) {
-			$this->url = BASE_URL.preg_replace('|^'.BASE_PATH.'|', '', $this->getPath());
+	public function getPublicUrl () {
+		if ($this->publicUrl === null) {
+			$this->publicUrl = BASE_URL.'/public';
 		}
 
 		if (func_num_args() === 0) {
-			return $this->url;
+			return $this->publicUrl;
 		}
 
-		return $this->url.FileSystem::fixPath('/'.implode('/', func_get_args()));
+		return $this->publicUrl.FileSystem::fixPath('/'.implode('/', func_get_args()));
 	}
 
 

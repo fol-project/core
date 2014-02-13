@@ -172,7 +172,7 @@ class Route {
 	 */
 	public function checkRegex ($request) {
 		$regex = $this->base.(($this->base && $this->regex === '/') ? '' : $this->regex);
-		
+
 		return preg_match("#^{$regex}$#", $request->getPath(), $this->matches);
 	}
 
