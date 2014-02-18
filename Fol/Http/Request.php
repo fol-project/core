@@ -58,7 +58,13 @@ class Request {
 		$file = array_shift($args);
 
 		$method = ($args && preg_match('#^[A-Z]+$#', $args[0])) ? array_shift($args) : 'GET';
-		$url = $args ? array_shift($args) : '/';
+
+		if (!($url = array_shift($args)) || $url[0] !== '/') {
+			$url = '/'.$url;
+		}
+
+		$url = parse_url(BASE_URL, PHP_URL_PATH).$url;
+
 		$vars = [];
 
 		if ($args) {
