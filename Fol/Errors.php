@@ -26,6 +26,19 @@ class Errors {
 	}
 
 
+	/**
+	 * Register the php error log file.
+	 */
+	static public function setLogFile ($file) {
+		ini_set('error_log', $file);
+	}
+
+
+	/**
+	 * Register a logger class
+	 *
+	 * @param Psr\Log\LoggerInterface $logger
+	 */
 	static public function setLogger (LoggerInterface $logger) {
 		static::$logger = $logger;
 	}
