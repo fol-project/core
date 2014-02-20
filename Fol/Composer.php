@@ -47,7 +47,7 @@ class Composer {
 
 		foreach ($extra['config'] as $configFile) {
 			$dir = dirname($configFile).'/';
-			$envDir = "$dir/$environment/";
+			$envDir = "{$dir}{$environment}/";
 			$base = basename($configFile, '.php');
 
 			$defaults = require(is_file("{$envDir}{$base}.php") ? "{$envDir}{$base}.php" : "{$dir}{$base}.php");
@@ -59,9 +59,35 @@ class Composer {
 
 			if (!is_dir($envDir)) {
 				mkdir($envDir, 0777, true);
+				$io->write("Creating writable (0777) configuration folder '$envDir'");
 			}
 
 			file_put_contents("{$envDir}{$base}.php", "<?php\n\nreturn ".var_export($config, true).';');
+		}
+	}
+
+
+	/**
+	 * Define the writable folder permissions
+	 *
+	 * @param Composer\Package\PackageInterface $package The installed package
+	 * @param Composer\IO\IOInterface $io The IO class to ask the questions
+	 */
+	private static function setWritable (PackageInterface $package, IOInterface $io) {
+		$extra = $package->getExtra();
+
+		if (empty($extra['writable'])) {
+			return;
+		}
+
+		foreach ($extra['writable'] as $dir) {
+			if (!is_dir($dir)) {
+				mkdir($dir, 0777, true);
+				$io->write("Creating writable (0777) folder '$dir'");
+			} else if ((fileperms($dir) & 0777) !== 0777) {
+				chmod($dir, 0777);
+				$io->write("Making the folder '$dir' writable (0777)");
+			}
 		}
 	}
 
@@ -74,5 +100,6 @@ class Composer {
 	public static function postCreateProject (Event $event) {
 		self::setConstants($event->getIO());
 		self::setConfig($event->getComposer()->getPackage(), $event->getIO());
+		self::setWritable($event->getComposer()->getPackage(), $event->getIO());
 	}
 }
