@@ -25,7 +25,7 @@ class Route {
 	private $match;
 	private $matches;
 	private $generate;
-	private $regex = null;
+	private $regex;
 	private $wildcard;
 
 
@@ -68,6 +68,10 @@ class Route {
 	 * Generates the path regex
 	 */
 	private function setRegex () {
+		if (!preg_match('/[\*\:]/', $this->path)) {
+			return;
+		}
+
 		if (substr($this->path, -2) === '/*') {
 			$this->path = substr($this->path, 0, -2).'(/{:__wildcard__:(.*)})?';
 			$this->wildcard = '__wildcard__';
@@ -171,6 +175,10 @@ class Route {
 	 * @return bool
 	 */
 	public function checkRegex ($request) {
+		if ($this->regex === null) {
+			return ($request->getPath() === $this->base.(($this->base && $this->path === '/') ? '' : $this->path));
+		}
+
 		$regex = $this->base.(($this->base && $this->regex === '/') ? '' : $this->regex);
 
 		return preg_match("#^{$regex}$#", $request->getPath(), $this->matches);
@@ -186,20 +194,24 @@ class Route {
 	 * @return string The url to the route
 	 */
 	public function generate (array $parameters = array()) {
-		$replace = [];
+		if ($this->regex !== null) {
+			$replace = [];
 
-		foreach ($this->parameters as $name => $value) {
-			if (isset($parameters[$name])) {
-				$replace["{:$name}"] = rawurlencode($parameters[$name]);
-				unset($parameters[$name]);
-			} else if ($value !== null) {
-				$replace["{:$name}"] = rawurlencode($value);
-			} else {
-				$replace["/{:$name}"] = '';
+			foreach ($this->parameters as $name => $value) {
+				if (isset($parameters[$name])) {
+					$replace["{:$name}"] = rawurlencode($parameters[$name]);
+					unset($parameters[$name]);
+				} else if ($value !== null) {
+					$replace["{:$name}"] = rawurlencode($value);
+				} else {
+					$replace["/{:$name}"] = '';
+				}
 			}
-		}
 
-		$path = $this->base.strtr($this->path, $replace);
+			$path = $this->base.strtr($this->path, $replace);
+		} else {
+			$path = $this->base.(($this->base && $this->path === '/') ? '' : $this->path);
+		}
 
 		if ($parameters) {
 			return "$path?".http_build_query($parameters);
@@ -221,22 +233,24 @@ class Route {
 			return false;
 		}
 
-		foreach ($this->matches as $key => $value) {
-			if (is_string($key)) {
-				$this->parameters[$key] = rawurldecode($value);
-			}
-		}
-
-		if ($this->wildcard) {
-			if (empty($this->parameters[$this->wildcard])) {
-				$this->parameters[$this->wildcard] = [];
-			} else {
-				$this->parameters[$this->wildcard] = array_map('rawurldecode', explode('/', $this->parameters[$this->wildcard]));
+		if ($this->regex !== null) {
+			foreach ($this->matches as $key => $value) {
+				if (is_string($key)) {
+					$this->parameters[$key] = rawurldecode($value);
+				}
 			}
 
-			if ($this->wildcard === '__wildcard__') {
-				$this->parameters['*'] = $this->parameters['__wildcard__'];
-				unset($this->parameters['__wildcard__']);
+			if ($this->wildcard) {
+				if (empty($this->parameters[$this->wildcard])) {
+					$this->parameters[$this->wildcard] = [];
+				} else {
+					$this->parameters[$this->wildcard] = array_map('rawurldecode', explode('/', $this->parameters[$this->wildcard]));
+				}
+
+				if ($this->wildcard === '__wildcard__') {
+					$this->parameters['*'] = $this->parameters['__wildcard__'];
+					unset($this->parameters['__wildcard__']);
+				}
 			}
 		}
 		
