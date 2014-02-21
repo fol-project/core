@@ -28,7 +28,7 @@ class Session {
 
 				$this->setCookieParams([
 					'httponly' => true,
-					'path' => BASE_URL ?: '/'
+					'path' => parse_url(BASE_URL, PHP_URL_PATH) ?: '/'
 				]);
 				break;
 		}
