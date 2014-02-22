@@ -7,6 +7,7 @@
 namespace Fol\Http;
 
 class Cookies {
+	protected $defaults;
 	protected $items = array();
 
 
@@ -18,6 +19,32 @@ class Cookies {
 		$cookies->setState($array['items']);
 
 		return $cookies;
+	}
+
+	public function __construct () {
+		$url = parse_url(BASE_URL);
+
+		$this->setDefaults(0, (empty($url['path']) ? '/' : $url['path']), $url['host'], ($url['scheme'] === 'https'), false);
+	}
+
+
+	/**
+	 * Sets the cookies default values
+	 * 
+	 * @param int $expire The cookie expiration time by default
+	 * @param string $path The cookie path default
+	 * @param string $domain The cookie domain default
+	 * @param boolean $secure If the cookie is secure by default
+	 * @param boolean $httponly If the cookie is httponly by default
+	 */
+	public function setDefaults ($expire, $path, $domain, $secure, $httponly) {
+		$this->defaults = [
+			'expire' => $expire,
+			'path' => $path,
+			'domain' => $domain,
+			'secure' => $secure,
+			'httponly' => $httponly
+		];
 	}
 
 
@@ -117,11 +144,12 @@ class Cookies {
 	 * @param string $name The cookie name
 	 * @param string $value The cookie value
 	 * @param mixed $expire The cookie expiration time. It can be a number or a DateTime instance
+	 * @param string $path The cookie path
 	 * @param string $domain The cookie domain
 	 * @param boolean $secure If the cookie is secure, only will be send in secure connection (https)
 	 * @param boolean $httponly If is set true, the cookie only will be accessed via http, so javascript cannot access to it.
 	 */
-	public function set ($name, $value = null, $expire = 0, $path = null, $domain = null, $secure = false, $httponly = false) {
+	public function set ($name, $value = null, $expire = null, $path = null, $domain = null, $secure = null, $httponly = null) {
 		if (is_array($name)) {
 			foreach ($name as $name => $value) {
 				$this->set($name, $value);
@@ -130,25 +158,23 @@ class Cookies {
 			return;
 		}
 
-		if ($expire instanceof \DateTime) {
+		if ($expire === null) {
+			$expire = $this->defaults['expire'];
+		} else if ($expire instanceof \DateTime) {
 			$expire = $expire->format('U');
 		} else if (!is_numeric($expire)) {
 			$expire = strtotime($expire);
 		}
 
-		if (empty($path)) {
-			$path = BASE_URL.'/';
-		}
-
-		$this->items["$name $path $domain"] = array(
+		$this->items["$name $path $domain"] = [
 			'name' => $name,
 			'value' => $value,
-			'domain' => $domain,
 			'expire' => $expire,
-			'path' => $path,
-			'secure' => (Boolean)$secure,
-			'httponly' => (Boolean)$httponly
-		);
+			'path' => ($path === null) ? $this->defaults['path'] : $path,
+			'domain' => ($domain === null) ? $this->defaults['domain'] : $domain,
+			'secure' => ($secure === null) ? $this->defaults['secure'] : (bool)$secure,
+			'httponly' => ($httponly === null) ? $this->defaults['httponly'] : (bool)$httponly
+		];
 	}
 
 
@@ -181,7 +207,7 @@ class Cookies {
 	 */
 	public function clear ($name = null, $path = null, $domain = null) {
 		if (func_num_args() === 0) {
-			$this->items = array();
+			$this->items = [];
 		} else {
 			if (empty($path)) {
 				$path = BASE_URL.'/';
@@ -191,4 +217,3 @@ class Cookies {
 		}
 	}
 }
-?>
