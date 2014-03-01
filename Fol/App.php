@@ -97,7 +97,7 @@ abstract class App {
 	 */
 	public function getPublicUrl () {
 		if ($this->publicUrl === null) {
-			$this->publicUrl = BASE_URL.'/public';
+			$this->publicUrl = BASE_URL.PUBLIC_DIR;
 		}
 
 		if (func_num_args() === 0) {
