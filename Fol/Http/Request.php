@@ -59,7 +59,7 @@ class Request {
 	 * @return Fol\Http\Request The object with the specified data
 	 */
 	static public function create ($url, $method = 'GET', array $vars = array(), array $parameters = array()) {
-		$components = array_replace(parse_url(BASE_URL), parse_url($url));
+		$components = parse_url($url);
 
 		$defaults = array(
 			'SERVER_NAME' => $components['host'],
