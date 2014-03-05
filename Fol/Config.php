@@ -4,8 +4,6 @@
  * 
  * This is a simple class to load configuration data from php files
  * You must define a base folder and the class search for the files inside automatically.
- * 
- * The class will search the database configuration in this two files.
  */
 namespace Fol;
 
@@ -33,9 +31,13 @@ class Config {
 	 * Changes the environment name
 	 * 
 	 * @param string $environment The new environment name
+	 *
+	 * @return $this
 	 */
 	public function setEnvironment ($environment) {
 		$this->environment = $environment;
+
+		return $this;
  	}
 
 
@@ -44,21 +46,19 @@ class Config {
 	 * 
 	 * @param string/array $paths The base folder paths
 	 * @param boolean $prepend If it's true, insert the new folder at begining of the array.
+	 *
+	 * @return $this
 	 */
 	public function addFolders ($paths, $prepend = true) {
 		$paths = (array)$paths;
-
-		foreach ($paths as &$path) {
-			if (substr($path, -1) !== '/') {
-				$path .= '/';
-			}
-		}
 
 		if ($prepend === true) {
 			$this->configPaths = array_merge($paths, $this->configPaths);
 		} else {
 			$this->configPaths = array_merge($this->configPaths, $paths);
 		}
+
+		return $this;
 	}
 
 
@@ -97,12 +97,12 @@ class Config {
 		}
 
 		foreach ($this->configPaths as $path) {
-			if ($this->environment && is_file($path.$this->environment.'/'.$name)) {
-				return include($path.$this->environment.'/'.$name);
+			if ($this->environment && is_file("{$path}/{$this->environment}/{$name}")) {
+				return include("{$path}/{$this->environment}/{$name}");
 			}
 
-			if (is_file($path.$name)) {
-				return include($path.$name);
+			if (is_file("{$path}/{$name}")) {
+				return include("{$path}/{$name}");
 			}
 		}
 	}
@@ -160,6 +160,8 @@ class Config {
 	 * 
 	 * @param string $name The data name or an array with all data name and value
 	 * @param array $value The value of the data
+	 *
+	 * @return $this
 	 */
 	public function set ($name, array $value = null) {
 		if (is_array($name)) {
@@ -167,6 +169,8 @@ class Config {
 		} else {
 			$this->items[$name] = $value;
 		}
+
+		return $this;
 	}
 
 
@@ -177,8 +181,43 @@ class Config {
 	 * $data->delete('database');
 	 * 
 	 * @param string $name The name of the data
+	 *
+	 * @return $this
 	 */
 	public function delete ($name) {
 		unset($this->items[$name]);
+
+		return $this;
+	}
+
+
+
+	/**
+	 * Save the configuration data into a file
+	 * 
+	 * @param string $name The name of the data
+	 * 
+	 * @return this
+	 */
+	public function saveFile ($name, $configPath = null) {
+		if (($config = $this->get($name)) === null) {
+			throw new \Exception('Empty configuration');
+		}
+
+		if (empty($configPath) && !($configPath = reset($this->configPaths))) {
+			throw new \Exception('No config path defined');
+		}
+
+		if ($this->environment) {
+			$configPath = "{$configPath}/{$this->environment}";
+		}
+
+		if (!is_dir($configPath)) {
+			mkdir($configPath, 0777, true);
+		}
+
+		file_put_contents("{$configPath}/{$name}.php", "<?php\n\nreturn ".var_export($config, true).';');
+
+		return $this;
 	}
 }

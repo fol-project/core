@@ -1,4 +1,9 @@
 <?php
+/**
+ * Fol\Terminal
+ * 
+ * This is a simple class to execute system commands
+ */
 namespace Fol;
 
 class Terminal {
@@ -6,6 +11,15 @@ class Terminal {
 	const OPTION_REQUIRED = 2;
 	const OPTION_OPTIONAL = 3;
 
+
+	/**
+	 * Parses an array of arguments ($argv) and returns the validated arguments
+	 *
+	 * @param array $options The array of options to parse
+	 * @param array $validator An optional array to validate data. Each key (option name) must have one of the OPTION_* constant
+	 *
+	 * @return array An array with two subarrays: the numeric options and named options
+	 */
 	public static function parseOptions (array $options, array $validator = null) {
 		$vars = [];
 
@@ -93,19 +107,59 @@ class Terminal {
 
 
 
-	public static function execute ($command, $cwd = null) {
-		if ($cwd === null) {
-			$cwd = BASE_PATH;
+	/**
+	 * Launch a question to the user and returns the answer
+	 *
+	 * @param string $prompt The string to the user
+	 * @param string $default The default value if the user send an empty value
+	 * @param callable $callback A function to validate/sanitize the input. If returns false, resend the prompt again
+	 *
+	 * @return string The user/default value
+	 */
+	public static function prompt ($prompt, $default = null, callable $callback = null) {
+		while (true) {
+			echo "$prompt ";
+
+			$input = trim(fgets(STDIN));
+
+			if ($callback !== null) {
+				$input = $callback($input);
+
+				if ($input === false) {
+					continue;
+				}
+			}
+
+			return $input ?: $default;
+		}
+	}
+
+
+
+	/**
+	 * Executes a command.
+	 *
+	 * @param string $command The command to execute
+	 * @param string $cwd Working directory passed to proc_open
+	 * @param callable $callback Function executed for each update in the strout
+	 * @param array $env Environment variables passed to proc_open
+	 * @param array $options Options passed to proc_open
+	 *
+	 * @return int The exit code of the proccess
+	 */
+	public static function execute ($command, $cwd = null, callable $callback = null, array $env = null, array $options = null) {
+		$descriptorspec = [
+			0 => ['pipe', 'r'],
+			1 => ['pipe', 'w'],
+			2 => ['pipe', 'w']
+		];
+
+		if (($process = proc_open($command, $descriptorspec, $pipes, $cwd, $env, $options)) === false) {
+			throw new \Exception("Error executing the command '$command'");
 		}
 
-		$descriptorspec = array(
-			0 => array('pipe', 'r'),
-			1 => array('pipe', 'w'),
-			2 => array('pipe', 'w')
-		);
-
-		if (($process = proc_open($command, $descriptorspec, $pipes, $cwd)) === false) {
-			throw new \Exception("Error executing the command '$command'");
+		if (function_exists('cli_set_process_title')) {
+			cli_set_process_title("FOL process: $command");
 		}
 
 		$buffer = $errbuf = '';
@@ -113,11 +167,11 @@ class Terminal {
 		while (($buffer = fgets($pipes[1])) !== null || ($errbuf = fgets($pipes[2])) !== null) {
 			$status = proc_get_status($process);
 
-			if (strlen($buffer)) {
+			if ($callback !== null) {
+				$callback($buffer, $errbuf, $status);
+			} else if (strlen($buffer)) {
 				echo $buffer;
-			}
-
-			if (strlen($errbuf)) {
+			} else if (strlen($errbuf)) {
 				echo "ERR: " . $errbuf;
 			}
 
