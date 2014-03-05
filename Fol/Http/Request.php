@@ -47,41 +47,6 @@ class Request {
 	}
 
 
-	/**
-	 * Creates a new request object from global values
-	 *
-	 * @param array $args The $argv variable with the arguments
-	 * 
-	 * @return Fol\Http\Request The object with the global data
-	 */
-	static public function createFromCli (array $args) {
-		$file = array_shift($args);
-
-		$method = ($args && preg_match('#^[A-Z]+$#', $args[0])) ? array_shift($args) : 'GET';
-
-		if (!($url = array_shift($args)) || $url[0] !== '/') {
-			$url = '/'.$url;
-		}
-
-		$url = parse_url(BASE_URL, PHP_URL_PATH).$url;
-
-		$vars = [];
-
-		if ($args) {
-			while ($args) {
-				$option = array_shift($args);
-
-				if (preg_match('#^(-+)([\w]+)$#', $option, $match)) {
-					$vars[$match[2]] = $args ? array_shift($args) : true;
-				} else {
-					$vars[] = $option;
-				}
-			}
-		}
-
-		return static::create($url, $method, $vars);
-	}
-
 
 	/**
 	 * Creates a new custom request object
@@ -317,7 +282,7 @@ class Request {
 	 * @return string The path
 	 */
 	public function getPath ($format = false) {
-		if (($format === true) && ($this->path !== '/') && ($format = $this->getFormat())) {
+		if (($format === true) && ($this->path !== '/') && ($format = $this->getFormat()) && ($format !== 'html')) {
 			return $this->path.'.'.$format;
 		}
 

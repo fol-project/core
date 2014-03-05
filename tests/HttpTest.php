@@ -83,23 +83,4 @@ class HttpTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals($response->getStatus(), 302);
 		$this->assertEquals($response->headers->get('location'), 'http://site.com');
 	}
-
-	public function testRequestCli () {
-		$path = '/item/edit/25';
-		$args = [
-			'index.php',
-			'POST', $path,
-			'--title', 'New title',
-			'--text', 'New text'
-		];
-
-		$request = Request::createFromCli($args);
-
-		$this->assertEquals($request->getPath(), $path);
-		$this->assertEquals($request->getMethod(), 'POST');
-		$this->assertEquals($request->post->get('title'), 'New title');
-		$this->assertEquals($request->post->get('text'), 'New text');
-		$this->assertEquals($request->getHost(), 'localhost');
-		$this->assertEquals($request->getUrl(), 'http://localhost/item/edit/25.html');
-	}
 }

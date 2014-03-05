@@ -150,20 +150,34 @@ class Errors {
 	 * Returns an exception info as a string according with the ACCESS_INTERFACE
 	 *
 	 * @param Exception $exception
+	 *
+	 * @return string
 	 */
 	static public function exceptionToString (\Exception $exception) {
 		if (ACCESS_INTERFACE === 'cli') {
 			return Errors::getTextException($exception);
 		}
 
-		return Errors::getHtmlException($exception);
+		$accept = $_SERVER['HTTP_ACCEPT'];
+
+		if (strpos($accept, 'json') !== false) {
+			return Errors::getJsonException($exception);
+		}
+
+		if (strpos($accept, 'html') !== false) {
+			return Errors::getHtmlException($exception);
+		}
+
+		return Errors::getTextException($exception);
 	}
 
 
 	/**
-	 * Returns as exception info as HTML
+	 * Returns an exception info as HTML
 	 * 
 	 * @param Exception $exception
+	 *
+	 * @return string
 	 */
 	static public function getHtmlException (\Exception $exception, $deep = 0) {
 		$previous = ($previousException = $exception->getPrevious()) ? self::getHtmlException($previousException, $deep + 1) : '';
@@ -186,9 +200,11 @@ EOT;
 
 
 	/**
-	 * Returns as exception info as text (for CLI)
+	 * Returns an exception info as plain text
 	 * 
 	 * @param Exception $exception
+	 *
+	 * @return string
 	 */
 	static public function getTextException (\Exception $exception, $deep = 0) {
 		$previous = ($previousException = $exception->getPrevious()) ? self::getTextException($previousException, $deep + 1) : '';
@@ -200,5 +216,49 @@ EOT;
 			.$exception->getTraceAsString()
 			.$previous
 			.(($deep === 0) ? "\n=======================\n" : "\n");
+	}
+
+
+	/**
+	 * Returns an exception info as array
+	 * 
+	 * @param Exception $exception
+	 *
+	 * @return array
+	 */
+	static public function getArrayException (\Exception $exception, $deep = 0) {
+		$previous = ($previousException = $exception->getPrevious()) ? self::getArrayException($previousException, $deep + 1) : '';
+		$class = get_class($exception);
+
+		$trace = [];
+
+		foreach ($exception->getTrace() as $v) {
+			$trace[] = [
+				'file' => isset($v['file']) ? $v['file'] : null,
+				'line' => isset($v['line']) ? $v['line'] : null
+			];
+		}
+		
+		return [
+			'message' => $exception->getMessage(),
+			'code' => $exception->getCode(),
+			'exception' => $class,
+			'file' => $exception->getFile(),
+			'line' => $exception->getLine(),
+			'trace' => $trace,
+			'previous' => $previous
+		];
+	}
+
+
+	/**
+	 * Returns an exception info as json
+	 * 
+	 * @param Exception $exception
+	 *
+	 * @return string
+	 */
+	static public function getJsonException (\Exception $exception, $deep = 0) {
+		return json_encode(self::getArrayException($exception), JSON_PRETTY_PRINT|JSON_NUMERIC_CHECK|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
 	}
 }
