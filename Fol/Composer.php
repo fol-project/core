@@ -30,13 +30,7 @@ class Composer
     {
         $file = 'constants.php';
 
-        $constants = is_file($file) ? require $file : [
-            'ENVIRONMENT' => 'development',
-            'BASE_URL' => 'http://localhost',
-            'PUBLIC_DIR' => '/public'
-        ];
-
-        foreach ($constants as $name => &$value) {
+        foreach (require $file as $name => &$value) {
             $value = $io->ask("Constant > {$name} = '{$value}' > ", $value);
         }
 
