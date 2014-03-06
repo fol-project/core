@@ -1,7 +1,7 @@
 <?php
 /**
  * Fol\Router\ErrorRoute
- * 
+ *
  * Class to manage an error route
  * Based in PHP-Router library (https://github.com/dannyvankooten/PHP-Router) and Aura-PHP.Router (https://github.com/auraphp/Aura.Router)
  */
@@ -12,64 +12,65 @@ use Fol\Http\Request;
 use Fol\Http\Response;
 use Fol\Http\HttpException;
 
-class ErrorRoute {
-	public $target;
+class ErrorRoute
+{
+    public $target;
 
+    /**
+     * Constructor
+     *
+     * @param array $options One available option: target
+     */
+    public function __construct(array $config)
+    {
+        $this->target = $config['target'];
+    }
 
-	/**
-	 * Constructor
-	 *
-	 * @param array $options One available option: target
-	 */
-	public function __construct (array $config) {
-		$this->target = $config['target'];
-	}
+    /**
+     * Execute the route
+     *
+     * @param Fol\Http\HttpException
+     * @param Fol\Http\Request
+     */
+    public function execute(HttpException $exception, Request $request, App $app)
+    {
+        ob_start();
 
+        $return = '';
+        $response = new Response;
+        $response->setStatus($exception->getCode() ?: 500);
 
-	/**
-	 * Execute the route
-	 *
-	 * @param Fol\Http\HttpException
-	 * @param Fol\Http\Request
-	 */
-	public function execute (HttpException $exception, Request $request, App $app) {
-		ob_start();
+        list($class, $method) = $this->target;
 
-		$return = '';
-		$response = new Response;
-		$response->setStatus($exception->getCode() ?: 500);
+        $class = new \ReflectionClass($class);
+        $controller = $class->newInstanceWithoutConstructor();
+        $controller->app = $app;
+        $controller->route = $this;
 
-		list($class, $method) = $this->target;
+        $request->parameters->set('exception', $exception);
 
-		$class = new \ReflectionClass($class);
-		$controller = $class->newInstanceWithoutConstructor();
-		$controller->app = $app;
-		$controller->route = $this;
+        if (($constructor = $class->getConstructor())) {
+            $constructor->invoke($controller, $request, $response);
+        }
 
-		$request->parameters->set('exception', $exception);
+        if ($method) {
+            $return = $class->getMethod($method)->invoke($controller, $request, $response);
+        } else {
+            $return = $controller($request, $response);
+        }
 
-		if (($constructor = $class->getConstructor())) {
-			$constructor->invoke($controller, $request, $response);
-		}
+        if ($return instanceof Response) {
+            $return->appendContent(ob_get_clean());
 
-		if ($method) {
-			$return = $class->getMethod($method)->invoke($controller, $request, $response);
-		} else {
-			$return = $controller($request, $response);
-		}
+            $return->prepare($request);
 
-		if ($return instanceof Response) {
-			$return->appendContent(ob_get_clean());
+            return $return;
+        }
 
-			$return->prepare($request);
-			
-			return $return;
-		}
+        $response->appendContent(ob_get_clean().$return);
 
-		$response->appendContent(ob_get_clean().$return);
+        $response->prepare($request);
 
-		$response->prepare($request);
-
-		return $response;
-	}
+        return $response;
+    }
 }

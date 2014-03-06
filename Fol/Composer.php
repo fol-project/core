@@ -1,7 +1,7 @@
 <?php
 /**
  * Fol\Composer
- * 
+ *
  * Class to execute composer scripts on install/update Fol
  */
 namespace Fol;
@@ -9,36 +9,37 @@ namespace Fol;
 use Composer\Script\Event;
 use Composer\IO\IOInterface;
 
-class Composer {
+class Composer
+{
+    /**
+     * Script executed by composer on post-create-project-cmd event
+     *
+     * @param Composer\Script\Event $event The event object
+     */
+    public static function postCreateProject(Event $event)
+    {
+        self::setConstants($event->getIO());
+    }
 
-	/**
-	 * Script executed by composer on post-create-project-cmd event
-	 *
-	 * @param Composer\Script\Event $event The event object
-	 */
-	public static function postCreateProject (Event $event) {
-		self::setConstants($event->getIO());
-	}
+    /**
+     * Define the constants (for example the constants ENVIRONMET and BASE_URL)
+     *
+     * @param Composer\IO\IOInterface $io The IO class to ask the questions
+     */
+    private static function setConstants(IOInterface $io)
+    {
+        $file = 'constants.php';
 
+        $constants = is_file($file) ? require $file : [
+            'ENVIRONMENT' => 'development',
+            'BASE_URL' => 'http://localhost',
+            'PUBLIC_DIR' => '/public'
+        ];
 
-	/**
-	 * Define the constants (for example the constants ENVIRONMET and BASE_URL)
-	 *
-	 * @param Composer\IO\IOInterface $io The IO class to ask the questions
-	 */
-	private static function setConstants (IOInterface $io) {
-		$file = 'constants.php';
+        foreach ($constants as $name => &$value) {
+            $value = $io->ask("Constant > {$name} = '{$value}' > ", $value);
+        }
 
-		$constants = is_file($file) ? require $file : [
-			'ENVIRONMENT' => 'development',
-			'BASE_URL' => 'http://localhost',
-			'PUBLIC_DIR' => '/public'
-		];
-
-		foreach ($constants as $name => &$value) {
-			$value = $io->ask("Constant > {$name} = '{$value}' > ", $value);
-		}
-
-		file_put_contents($file, "<?php\n\nreturn ".var_export($constants, true).';');
-	}
+        file_put_contents($file, "<?php\n\nreturn ".var_export($constants, true).';');
+    }
 }
