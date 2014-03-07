@@ -29,8 +29,9 @@ class Composer
     private static function setConstants(IOInterface $io)
     {
         $file = 'constants.php';
+        $constants = require $file;
 
-        foreach (require $file as $name => &$value) {
+        foreach ($constants as $name => &$value) {
             $value = $io->ask("Constant > {$name} = '{$value}' > ", $value);
         }
 
