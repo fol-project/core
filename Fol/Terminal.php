@@ -11,6 +11,8 @@ class Terminal
     const OPTION_BOOLEAN = 1;
     const OPTION_REQUIRED = 2;
     const OPTION_OPTIONAL = 3;
+    const OPTION_SET = 4;
+
 
     /**
      * Parses an array of arguments ($argv) and returns the validated arguments
@@ -59,18 +61,20 @@ class Terminal
 
         if ($validator !== null) {
             foreach ($validator as $name => $property) {
-                if (is_array($property)) {
-                    if (!isset($vars[$name]) || !in_array($vars[$name], $property)) {
-                        throw new \Exception("The option '$name' must be one of these values: ".implode(', ', $property));
-                    }
+                $default = null;
 
-                    continue;
+                if (is_array($property)) {
+                    list($property, $default) = $property;
                 }
 
                 switch ($property) {
                     case self::OPTION_BOOLEAN:
-                        if (isset($vars[$name]) && ($vars[$name] !== true)) {
-                            throw new \Exception("The option '$name' does not accept values");
+                        if (isset($vars[$name])) {
+                            if ($vars[$name] !== true) {
+                                throw new \Exception("The option '$name' does not accept values");
+                            }
+                        } else {
+                            $vars[$name] = (bool)$default;
                         }
                         break;
 
@@ -81,9 +85,20 @@ class Terminal
                         break;
 
                     case self::OPTION_OPTIONAL:
-                        if (isset($vars[$name]) && ($vars[$name] === true)) {
-                            throw new \Exception("The option '$name' must have a value");
+                        if (isset($vars[$name])) {
+                            if ($vars[$name] === true) {
+                                throw new \Exception("The option '$name' must have a value");
+                            }
+                        } else {
+                            $vars[$name] = $default;
                         }
+                        break;
+
+                    case self::OPTION_SET:
+                        if (!isset($vars[$name]) || !in_array($vars[$name], $default)) {
+                            throw new \Exception("The option '$name' must be one of these values: ".implode(', ', $default));
+                        }
+
                         break;
 
                     default:
@@ -105,6 +120,7 @@ class Terminal
 
         return [$numeric, $associative];
     }
+
 
     /**
      * Launch a question to the user and returns the answer
@@ -133,6 +149,7 @@ class Terminal
             return $input ?: $default;
         }
     }
+
 
     /**
      * Executes a command.
