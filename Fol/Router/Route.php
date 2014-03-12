@@ -184,11 +184,14 @@ class Route
      * Reverse the route
      *
      * @param array $parameters Optional array of parameters to use in URL
+     * @param boolean $basePath Set false to discard the router of the basepath
      *
      * @return string The url to the route
      */
-    public function generate (array $parameters = array())
+    public function generate (array $parameters = array(), $basePath = true)
     {
+        $basePath = $basePath ? $this->base : '';
+
         if ($this->regex !== null) {
             $replace = [];
 
@@ -203,9 +206,9 @@ class Route
                 }
             }
 
-            $path = $this->base.strtr($this->path, $replace);
+            $path = $basePath.strtr($this->path, $replace);
         } else {
-            $path = $this->base.(($this->base && $this->path === '/') ? '' : $this->path);
+            $path = $basePath.(($basePath && $this->path === '/') ? '' : $this->path);
         }
 
         if ($parameters) {

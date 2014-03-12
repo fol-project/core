@@ -133,17 +133,17 @@ class Router
      *
      * @param string $name     The name of the route to reverse route.
      * @param array  $params   Optional array of parameters to use in URL
-     * @param bool   $absolute Set true to get the absolute path (with basehost)
+     * @param bool   $mode     0: only the path, 1: basePath + path, 2: host + basePath + path
      *
      * @return string The url to the route
      */
-    public function generate ($name, array $params = array(), $absolute = false)
+    public function generate ($name, array $params = array(), $absolute = 1)
     {
         if (!isset($this->routes[$name])) {
             throw new \Exception("No route with the name $name has been found.");
         }
 
-        return ($absolute ? $this->baseurl['host'] : '').$this->routes[$name]->generate($params);
+        return ($absolute ? $this->baseurl['host'] : '').$this->routes[$name]->generate($params, ($absolute > 0));
     }
 
 
