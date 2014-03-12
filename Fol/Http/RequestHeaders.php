@@ -38,6 +38,7 @@ class RequestHeaders extends Headers
         return $headers;
     }
 
+
     /**
      * Defines a If-Modified-Since header
      *

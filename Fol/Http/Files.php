@@ -8,6 +8,15 @@ namespace Fol\Http;
 
 class Files extends Input
 {
+    public static $errors = array(
+        1 => 'The uploaded file exceeds the upload_max_filesize directive in php.ini',
+        2 => 'The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in the HTML form',
+        3 => 'The uploaded file was only partially uploaded',
+        4 => 'No file was uploaded',
+        6 => 'Missing a temporary folder'
+    );
+
+
     /**
      * Constructor class. You can define the items directly
      *
@@ -20,6 +29,7 @@ class Files extends Input
             $this->items = $parameters;
         }
     }
+
 
     /**
      * Fix the $files order by converting from default wierd schema
@@ -43,6 +53,7 @@ class Files extends Input
 
         return $files;
     }
+
 
     /**
      * Private function used by fixArray
@@ -78,6 +89,7 @@ class Files extends Input
         return $results;
     }
 
+
     /**
      * Check if an uploaded file has any error
      *
@@ -95,6 +107,7 @@ class Files extends Input
 
         return false;
     }
+
 
     /**
      * Returns the error code

@@ -37,6 +37,7 @@ class Input extends Container
         return parent::get($name, $default);
     }
 
+
     /**
      * Returns a value filtered using the filter_var php function
      *

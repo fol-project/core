@@ -16,6 +16,7 @@ class Response
     protected $content_type;
     protected $headers_sent = false;
 
+
     public static function __set_state($array)
     {
         $Response = new static($array['content'], $array['status'][0]);
@@ -26,6 +27,7 @@ class Response
 
         return $Response;
     }
+
 
     /**
      * Constructor
@@ -47,6 +49,7 @@ class Response
         }
     }
 
+
     /**
      * Magic function to clone the internal objects
      */
@@ -56,6 +59,7 @@ class Response
         $this->cookies = clone $this->cookies;
     }
 
+
     /**
      * Magic function to converts the current response to a string
      */
@@ -63,6 +67,7 @@ class Response
     {
         return (string) $this->content;
     }
+
 
     /**
      * Prepare the Response according a request
@@ -84,6 +89,7 @@ class Response
         }
     }
 
+
     /**
      * Sets the content of the response body
      *
@@ -93,6 +99,7 @@ class Response
     {
         $this->content = (string) $content;
     }
+
 
     /**
      * Appends more content to the response body
@@ -104,6 +111,7 @@ class Response
         $this->content .= (string) $content;
     }
 
+
     /**
      * Prepends content to the response body
      *
@@ -113,6 +121,7 @@ class Response
     {
         $this->content = (string) $content.$this->content;
     }
+
 
     /**
      * Gets the body content
@@ -124,6 +133,7 @@ class Response
         return $this->content;
     }
 
+
     /**
      * Sets the status code
      *
@@ -134,7 +144,6 @@ class Response
     {
         $this->status = array($code, ($text ?: ResponseHeaders::getStatusText($code)));
     }
-
 
 
     /**
@@ -223,6 +232,7 @@ class Response
         return true;
     }
 
+
     /**
      * Sends the content
      */
@@ -230,6 +240,7 @@ class Response
     {
         echo $this->content;
     }
+
 
     /**
      * Defines a Last-Modified header
@@ -241,6 +252,7 @@ class Response
         $this->headers->setDateTime('Last-Modified', $datetime);
     }
 
+
     /**
      * Defines a Expire header
      *
@@ -250,6 +262,7 @@ class Response
     {
         $this->headers->setDateTime('Expires', $datetime);
     }
+
 
     /**
      * Returns the age of the response
@@ -264,6 +277,7 @@ class Response
 
         return max(time() - $this->headers->getDateTime('Date')->getTimestamp(), 0);
     }
+
 
     /**
      * Defines a max-age and optionally s-maxage cache directive
@@ -283,6 +297,7 @@ class Response
         $this->headers->setParsed('Cache-Control', $cacheControl);
     }
 
+
     /**
      * Returns the max-age cache directive
      *
@@ -299,6 +314,7 @@ class Response
         return isset($cacheControl['max-age']) ? (int) $cacheControl['max-age'] : 0;
     }
 
+
     /**
      * Defines the response as public in Cache-Control directive
      */
@@ -309,6 +325,7 @@ class Response
         unset($cacheControl['private']);
         $this->headers->setParsed('Cache-Control', $cacheControl);
     }
+
 
     /**
      * Defines the response as private in Cache-Control directive
@@ -321,6 +338,7 @@ class Response
         $this->headers->setParsed('Cache-Control', $cacheControl);
     }
 
+
     /**
      * Check if the response must be revalidated by the origin
      */
@@ -330,6 +348,7 @@ class Response
 
         return (!empty($cacheControl['must-revalidate']) || $this->headers->has('proxy-revalidate'));
     }
+
 
     /**
      * Add a must-revalidate cache control directive

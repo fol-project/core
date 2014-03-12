@@ -55,6 +55,7 @@ class ResponseHeaders extends Headers
         505 => 'HTTP Version Not Supported',
     );
 
+
     /**
      * Gets the status text related with a status code. Search in self::$status array
      *
@@ -69,6 +70,7 @@ class ResponseHeaders extends Headers
         return isset(self::$status[$code]) ? self::$status[$code] : false;
     }
 
+
     /**
      * Defines a Last-Modified header
      *
@@ -79,6 +81,7 @@ class ResponseHeaders extends Headers
         $this->setDateTime('Last-Modified', $datetime);
     }
 
+
     /**
      * Defines a Expire header
      *
@@ -88,6 +91,7 @@ class ResponseHeaders extends Headers
     {
         $this->setDateTime('Expires', $datetime);
     }
+
 
     /**
      * Defines an Age header

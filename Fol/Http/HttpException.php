@@ -21,6 +21,7 @@ class HttpException extends \Exception
         parent::__construct($message, $code, $previous);
     }
 
+
     /**
      * Pretty print
      */

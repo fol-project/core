@@ -30,6 +30,7 @@ class Headers
         'zip' => array('application/zip', 'application/x-zip', 'application/x-zip-compressed')
     );
 
+
     /**
      * Magic function to recover the object exported by var_export
      */
@@ -37,6 +38,7 @@ class Headers
     {
         return new static($array['items']);
     }
+
 
     /**
      * Magic function to convert all headers to a string
@@ -58,6 +60,7 @@ class Headers
         return $text;
     }
 
+
     /**
      * Gets the format related with a mimetype. Search in self::$formats array.
      *
@@ -78,6 +81,7 @@ class Headers
         return false;
     }
 
+
     /**
      * Gets the mimetype related with a format. This is the opposite of getFormat()
      *
@@ -92,6 +96,7 @@ class Headers
         return isset(self::$formats[$format][0]) ? self::$formats[$format][0] : false;
     }
 
+
     /**
      * Constructor function. You can set parameters
      *
@@ -103,6 +108,7 @@ class Headers
             $this->set($parameters);
         }
     }
+
 
     /**
      * Normalize the name of the parameters.
@@ -116,6 +122,7 @@ class Headers
     {
         return str_replace(' ', '-', ucwords(strtolower(str_replace('-', ' ', $string))));
     }
+
 
     /**
      * Sends the headers if don't have been send by the developer
@@ -140,7 +147,6 @@ class Headers
 
         return true;
     }
-
 
 
     /**
@@ -172,7 +178,6 @@ class Headers
     }
 
 
-
     /**
      * Gets one or all parameters
      *
@@ -199,7 +204,6 @@ class Headers
 
         return $this->items[$name];
     }
-
 
 
     /**
@@ -235,6 +239,7 @@ class Headers
         $this->set($name, static::toString($value));
     }
 
+
     /**
      * Gets one parameter as a getDateTime object
      * Useful for datetime values (Expires, Last-Modification, etc)
@@ -257,6 +262,7 @@ class Headers
         return new \Datetime($default, new \DateTimeZone('UTC'));
     }
 
+
     /**
      * Define a header using a Datetime object and returns it
      *
@@ -277,6 +283,7 @@ class Headers
         return $datetime;
     }
 
+
     /**
      * Deletes one or all headers
      *
@@ -296,6 +303,7 @@ class Headers
         }
     }
 
+
     /**
      * Checks if a header exists
      *
@@ -309,6 +317,7 @@ class Headers
 
         return array_key_exists($name, $this->items);
     }
+
 
     /**
      * Private function to parse and return http values
@@ -349,6 +358,7 @@ class Headers
 
         return $results;
     }
+
 
     /**
      * Private function to convert a parsed http value to string

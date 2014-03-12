@@ -10,6 +10,7 @@ class RequestStack
 {
     private $requests = [];
 
+
     /**
      * Pushes a Request on the stack.
      *
@@ -19,6 +20,7 @@ class RequestStack
     {
         $this->requests[] = $request;
     }
+
 
     /**
      * Pops the current request from the stack.
@@ -34,6 +36,7 @@ class RequestStack
         return array_pop($this->requests);
     }
 
+
     /**
      * Return the current request
      *
@@ -43,6 +46,7 @@ class RequestStack
     {
         return end($this->requests) ?: null;
     }
+
 
     /**
      * Gets the main Request.
@@ -57,6 +61,7 @@ class RequestStack
 
         return $this->requests[0];
     }
+
 
     /**
      * Returns the parent request of the current.
