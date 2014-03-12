@@ -32,7 +32,9 @@ class Request
      */
     public static function createFromGlobals()
     {
-        $url = (($_SERVER['HTTPS'] === 'on') ? 'https' : 'http').'://'.$_SERVER['SERVER_NAME'].':'.($_SERVER['X_FORWARDED_PORT'] ?: $_SERVER['SERVER_PORT']).$_SERVER['REQUEST_URI'];
+        $scheme = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http';
+        $port = !empty($_SERVER['X_FORWARDED_PORT']) ? $_SERVER['X_FORWARDED_PORT'] : $_SERVER['SERVER_PORT'];
+        $url = "{$scheme}://".$_SERVER['SERVER_NAME'].":{$port}".$_SERVER['REQUEST_URI'];
 
         $request = new static($url, RequestHeaders::getHeadersFromServer($_SERVER), (array) filter_input_array(INPUT_GET), (array) filter_input_array(INPUT_POST), $_FILES, (array) filter_input_array(INPUT_COOKIE));
 
@@ -360,7 +362,7 @@ class Request
      */
     public function setIp($ip)
     {
-        $this->ip = $id;
+        $this->ip = $ip;
     }
 
 
