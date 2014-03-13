@@ -107,18 +107,7 @@ class Terminal
             }
         }
 
-        $numeric = [];
-        $associative = [];
-
-        foreach ($vars as $key => $value) {
-            if (is_int($key)) {
-                $numeric[$key] = $value;
-            } else {
-                $associative[$key] = $value;
-            }
-        }
-
-        return [$numeric, $associative];
+        return $vars;
     }
 
 
