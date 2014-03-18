@@ -6,10 +6,11 @@
  */
 namespace Fol\Http;
 
-class Cookies
+class Cookies implements \ArrayAccess
 {
     protected $defaults;
-    protected $items = array();
+    protected $items = [];
+
 
     /**
      * Magic function to recover the object exported by var_export
@@ -22,12 +23,31 @@ class Cookies
         return $cookies;
     }
 
+
     public function __construct()
     {
         $url = parse_url(BASE_URL);
 
         $this->setDefaults(0, (empty($url['path']) ? '/' : $url['path']), $url['host'], ($url['scheme'] === 'https'), false);
     }
+
+
+    /**
+     * ArrayAcces interface methods
+     */
+    public function offsetExists ($offset) {
+        return $this->has($offset);
+    }
+    public function offsetGet ($offset) {
+        return $this->get($offset);
+    }
+    public function offsetSet ($offset, $value) {
+        $this->set($offset, $value);
+    }
+    public function offsetUnset ($offset) {
+        $this->delete($offset);
+    }
+
 
     /**
      * Sets the cookies default values
@@ -49,6 +69,7 @@ class Cookies
         ];
     }
 
+
     /**
      * Function executed only to restore a previous saved state
      *
@@ -58,6 +79,7 @@ class Cookies
     {
         $this->items = $items;
     }
+
 
     /**
      * Magic function to converts all cookies to a string
@@ -98,6 +120,7 @@ class Cookies
         return $text;
     }
 
+
     /**
      * Send the cookies to the browser
      *
@@ -118,23 +141,27 @@ class Cookies
         return true;
     }
 
+
     /**
      * Gets one or all cookies
      *
      * @param string $name   The cookie name
-     * @param string $path   The cookie path
-     * @param string $domain The cookie domain
      *
      * @return array The cookie data or null
      */
-    public function get($name = null, $path = '/', $domain = null)
+    public function get($name = null, $default = null)
     {
-        if (func_num_args() === 0) {
+        if ($name === null) {
             return $this->items;
         }
 
-        return $this->items["$name $path $domain"];
+        if (isset($this->items[$name])) {
+            return $this->items[$name];
+        }
+
+        return $default;
     }
+
 
     /**
      * Sets a new cookie
@@ -149,68 +176,70 @@ class Cookies
      */
     public function set($name, $value = null, $expire = null, $path = null, $domain = null, $secure = null, $httponly = null)
     {
-        if (is_array($name)) {
-            foreach ($name as $name => $value) {
-                $this->set($name, $value);
-            }
-
-            return;
-        }
+        $defaults = $this->get($name, $this->defaults);
 
         if ($expire === null) {
-            $expire = $this->defaults['expire'];
+            $expire = $defaults['expire'];
         } elseif ($expire instanceof \DateTime) {
             $expire = $expire->format('U');
         } elseif (!is_numeric($expire)) {
             $expire = strtotime($expire);
         }
 
-        $this->items["$name $path $domain"] = [
+        $this->items[$name] = [
             'name' => $name,
             'value' => $value,
             'expire' => $expire,
-            'path' => ($path === null) ? $this->defaults['path'] : $path,
-            'domain' => ($domain === null) ? $this->defaults['domain'] : $domain,
-            'secure' => ($secure === null) ? $this->defaults['secure'] : (bool) $secure,
-            'httponly' => ($httponly === null) ? $this->defaults['httponly'] : (bool) $httponly
+            'path' => ($path === null) ? $defaults['path'] : $path,
+            'domain' => ($domain === null) ? $defaults['domain'] : $domain,
+            'secure' => ($secure === null) ? $defaults['secure'] : (bool) $secure,
+            'httponly' => ($httponly === null) ? $defaults['httponly'] : (bool) $httponly
         ];
     }
 
+
     /**
-     * Deletes one or all cookies
+     * Deletes a cookie
      *
-     * @param string $name   The cookie name
-     * @param string $path   The cookie path
-     * @param string $domain The cookie domain
+     * @param string  $name     The cookie name
+     * @param string  $path     The cookie path
+     * @param string  $domain   The cookie domain
+     * @param boolean $secure   If the cookie is secure, only will be send in secure connection (https)
+     * @param boolean $httponly If is set true, the cookie only will be accessed via http, so javascript cannot access to it.
      */
-    public function delete($name = null, $path = null, $domain = null)
+    public function setDelete($name, $path = null, $domain = null, $secure = null, $httponly = null)
     {
-        if (func_num_args() === 0) {
-            foreach ($this->items as $cookie) {
-                $this->set($cookie['name'], '', 1, $cookie['path'], $cookie['domain']);
-            }
+        $this->set($name, '', 1, $path, $domain, $secure, $httponly);
+    }
+
+
+    /**
+     * Deletes the cookie in the object (not in the browser)
+     *
+     * $params->delete('name') Deletes one parameter
+     * $params->delete() Deletes all parameter
+     *
+     * @param string $name The parameter name
+     */
+    public function delete($name = null)
+    {
+        if ($name === null) {
+            $this->items = [];
         } else {
-            $this->set($name, '', 1, $path, $domain);
+            unset($this->items[$name]);
         }
     }
 
-    /**
-     * Clear one or all cookies in the object (not in the browser)
-     *
-     * @param string $name   The cookie name
-     * @param string $path   The cookie path
-     * @param string $domain The cookie domain
-     */
-    public function clear($name = null, $path = null, $domain = null)
-    {
-        if (func_num_args() === 0) {
-            $this->items = [];
-        } else {
-            if (empty($path)) {
-                $path = BASE_URL.'/';
-            }
 
-            unset($this->items["$name $path $domain"]);
-        }
+    /**
+     * Checks if a parameter exists
+     *
+     * @param string $name The parameter name
+     *
+     * @return boolean True if the parameter exists (even if it's null) or false if not
+     */
+    public function has($name)
+    {
+        return array_key_exists($name, $this->items);
     }
 }

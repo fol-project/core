@@ -7,11 +7,29 @@
  */
 namespace Fol;
 
-class Config
+class Config implements \ArrayAccess
 {
     protected $configPaths = [];
-    protected $items = [];
     protected $environment;
+    protected $items = [];
+
+
+    /**
+     * ArrayAcces interface methods
+     */
+    public function offsetExists ($offset) {
+        return $this->has($offset);
+    }
+    public function offsetGet ($offset) {
+        return $this->get($offset);
+    }
+    public function offsetSet ($offset, $value) {
+        $this->set($offset, $value);
+    }
+    public function offsetUnset ($offset) {
+        $this->delete($offset);
+    }
+
 
     /**
      * Constructor method. You must define the base folder where the config files are stored
@@ -27,6 +45,7 @@ class Config
         }
     }
 
+
     /**
      * Changes the environment name
      *
@@ -40,6 +59,7 @@ class Config
 
         return $this;
     }
+
 
     /**
      * Adds new base folders where search for the config files
@@ -63,7 +83,6 @@ class Config
     }
 
 
-
     /**
      * Magic function to convert all data loaded in a string (for debug purposes)
      *
@@ -83,7 +102,6 @@ class Config
 
         return $text;
     }
-
 
 
     /**
@@ -110,6 +128,7 @@ class Config
         }
     }
 
+
     /**
      * Gets the data. Loads automatically the data if it has not been loaded.
      * If no name is defined, returns all loaded data
@@ -130,6 +149,7 @@ class Config
 
         return $this->items[$name];
     }
+
 
     /**
      * Sets a new value
@@ -174,6 +194,7 @@ class Config
         return $this;
     }
 
+
     /**
      * Deletes a data value
      *
@@ -189,6 +210,20 @@ class Config
 
         return $this;
     }
+
+
+    /**
+     * Checks if a configuration is loaded
+     *
+     * @param string $name The configuration name
+     *
+     * @return boolean True if the parameter exists (even if it's null) or false if not
+     */
+    public function has($name)
+    {
+        return array_key_exists($name, $this->items);
+    }
+
 
     /**
      * Save the configuration data into a file

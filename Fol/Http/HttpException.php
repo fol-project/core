@@ -10,6 +10,7 @@ use Fol\Errors;
 
 class HttpException extends \Exception
 {
+
     /**
      * Constructor.
      *
@@ -19,14 +20,5 @@ class HttpException extends \Exception
     public function __construct($message, $code = 500, $previous = null)
     {
         parent::__construct($message, $code, $previous);
-    }
-
-
-    /**
-     * Pretty print
-     */
-    public function __toString()
-    {
-        return Errors::exceptionToString($this);
     }
 }

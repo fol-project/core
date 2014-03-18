@@ -6,59 +6,141 @@
  */
 namespace Fol\Http;
 
-class Headers
+class Headers implements \ArrayAccess
 {
-    protected $items = array();
 
     /**
      * list of standard mime-types used
      */
-    public static $formats = array(
-        'atom' => array('application/atom+xml'),
-        'css' => array('text/css'),
-        'html' => array('text/html', 'application/xhtml+xml'),
-        'gif' => array('image/gif'),
-        'jpg' => array('image/jpeg', 'image/jpg'),
-        'js'  => array('text/javascript', 'application/javascript', 'application/x-javascript'),
-        'json' => array('text/json', 'application/json', 'application/x-json'),
-        'png' => array('image/png',  'image/x-png'),
-        'pdf' => array('application/pdf', 'application/x-download'),
-        'rdf' => array('application/rdf+xml'),
-        'rss' => array('application/rss+xml'),
-        'txt' => array('text/plain'),
-        'xml' => array('text/xml', 'application/xml', 'application/x-xml'),
-        'zip' => array('application/zip', 'application/x-zip', 'application/x-zip-compressed')
+    public static $formats = [
+        'atom' => ['application/atom+xml'],
+        'css' => ['text/css'],
+        'html' => ['text/html', 'application/xhtml+xml'],
+        'gif' => ['image/gif'],
+        'jpg' => ['image/jpeg', 'image/jpg'],
+        'js'  => ['text/javascript', 'application/javascript', 'application/x-javascript'],
+        'json' => ['text/json', 'application/json', 'application/x-json'],
+        'png' => ['image/png',  'image/x-png'],
+        'pdf' => ['application/pdf', 'application/x-download'],
+        'rdf' => ['application/rdf+xml'],
+        'rss' => ['application/rss+xml'],
+        'txt' => ['text/plain'],
+        'xml' => ['text/xml', 'application/xml', 'application/x-xml'],
+        'zip' => ['application/zip', 'application/x-zip', 'application/x-zip-compressed']
+    ];
+
+
+    /**
+     * List of standard http status codes
+     */
+    public static $status = array(
+        100 => 'Continue',
+        101 => 'Switching Protocols',
+        200 => 'OK',
+        201 => 'Created',
+        202 => 'Accepted',
+        203 => 'Non-Authoritative Information',
+        204 => 'No Content',
+        205 => 'Reset Content',
+        206 => 'Partial Content',
+        300 => 'Multiple Choices',
+        301 => 'Moved Permanently',
+        302 => 'Found',
+        303 => 'See Other',
+        304 => 'Not Modified',
+        305 => 'Use Proxy',
+        307 => 'Temporary Redirect',
+        400 => 'Bad Request',
+        401 => 'Unauthorized',
+        402 => 'Payment Required',
+        403 => 'Forbidden',
+        404 => 'Not Found',
+        405 => 'Method Not Allowed',
+        406 => 'Not Acceptable',
+        407 => 'Proxy Authentication Required',
+        408 => 'Request Timeout',
+        409 => 'Conflict',
+        410 => 'Gone',
+        411 => 'Length Required',
+        412 => 'Precondition Failed',
+        413 => 'Request Entity Too Large',
+        414 => 'Request-URI Too Long',
+        415 => 'Unsupported Media Type',
+        416 => 'Requested Range Not Satisfiable',
+        417 => 'Expectation Failed',
+        418 => 'I\'m a teapot',
+        500 => 'Internal Server Error',
+        501 => 'Not Implemented',
+        502 => 'Bad Gateway',
+        503 => 'Service Unavailable',
+        504 => 'Gateway Timeout',
+        505 => 'HTTP Version Not Supported',
     );
 
 
+    protected $items = [];
+
+
     /**
-     * Magic function to recover the object exported by var_export
+     * ArrayAcces interface methods
      */
-    public static function __set_state($array)
-    {
-        return new static($array['items']);
+    public function offsetExists ($offset) {
+        return $this->has($offset);
+    }
+    public function offsetGet ($offset) {
+        return $this->get($offset);
+    }
+    public function offsetSet ($offset, $value) {
+        $this->set($offset, $value);
+    }
+    public function offsetUnset ($offset) {
+        $this->delete($offset);
     }
 
 
     /**
-     * Magic function to convert all headers to a string
+     * Detects http header from a $_SERVER array
+     *
+     * @return array The headers found
      */
-    public function __toString()
+    public static function getFromGlobals()
     {
-        $text = '';
+        $headers = [];
 
-        foreach ($this->items as $name => $value) {
-            if (is_string($value)) {
-                $text .= "$name: $value\n";
-            } else {
-                foreach ($value as $value) {
-                    $text .= "$name: $value\n";
-                }
+        foreach ($_SERVER as $name => $value) {
+            if (strpos($name, 'HTTP_') === 0) {
+                $headers[str_replace('_', '-', substr($name, 5))] = $value;
+                continue;
+            }
+
+            if (in_array($name, array('CONTENT_LENGTH', 'CONTENT_MD5', 'CONTENT_TYPE'))) {
+                $headers[str_replace('_', '-', $name)] = $value;
             }
         }
 
-        return $text;
+        if (isset($_SERVER['PHP_AUTH_USER'])) {
+            $pass = isset($_SERVER['PHP_AUTH_PW']) ? $_SERVER['PHP_AUTH_PW'] : '';
+            $headers['AUTHORIZATION'] = 'Basic '.base64_encode($_SERVER['PHP_AUTH_USER'].':'.$pass);
+        }
+
+        return $headers;
     }
+
+
+    /**
+     * Gets the status text related with a status code.
+     *
+     * $headers->getStatusText(404) Returns "Not Found"
+     *
+     * @param integer $code The Http code
+     *
+     * @return string The status text or false
+     */
+    public static function getStatusText($code)
+    {
+        return isset(self::$status[$code]) ? self::$status[$code] : false;
+    }
+
 
 
     /**
@@ -98,6 +180,50 @@ class Headers
 
 
     /**
+     * Normalize the name of the parameters.
+     * self::normalize('CONTENT type') Returns "Content-Type"
+     *
+     * @param string $string The text to normalize
+     *
+     * @return string The normalized text
+     */
+    private static function normalize($string)
+    {
+        return str_replace(' ', '-', ucwords(strtolower(str_replace('-', ' ', $string))));
+    }
+
+
+    /**
+     * Magic function to recover the object exported by var_export
+     */
+    public static function __set_state($array)
+    {
+        return new static($array['items']);
+    }
+
+
+    /**
+     * Magic function to convert all headers to a string
+     */
+    public function __toString()
+    {
+        $text = '';
+
+        foreach ($this->items as $name => $value) {
+            if (is_string($value)) {
+                $text .= "$name: $value\n";
+            } else {
+                foreach ($value as $value) {
+                    $text .= "$name: $value\n";
+                }
+            }
+        }
+
+        return $text;
+    }
+
+
+    /**
      * Constructor function. You can set parameters
      *
      * @param $parameters Data to save
@@ -107,20 +233,6 @@ class Headers
         if ($parameters) {
             $this->set($parameters);
         }
-    }
-
-
-    /**
-     * Normalize the name of the parameters.
-     * $headers->normalize('CONTENT type') Returns "Content-Type"
-     *
-     * @param string $string The text to normalize
-     *
-     * @return string The normalized text
-     */
-    private function normalize($string)
-    {
-        return str_replace(' ', '-', ucwords(strtolower(str_replace('-', ' ', $string))));
     }
 
 
@@ -168,7 +280,7 @@ class Headers
             return;
         }
 
-        $name = $this->normalize($name);
+        $name = self::normalize($name);
 
         if ($replace || !isset($this->items[$name])) {
             $this->items[$name] = $value;
@@ -192,7 +304,7 @@ class Headers
             return $this->items;
         }
 
-        $name = $this->normalize($name);
+        $name = self::normalize($name);
 
         if (!isset($this->items[$name])) {
             return null;
@@ -297,7 +409,7 @@ class Headers
         if (func_num_args() === 0) {
             $this->items = array();
         } else {
-            $name = $this->normalize($name);
+            $name = self::normalize($name);
 
             unset($this->items[$name]);
         }
@@ -313,9 +425,7 @@ class Headers
      */
     public function has($name)
     {
-        $name = $this->normalize($name);
-
-        return array_key_exists($name, $this->items);
+        return array_key_exists(self::normalize($name), $this->items);
     }
 
 
@@ -329,13 +439,13 @@ class Headers
     private static function toArray($value)
     {
         if (!$value) {
-            return array();
+            return [];
         }
 
-        $results = array();
+        $results = [];
 
         foreach (explode(',', $value) as $values) {
-            $items = array();
+            $items = [];
 
             foreach (explode(';', $values) as $value) {
                 if (strpos($value, '=') === false) {

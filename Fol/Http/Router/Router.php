@@ -1,13 +1,11 @@
 <?php
 /**
- * Fol\Router\Router
+ * Fol\Http\Router\Router
  *
  * Class to manage all routes
- * Based in PHP-Router library (https://github.com/dannyvankooten/PHP-Router) and Aura-PHP.Router (https://github.com/auraphp/Aura.Router)
  */
-namespace Fol\Router;
+namespace Fol\Http\Router;
 
-use Fol\App;
 use Fol\Http\Request;
 use Fol\Http\Response;
 use Fol\Http\HttpException;
@@ -17,7 +15,10 @@ class Router
     private $routes = [];
     private $errorController;
     private $routeFactory;
-    private $baseurl;
+
+    private $basePath;
+    private $defaults;
+
 
     /**
      * Constructor function. Defines the base url
@@ -28,57 +29,62 @@ class Router
     {
         $this->routeFactory = $routeFactory;
 
-        $this->setBaseUrl(BASE_URL);
+        $components = parse_url(BASE_URL);
+
+        $this->setDefaults($components['scheme'], $components['host'], isset($components['port']) ? ':'.$components['port'] : null);
+        $this->setBasePath(isset($components['path']) ? $components['path'] : '');
     }
+
 
     /**
-     * Change the current base url
+     * Change the base path
      *
-     * @param string $baseurl The new baseurl
+     * @param string $basePath
      */
-    public function setBaseUrl($baseurl)
+    public function setDefaults($scheme, $host, $port = null)
     {
-        $components = parse_url($baseurl);
-
-        $this->baseurl = [
-            'host' => $components['scheme'].'://'.$components['host'].(isset($components['port']) ? ':'.$components['port'] : ''),
-            'path' => isset($components['path']) ? $components['path'] : ''
+        $this->defaults = [
+            'scheme' => $scheme,
+            'host' => $host,
+            'port' => $port
         ];
-
-        foreach ($this->routes as $route) {
-            $route->base = $this->baseurl['path'];
-        }
     }
+
+
+    /**
+     * Change the base path
+     *
+     * @param string $basePath
+     */
+    public function setBasePath($basePath)
+    {
+        $this->basePath = $basePath;
+    }
+
 
     /**
      * Route factory method
      * Maps the given URL to the given target.
      *
      * @param string $name   string The route name.
-     * @param string $path   string
-     * @param mixed  $target The target of this route.
      * @param array  $config Array of optional arguments.
      */
-    public function map ($name, $path = null, $target = null, array $config = array())
+    public function map ($name, array $config = array())
     {
         if (is_array($name)) {
             foreach ($name as $name => $config) {
-                $config['base'] = $this->baseurl['path'];
-
-                $this->routes[$name] = $this->routeFactory->createRoute($name, $config);
+                $this->routes[$name] = $route = $this->routeFactory->createRoute($name, $config, $this->basePath);
             }
 
             return;
         }
 
-        $config['path'] = $path;
-        $config['target'] = $target;
-        $config['base'] = $this->baseurl['path'];
+        $route = $this->routeFactory->createRoute($name, $config, $this->basePath);
 
         if ($name === null) {
-            $this->routes[] = $this->routeFactory->createRoute($name, $config);
+            $this->routes[] = $route;
         } else {
-            $this->routes[$name] = $this->routeFactory->createRoute($name, $config);
+            $this->routes[$name] = $route;
         }
     }
 
@@ -133,17 +139,16 @@ class Router
      *
      * @param string $name     The name of the route to reverse route.
      * @param array  $params   Optional array of parameters to use in URL
-     * @param bool   $mode     0: only the path, 1: basePath + path, 2: host + basePath + path
      *
      * @return string The url to the route
      */
-    public function generate ($name, array $params = array(), $absolute = 1)
+    public function getUrl ($name, array $params = array())
     {
         if (!isset($this->routes[$name])) {
             throw new \Exception("No route with the name $name has been found.");
         }
 
-        return ($absolute ? $this->baseurl['host'] : '').$this->routes[$name]->generate($params, ($absolute > 0));
+        return $this->routes[$name]->generate($this->defaults, $params);
     }
 
 
@@ -151,19 +156,20 @@ class Router
      * Handle a request
      *
      * @param Fol\Request $request
+     * @param array $arguments The arguments passed to the controller (after $request and $response instances)
      *
      * @throws Exception If no errorController is defined and an exception is thrown
      *
      * @return Fol\Response
      */
-    public function handle(Request $request, App $app)
+    public function handle(Request $request, array $arguments = array())
     {
         if (($route = $this->match($request))) {
             try {
-                $response = $route->execute($request, $app);
+                $response = $route->execute($request, $arguments);
             } catch (HttpException $exception) {
                 if ($this->errorController) {
-                    return $this->errorController->execute($exception, $request, $app);
+                    return $this->errorController->execute($exception, $request, $arguments);
                 }
 
                 throw $exception;
@@ -175,7 +181,7 @@ class Router
         $exception = new HttpException('Not found', 404);
 
         if ($this->errorController) {
-            return $this->errorController->execute($exception, $request, $app);
+            return $this->errorController->execute($exception, $request, $arguments);
         }
 
         throw $exception;

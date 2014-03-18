@@ -1,11 +1,10 @@
 <?php
 /**
- * Fol\Router\RouteFactory
+ * Fol\Http\Router\RouteFactory
  *
  * Class to generate route classes
- * Based in PHP-Router library (https://github.com/dannyvankooten/PHP-Router)
  */
-namespace Fol\Router;
+namespace Fol\Http\Router;
 
 class RouteFactory
 {
@@ -20,6 +19,7 @@ class RouteFactory
     {
         $this->namespace = $namespace;
     }
+
 
     /**
      * Generates the target of the route
@@ -42,20 +42,35 @@ class RouteFactory
         return [$class, $method];
     }
 
+
     /**
      * Creates a new route instance
      *
-     * @param string $name   Route name
-     * @param array  $config Route configuration (path, target, etc)
+     * @param string $name     Route name
+     * @param array  $config   Route configuration (path, target, etc)
+     * @param string $basePath The path to prepend
      *
-     * @return Fol\Router\Route
+     * @return Fol\Http\Router\Route
      */
-    public function createRoute ($name, array $config = array())
+    public function createRoute ($name, array $config, $basePath)
     {
         $config['target'] = $this->getTarget($config['target']);
 
+        if ($basePath) {
+            $config['path'] = $basePath.$config['path'];
+        }
+
+        if (isset($config['path'][1])) {
+            $config['path'] = rtrim($config['path'], '/');
+        }
+
+        if (strpos($config['path'], '{:') !== false) {
+            return new RegexRoute($name, $config);
+        }
+
         return new Route($name, $config);
     }
+
 
     /**
      * Creates a new error route instance

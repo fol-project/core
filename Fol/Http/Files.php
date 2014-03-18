@@ -8,13 +8,13 @@ namespace Fol\Http;
 
 class Files extends Input
 {
-    public static $errors = array(
+    public static $errors = [
         1 => 'The uploaded file exceeds the upload_max_filesize directive in php.ini',
         2 => 'The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in the HTML form',
         3 => 'The uploaded file was only partially uploaded',
         4 => 'No file was uploaded',
         6 => 'Missing a temporary folder'
-    );
+    ];
 
 
     /**
@@ -22,11 +22,10 @@ class Files extends Input
      *
      * @param array $items The items to store
      */
-    public function __construct (array $parameters = array())
+    public function __construct (array $items = null)
     {
-        if ($parameters) {
-            $parameters = $this->fixArray($parameters);
-            $this->items = $parameters;
+        if ($items !== null) {
+            $this->items = $this->fixArray($items);
         }
     }
 

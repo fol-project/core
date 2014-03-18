@@ -8,6 +8,7 @@ namespace Fol\Http;
 
 class Input extends Container
 {
+
     /**
      * Gets one or all parameters. You can gets the subvalues using brackets:
      *

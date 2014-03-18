@@ -16,11 +16,11 @@ class Request
     private $path = '';
     private $format = 'html';
 
-    public $parameters;
     public $get;
     public $post;
     public $files;
     public $cookies;
+    public $route;
     public $headers;
     public $content;
 
@@ -36,7 +36,7 @@ class Request
         $port = !empty($_SERVER['X_FORWARDED_PORT']) ? $_SERVER['X_FORWARDED_PORT'] : $_SERVER['SERVER_PORT'];
         $url = "{$scheme}://".$_SERVER['SERVER_NAME'].":{$port}".$_SERVER['REQUEST_URI'];
 
-        $request = new static($url, RequestHeaders::getHeadersFromServer($_SERVER), (array) filter_input_array(INPUT_GET), (array) filter_input_array(INPUT_POST), $_FILES, (array) filter_input_array(INPUT_COOKIE));
+        $request = new static($url, Headers::getFromGlobals(), (array) filter_input_array(INPUT_GET), (array) filter_input_array(INPUT_POST), $_FILES, (array) filter_input_array(INPUT_COOKIE));
 
         if (($method = $_SERVER['REQUEST_METHOD']) === 'POST') {
             $method = $_SERVER['X_HTTP_METHOD_OVERRIDE'] ?: 'POST';
@@ -102,7 +102,6 @@ class Request
      */
     public function __construct ($url = null, array $headers = array(), array $get = array(), array $post = array(), array $files = array(), array $cookies = array())
     {
-        $this->parameters = new Container();
         $this->get = new Input($get);
         $this->post = new Input($post);
         $this->files = new Files($files);
@@ -127,7 +126,6 @@ class Request
      */
     public function __clone()
     {
-        $this->parameters = clone $this->parameters;
         $this->get = clone $this->get;
         $this->post = clone $this->post;
         $this->files = clone $this->files;
@@ -143,7 +141,6 @@ class Request
     {
         $text = $this->getMethod().' '.$this->getUrl();
         $text .= "\nFormat: ".$this->getFormat();
-        $text .= "\nParameters:\n".$this->parameters;
         $text .= "\nGet:\n".$this->get;
         $text .= "\nPost:\n".$this->post;
         $text .= "\nFiles:\n".$this->files;
@@ -159,7 +156,7 @@ class Request
      *
      * @param string $url The new url
      */
-    public function setUrl($url = true)
+    public function setUrl($url)
     {
         $url = parse_url($url);
 
@@ -199,7 +196,7 @@ class Request
 
         $url .= $this->getPath($format);
 
-        if (($query === true) && ($query = $this->get->get())) {
+        if (($query === true) && ($query = $this->get->length())) {
             $url .= '?'.http_build_query($query);
         }
 
@@ -304,7 +301,7 @@ class Request
 
 
     /**
-     * Gets one parameter in POST/FILES/GET/parameters order
+     * Gets one parameter in POST/FILES/GET/Route order
      *
      * @param string $name    The variable name
      * @param mixed  $default The default value if the variable does not exists in POST, FILES or GET values
@@ -313,12 +310,16 @@ class Request
      */
     public function get($name, $default = null)
     {
-        return $this->post->get($name, $this->files->get($name, $this->get->get($name, $this->parameters->get($name, $default))));
+        if ($this->route) {
+            $default = $this->route->get($name, $default);
+        }
+
+        return $this->post->get($name, $this->files->get($name, $this->get->get($name, $default)));
     }
 
 
     /**
-     * Removes a variable in POST/FILES/GET/parameters
+     * Removes a variable in POST/FILES/GET/Route
      *
      * @param string $name The variable name to remove
      */
@@ -327,12 +328,15 @@ class Request
         $this->post->remove($name);
         $this->files->remove($name);
         $this->get->remove($name);
-        $this->parameters->remove($name);
+
+        if ($this->route) {
+            $this->route->remove($name);
+        }
     }
 
 
     /**
-     * Check if a variable exists in POST/FILES/GET/parameters
+     * Check if a variable exists in POST/FILES/GET/Route
      *
      * @param string $name The variable name to check
      *
@@ -340,7 +344,11 @@ class Request
      */
     public function has($name)
     {
-        return ($this->post->has($name) || $this->files->has($name) || $this->get->has($name) || $this->parameters->has($name)) ? true : false;
+        if ($this->route && $this->route->has($name)) {
+            return true;
+        }
+
+        return ($this->post->has($name) || $this->files->has($name) || $this->get->has($name)) ? true : false;
     }
 
 

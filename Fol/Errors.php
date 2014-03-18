@@ -28,7 +28,7 @@ class Errors
     /**
      * Register the php error log file.
      */
-    public static function setLogFile($file)
+    public static function setPhpLogFile($file)
     {
         ini_set('error_log', $file);
     }

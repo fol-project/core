@@ -6,9 +6,27 @@
  */
 namespace Fol\Http;
 
-class Container
+class Container implements \ArrayAccess
 {
-    protected $items = array();
+    protected $items = [];
+
+
+    /**
+     * ArrayAcces interface methods
+     */
+    public function offsetExists ($offset) {
+        return $this->has($offset);
+    }
+    public function offsetGet ($offset) {
+        return $this->get($offset);
+    }
+    public function offsetSet ($offset, $value) {
+        $this->set($offset, $value);
+    }
+    public function offsetUnset ($offset) {
+        $this->delete($offset);
+    }
+
 
     /**
      * Constructor class. You can define the items directly
@@ -21,6 +39,7 @@ class Container
             $this->set($items);
         }
     }
+
 
     /**
      * Converts all items to a string
@@ -40,6 +59,7 @@ class Container
         return $text;
     }
 
+
     /**
      * Counts all stored parameteres
      *
@@ -49,6 +69,7 @@ class Container
     {
         return count($this->items);
     }
+
 
     /**
      * Gets one or all parameters.
@@ -74,6 +95,7 @@ class Container
         return $default;
     }
 
+
     /**
      * Sets one parameter or various new parameters
      *
@@ -89,6 +111,7 @@ class Container
         }
     }
 
+
     /**
      * Deletes one or all parameters
      *
@@ -100,11 +123,12 @@ class Container
     public function delete($name = null)
     {
         if ($name === null) {
-            $this->items = array();
+            $this->items = [];
         } else {
             unset($this->items[$name]);
         }
     }
+
 
     /**
      * Checks if a parameter exists
