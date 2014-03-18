@@ -141,7 +141,7 @@ class Route extends Container
         $response = new Response;
 
         array_unshift($arguments, $request, $response);
-        $request->router = $this;
+        $request->route = $this;
 
         try {
             list($class, $method) = $this->target;

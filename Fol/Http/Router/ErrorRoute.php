@@ -40,7 +40,7 @@ class ErrorRoute extends Container
         
         array_unshift($arguments, $request, $response);
         $this->set('exception', $exception);
-        $request->router = $this;
+        $request->route = $this;
 
         list($class, $method) = $this->target;
 

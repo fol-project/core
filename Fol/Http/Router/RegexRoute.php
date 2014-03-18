@@ -92,7 +92,7 @@ class RegexRoute extends Route
         }
 
         $this->path = str_replace(['(', ')', '?', '*'], '', $this->path);
-        $this->regex = "#^{$this->regex}$#"
+        $this->regex = '#^'.$this->regex.'$#';
     }
 
 
@@ -105,7 +105,7 @@ class RegexRoute extends Route
      */
     public function checkRegex($path)
     {
-        if (preg_match("#^{$this->regex}$#", $path, $matches)) {
+        if (preg_match($this->regex, $path, $matches)) {
             return $matches;
         }
 
@@ -152,7 +152,7 @@ class RegexRoute extends Route
 
         foreach ($parameters as $name => $value) {
             if (strpos($path, "{:$name}") !== false) {
-                str_replace("{:$name}", rawurlencode($value), $path);
+                $path = str_replace("{:$name}", rawurlencode($value), $path);
                 unset($parameters[$name]);
             }
         }

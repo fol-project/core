@@ -38,8 +38,8 @@ class Request
 
         $request = new static($url, Headers::getFromGlobals(), (array) filter_input_array(INPUT_GET), (array) filter_input_array(INPUT_POST), $_FILES, (array) filter_input_array(INPUT_COOKIE));
 
-        if (($method = $_SERVER['REQUEST_METHOD']) === 'POST') {
-            $method = $_SERVER['X_HTTP_METHOD_OVERRIDE'] ?: 'POST';
+        if (($method = $_SERVER['REQUEST_METHOD']) === 'POST' && !empty($_SERVER['X_HTTP_METHOD_OVERRIDE'])) {
+            $method = $_SERVER['X_HTTP_METHOD_OVERRIDE'];
         }
 
         $request->setMethod($method ?: 'get');
@@ -61,15 +61,17 @@ class Request
     /**
      * Creates a new custom request object
      *
-     * @param string $path       The request path
+     * @param string $url        The request url or path
      * @param string $method     The method of the request (GET, POST, PUT, DELETE)
      * @param array  $vars       The parameters of the request (GET, POST, etc)
      *
      * @return Fol\Http\Request The object with the specified data
      */
-    public static function create ($path = '', $method = 'GET', array $vars = array())
+    public static function create ($url = '', $method = 'GET', array $vars = array())
     {
-        $url = BASE_URL.$path;
+        if (strpos($url, '://') === false) {
+            $url = BASE_URL.$url;
+        }
 
         $request = new static($url);
 
