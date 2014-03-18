@@ -31,7 +31,7 @@ class Router
 
         $components = parse_url(BASE_URL);
 
-        $this->setDefaults($components['scheme'], $components['host'], isset($components['port']) ? ':'.$components['port'] : null);
+        $this->setDefaults($components['scheme'], $components['host'], isset($components['port']) ? $components['port'] : null);
         $this->setBasePath(isset($components['path']) ? $components['path'] : '');
     }
 
