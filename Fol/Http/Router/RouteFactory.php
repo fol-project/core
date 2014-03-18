@@ -30,9 +30,17 @@ class RouteFactory
      */
     private function getTarget($target)
     {
+        if ($target instanceof \Closure) {
+            return $target;
+        }
+
+        if (is_array($target)) {
+            return $target;
+        }
+
         if (strpos($target, '::') === false) {
             $class = $target;
-            $method = null;
+            $method = '__invoke';
         } else {
             list($class, $method) = explode('::', $target, 2);
         }

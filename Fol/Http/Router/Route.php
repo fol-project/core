@@ -144,14 +144,19 @@ class Route extends Container
         $request->route = $this;
 
         try {
-            list($class, $method) = $this->target;
+            if (!is_array($this->target) || is_object($this->target[0])) {
+                $return = call_user_func_array($this->target, $arguments);
+            } else {
+                list($class, $method) = $this->target;
 
-            $class = new \ReflectionClass($class);
+                $class = new \ReflectionClass($class);
 
-            $controller = $class->hasMethod('__construct') ? $class->newInstanceArgs($arguments) : $class->newInstance();
-            $return = $class->getMethod($method ?: '__invoke')->invokeArgs($controller, $arguments);
+                $controller = $class->hasMethod('__construct') ? $class->newInstanceArgs($arguments) : $class->newInstance();
 
-            unset($controller);
+                $return = $class->getMethod($method)->invokeArgs($controller, $arguments);
+
+                unset($controller);
+            }
         } catch (\Exception $exception) {
             ob_clean();
 
