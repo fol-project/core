@@ -6,10 +6,28 @@
  */
 namespace Fol;
 
-class Session
+class Session implements \ArrayAccess
 {
     protected $cookies;
     protected $cookieParams;
+
+
+    /**
+     * ArrayAcces interface methods
+     */
+    public function offsetExists ($offset) {
+        return $this->has($offset);
+    }
+    public function offsetGet ($offset) {
+        return $this->get($offset);
+    }
+    public function offsetSet ($offset, $value) {
+        $this->set($offset, $value);
+    }
+    public function offsetUnset ($offset) {
+        $this->delete($offset);
+    }
+
 
     /**
      * Constructor. Start/resume the latest session.
@@ -38,6 +56,7 @@ class Session
         $this->cookies = $cookies;
     }
 
+
     /**
      * Sets the session cookie parameters
      * @param array $params The available parameters (lifetime, path, domain, secure, httponly)
@@ -49,6 +68,7 @@ class Session
         session_set_cookie_params($this->cookieParams['lifetime'], $this->cookieParams['path'], $this->cookieParams['domain'], $this->cookieParams['secure'], $this->cookieParams['httponly']);
     }
 
+
     /**
      * Magic function to close the session on destroy the object
      */
@@ -57,20 +77,6 @@ class Session
         $this->close();
     }
 
-    /**
-     * Switch the current session to other different session
-     *
-     * @param string $name The name of the new session
-     */
-    public function switchTo($name)
-    {
-        if (session_name() === $name) {
-            return;
-        }
-
-        $this->close();
-        $this->start(sha1(mt_rand()), $name);
-    }
 
     /**
      * Close the session and save the data.
@@ -82,6 +88,7 @@ class Session
         }
     }
 
+
     /**
      * Sets the session cache expire in minutes
      *
@@ -92,6 +99,7 @@ class Session
         return session_cache_expire($minutes);
     }
 
+
     /**
      * Gets the session cache expire in minutes
      *
@@ -101,6 +109,7 @@ class Session
     {
         return session_cache_expire();
     }
+
 
     /**
      * Start a session
@@ -121,6 +130,7 @@ class Session
         session_start();
     }
 
+
     /**
      * Destroy the current session deleting the data
      */
@@ -134,6 +144,7 @@ class Session
 
         return session_destroy();
     }
+
 
     /**
      * Check if a session is started or not.
@@ -268,6 +279,7 @@ class Session
         return array_key_exists($name, $_SESSION);
     }
 
+
     /**
      * Get a flash value (read only once)
      *
@@ -291,6 +303,7 @@ class Session
         return $default;
     }
 
+
     /**
      * Set a new flash value
      *
@@ -309,6 +322,7 @@ class Session
             $_SESSION['_flash'][$name] = $value;
         }
     }
+
 
     /**
      * Check if a flash variable is defined or not (but does not remove it)
