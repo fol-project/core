@@ -8,12 +8,12 @@ namespace Fol\Http;
 
 class Request
 {
-    private $ip = '127.0.0.1';
-    private $method = 'GET';
-    private $scheme = 'http';
-    private $host = 'localhost';
-    private $port = 80;
-    private $path = '';
+    private $ip;
+    private $method;
+    private $scheme;
+    private $host;
+    private $port;
+    private $path;
     private $format = 'html';
 
     public $get;
@@ -42,8 +42,20 @@ class Request
             $method = $_SERVER['X_HTTP_METHOD_OVERRIDE'];
         }
 
-        $request->setMethod($method ?: 'get');
-        $request->setIp($request->headers->get('Client-Ip', $request->headers->get('X-Forwarded-For', $_SERVER['REMOTE_ADDR'])));
+        $request->setMethod($method ?: 'GET');
+
+        foreach (['HTTP_CLIENT_IP', 'HTTP_X_FORWARDED_FOR', 'REMOTE_ADDR'] as $key) {
+            if (empty($_SERVER[$key])) {
+                continue;
+            }
+
+            foreach (explode(',', $_SERVER[$key]) as $ip) {
+                if (!empty($ip) && $ip !== 'unknown') {
+                    $request->setIp($ip);
+                    break 2;
+                }
+            }
+        }
 
         $contentType = $request->headers->get('Content-Type');
 
@@ -74,6 +86,10 @@ class Request
         }
 
         $request = new static($url);
+
+        $request->setIp('127.0.0.1');
+        $request->setMethod($method);
+        $request->setPort(80);
 
         if ($request->getScheme() === 'https') {
             $request->setPort(443);
