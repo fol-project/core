@@ -8,8 +8,9 @@ namespace Fol;
 
 class Session implements \ArrayAccess
 {
-    protected $cookies;
-    protected $cookieParams;
+    protected $id;
+    protected $name;
+    protected $items = [];
 
 
     /**
@@ -34,7 +35,7 @@ class Session implements \ArrayAccess
      *
      * @throws an Exception is the session is disabled
      */
-    public function __construct(array $cookies)
+    public static function createFromGlobals($id = null, $name = null, array $cookieParams = array())
     {
         switch (session_status()) {
             case PHP_SESSION_DISABLED:
@@ -42,30 +43,48 @@ class Session implements \ArrayAccess
                 break;
 
             case PHP_SESSION_NONE:
+                $session = new static();
+
+                if ($name !== null) {
+                    session_name($name);
+                }
+
+                $session->name = session_name();
+
+                if ($id !== null) {
+                    session_id($id);
+                }
+
+                $session->id = session_id();
+
+                $cookieParams = array_replace(
+                    session_get_cookie_params(),
+                    ['httponly' => true, 'path' => parse_url(BASE_URL, PHP_URL_PATH) ?: '/'],
+                    $cookieParams
+                );
+
                 ini_set('session.use_only_cookies', 1);
+                session_set_cookie_params($cookieParams['lifetime'], $cookieParams['path'], $cookieParams['domain'], $cookieParams['secure'], $cookieParams['httponly']);
 
-                $this->cookieParams = session_get_cookie_params();
+                session_start();
 
-                $this->setCookieParams([
-                    'httponly' => true,
-                    'path' => parse_url(BASE_URL, PHP_URL_PATH) ?: '/'
-                ]);
-                break;
+                $session->set($_SESSION);
+
+                return $session;
         }
-
-        $this->cookies = $cookies;
     }
 
 
     /**
-     * Sets the session cookie parameters
-     * @param array $params The available parameters (lifetime, path, domain, secure, httponly)
+     * Constructor class. You can define the items directly
+     *
+     * @param array $items The items to store
      */
-    public function setCookieParams(array $params)
+    public function __construct(array $items = null)
     {
-        $this->cookieParams = array_replace($this->cookieParams, $params);
-
-        session_set_cookie_params($this->cookieParams['lifetime'], $this->cookieParams['path'], $this->cookieParams['domain'], $this->cookieParams['secure'], $this->cookieParams['httponly']);
+        if ($items !== null) {
+            $this->set($items);
+        }
     }
 
 
@@ -112,26 +131,6 @@ class Session implements \ArrayAccess
 
 
     /**
-     * Start a session
-     *
-     * @param string $id   Set the custom id if the session has not a previous id assigned. Useful to switch from one session to another.
-     * @param string $name The session name.
-     */
-    public function start($id = null, $name = null)
-    {
-        if ($name !== null) {
-            $this->setName($name);
-        }
-
-        if ($id !== null) {
-            $this->setId(isset($this->cookies[$name]) ? $this->cookies[$name] : $id);
-        }
-
-        session_start();
-    }
-
-
-    /**
      * Destroy the current session deleting the data
      */
     public function destroy()
@@ -164,7 +163,7 @@ class Session implements \ArrayAccess
      */
     public function getName()
     {
-        return session_name();
+        return $this->name;
     }
 
 
@@ -175,7 +174,7 @@ class Session implements \ArrayAccess
      */
     public function setName($name)
     {
-        return session_name($name);
+        $this->name = $name;
     }
 
 
@@ -186,7 +185,7 @@ class Session implements \ArrayAccess
      */
     public function getId()
     {
-        return session_id();
+        return $this->id;
     }
 
 
@@ -199,7 +198,7 @@ class Session implements \ArrayAccess
      */
     public function setId($id)
     {
-        return session_id($id);
+        return $this->id = $id;
     }
 
 
@@ -224,11 +223,11 @@ class Session implements \ArrayAccess
     public function get($name = null, $default = null)
     {
         if ($name === null) {
-            return $_SESSION;
+            return $this->items;
         }
 
-        if (isset($_SESSION[$name])) {
-            return $_SESSION[$name];
+        if (isset($this->items[$name]) && $this->items[$name] !== '') {
+            return $this->items[$name];
         }
 
         return $default;
@@ -244,9 +243,9 @@ class Session implements \ArrayAccess
     public function set($name, $value = null)
     {
         if (is_array($name)) {
-            $_SESSION = array_replace($_SESSION, $name);
+            $this->items = array_replace($this->items, $name);
         } else {
-            $_SESSION[$name] = $value;
+            $this->items[$name] = $value;
         }
     }
 
@@ -259,10 +258,9 @@ class Session implements \ArrayAccess
     public function delete($name = null)
     {
         if ($name === null) {
-            $_SESSION = [];
-            session_unset();
+            $this->items = [];
         } else {
-            unset($_SESSION[$name]);
+            unset($this->items[$name]);
         }
     }
 
@@ -276,7 +274,7 @@ class Session implements \ArrayAccess
      */
     public function has($name)
     {
-        return array_key_exists($name, $_SESSION);
+        return array_key_exists($name, $this->items);
     }
 
 
@@ -292,12 +290,12 @@ class Session implements \ArrayAccess
     public function getFlash($name = null, $default = null)
     {
         if ($name === null) {
-            return isset($_SESSION['_flash']) ? $_SESSION['_flash'] : [];
+            return isset($this->items['_flash']) ? $this->items['_flash'] : [];
         }
 
-        if (isset($_SESSION['_flash'][$name])) {
-            $default = $_SESSION['_flash'][$name];
-            unset($_SESSION['_flash'][$name]);
+        if (isset($this->items['_flash'][$name])) {
+            $default = $this->items['_flash'][$name];
+            unset($this->items['_flash'][$name]);
         }
 
         return $default;
@@ -312,14 +310,14 @@ class Session implements \ArrayAccess
      */
     public function setFlash($name, $value = null)
     {
-        if (!isset($_SESSION['_flash'])) {
-            $_SESSION['_flash'] = [];
+        if (!isset($this->items['_flash'])) {
+            $this->items['_flash'] = [];
         }
 
         if (is_array($name)) {
-            $_SESSION['_flash'] = array_replace($_SESSION['_flash'], $name);
+            $this->items['_flash'] = array_replace($this->items['_flash'], $name);
         } else {
-            $_SESSION['_flash'][$name] = $value;
+            $this->items['_flash'][$name] = $value;
         }
     }
 
@@ -333,6 +331,6 @@ class Session implements \ArrayAccess
      */
     public function hasFlash($name)
     {
-        return (isset($_SESSION['_flash']) && array_key_exists($name, $_SESSION['_flash']));
+        return (isset($this->items['_flash']) && array_key_exists($name, $this->items['_flash']));
     }
 }
