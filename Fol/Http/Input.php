@@ -10,6 +10,19 @@ class Input extends Container
 {
 
     /**
+     * Constructor class. You can define the items directly
+     *
+     * @param array $items The items to store
+     */
+    public function __construct(array $items = null)
+    {
+        if ($items !== null) {
+            $this->set($items);
+        }
+    }
+
+
+    /**
      * Gets one or all parameters. You can gets the subvalues using brackets:
      *
      * $input->get('user') Returns, for example: array('name' => 'xan', 'age' => 34)

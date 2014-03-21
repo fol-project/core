@@ -29,19 +29,6 @@ class Container implements \ArrayAccess
 
 
     /**
-     * Constructor class. You can define the items directly
-     *
-     * @param array $items The items to store
-     */
-    public function __construct(array $items = null)
-    {
-        if ($items !== null) {
-            $this->set($items);
-        }
-    }
-
-
-    /**
      * Converts all items to a string
      */
     public function __toString()

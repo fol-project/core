@@ -319,58 +319,6 @@ class Request
 
 
     /**
-     * Gets one parameter in POST/FILES/GET/Route order
-     *
-     * @param string $name    The variable name
-     * @param mixed  $default The default value if the variable does not exists in POST, FILES or GET values
-     *
-     * @return mixed The value of the variable or the default value
-     */
-    public function get($name, $default = null)
-    {
-        if ($this->route) {
-            $default = $this->route->get($name, $default);
-        }
-
-        return $this->post->get($name, $this->files->get($name, $this->get->get($name, $default)));
-    }
-
-
-    /**
-     * Removes a variable in POST/FILES/GET/Route
-     *
-     * @param string $name The variable name to remove
-     */
-    public function remove($name)
-    {
-        $this->post->remove($name);
-        $this->files->remove($name);
-        $this->get->remove($name);
-
-        if ($this->route) {
-            $this->route->remove($name);
-        }
-    }
-
-
-    /**
-     * Check if a variable exists in POST/FILES/GET/Route
-     *
-     * @param string $name The variable name to check
-     *
-     * @return boolean TRUE if the variable exists in any of the parameters and FALSE if doesn't
-     */
-    public function has($name)
-    {
-        if ($this->route && $this->route->has($name)) {
-            return true;
-        }
-
-        return ($this->post->has($name) || $this->files->has($name) || $this->get->has($name)) ? true : false;
-    }
-
-
-    /**
      * Returns the real client IP
      *
      * @return string The client IP
