@@ -9,12 +9,14 @@ namespace Fol\Http;
 class Request
 {
     private $ip;
-    private $method;
+    private $method = 'GET';
     private $scheme;
     private $host;
     private $port;
     private $path;
+    private $session;
     private $format = 'html';
+    private $language;
 
     public $get;
     public $post;
@@ -28,9 +30,11 @@ class Request
     /**
      * Creates a new request object from global values
      *
+     * @param array $validLanguages You can define a list of valid languages, so if an accept language is in the list, returns that language. If doesn't exists, returns the first accept language.
+     *
      * @return Fol\Http\Request The object with the global data
      */
-    public static function createFromGlobals()
+    public static function createFromGlobals(array $validLanguages = null)
     {
         $scheme = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http';
         $port = !empty($_SERVER['X_FORWARDED_PORT']) ? $_SERVER['X_FORWARDED_PORT'] : $_SERVER['SERVER_PORT'];
@@ -38,12 +42,14 @@ class Request
 
         $request = new static($url, Headers::getFromGlobals(), (array) filter_input_array(INPUT_GET), (array) filter_input_array(INPUT_POST), $_FILES, (array) filter_input_array(INPUT_COOKIE));
 
+        //Detect request method
         if (($method = $_SERVER['REQUEST_METHOD']) === 'POST' && !empty($_SERVER['X_HTTP_METHOD_OVERRIDE'])) {
             $method = $_SERVER['X_HTTP_METHOD_OVERRIDE'];
         }
 
         $request->setMethod($method ?: 'GET');
 
+        //Detect client ip
         foreach (['HTTP_CLIENT_IP', 'HTTP_X_FORWARDED_FOR', 'REMOTE_ADDR'] as $key) {
             if (empty($_SERVER[$key])) {
                 continue;
@@ -57,6 +63,20 @@ class Request
             }
         }
 
+        //Detect client language
+        $userLanguages = array_keys($request->headers->getParsed('Accept-Language'));
+
+        if ($validLanguages === null) {
+            $request->setLanguage(isset($userLanguages[0]) ? $userLanguages[0] : null);
+        } else if (!$userLanguages) {
+            $request->setLanguage(isset($validLanguages[0]) ? $validLanguages[0] : null);
+        } else {
+            $commonLanguages = array_values(array_intersect($userLanguages, $validLanguages));
+
+            $request->setLanguage(isset($commonLanguages[0]) ? $commonLanguages[0] : $validLanguages[0]);
+        }
+
+        //Detect request payload
         $contentType = $request->headers->get('Content-Type');
 
         if ((strpos($contentType, 'application/x-www-form-urlencoded') === 0) && in_array($request->getMethod(), ['PUT', 'DELETE']) && ($content = file_get_contents('php://input'))) {
@@ -118,7 +138,7 @@ class Request
      * @param array  $files      The FILES parameters
      * @param array  $cookies    The request cookies
      */
-    public function __construct ($url = null, array $headers = array(), array $get = array(), array $post = array(), array $files = array(), array $cookies = array())
+    public function __construct($url = null, array $headers = array(), array $get = array(), array $post = array(), array $files = array(), array $cookies = array())
     {
         $this->get = new Input($get);
         $this->post = new Input($post);
@@ -141,6 +161,9 @@ class Request
 
     /**
      * Magic function to clone the internal objects
+     *
+     * Note that session is not cloned because is shared in all requests
+     * unless is changed manually
      */
     public function __clone()
     {
@@ -149,6 +172,30 @@ class Request
         $this->files = clone $this->files;
         $this->cookies = clone $this->cookies;
         $this->headers = clone $this->headers;
+    }
+
+
+    /**
+     * Creates a subrequest based in this request
+     *
+     * @param string $url        The request url or path
+     * @param string $method     The method of the request (GET, POST, PUT, DELETE)
+     * @param array  $vars       The parameters of the request (GET, POST, etc)
+     *
+     * @return Fol\Http\Request The object with the specified data
+     */
+    public function createSubRequest($url = '', $method = 'GET', array $vars = array())
+    {
+        $request = static::create($url, $method, $vars);
+
+        $request->setIp($this->getIp());
+        $request->setLanguage($this->getLanguage());
+
+        if (isset($this->session)) {
+            $request->setSession($this->getSession());
+        }
+
+        return $request;
     }
 
 
@@ -164,6 +211,11 @@ class Request
         $text .= "\nFiles:\n".$this->files;
         $text .= "\nCookies:\n".$this->cookies;
         $text .= "\nHeaders:\n".$this->headers;
+        $text .= "\nSession:\n".$this->session;
+
+        if (isset($this->route)) {
+            $text .= "\nRoute:\n".$this->route;
+        }
 
         return $text;
     }
@@ -290,31 +342,24 @@ class Request
 
 
     /**
-     * Gets the preferred language according with the Accept-Language http header
+     * Returns the client language
      *
-     * Example:
-     * $request->getLanguage() Returns, for example gl
-     * $request->getLanguage(array('es', 'en')); Returns, for example, es
-     *
-     * @param array $valid_languages You can define a list of valid languages, so if an accept language is in the list, returns that language. If doesn't exists, returns the first accept language.
-     *
-     * @return string The preferred language
+     * @return string The language code
      */
-    public function getLanguage(array $valid_languages = null)
+    public function getLanguage()
     {
-        $user_languages = array_keys($this->headers->getParsed('Accept-Language'));
+        return $this->language;
+    }
 
-        if (is_null($valid_languages)) {
-            return $user_languages[0];
-        }
 
-        if (!$user_languages) {
-            return $valid_languages[0];
-        }
-
-        $common_languages = array_values(array_intersect($user_languages, $valid_languages));
-
-        return isset($common_languages[0]) ? $common_languages[0] : $valid_languages[0];
+    /**
+     * Set the client language
+     *
+     * @param string $language The language code
+     */
+    public function setLanguage($language)
+    {
+        $this->language = $language;
     }
 
 
@@ -436,5 +481,27 @@ class Request
     public function setMethod($method)
     {
         $this->method = strtoupper($method);
+    }
+
+
+    /**
+     * Set the request session
+     *
+     * @param Fol\Http\Sessions\Session A session instance
+     */
+    public function setSession(Sessions\Session $session)
+    {
+        $this->session = $session;
+    }
+
+
+    /**
+     * Returns the session
+     *
+     * @return Fol\Http\Sessions\Session The session instance or null
+     */
+    public function getSession()
+    {
+        return $this->session;
     }
 }
