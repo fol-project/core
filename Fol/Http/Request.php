@@ -37,7 +37,7 @@ class Request
     public static function createFromGlobals(array $validLanguages = null)
     {
         $scheme = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http';
-        $port = !empty($_SERVER['X_FORWARDED_PORT']) ? $_SERVER['X_FORWARDED_PORT'] : $_SERVER['SERVER_PORT'];
+        $port = !empty($_SERVER['X_FORWARDED_PORT']) ? $_SERVER['X_FORWARDED_PORT'] : (!empty($_SERVER['SERVER_PORT']) ? $_SERVER['SERVER_PORT'] : 80);
         $url = "{$scheme}://".$_SERVER['SERVER_NAME'].":{$port}".$_SERVER['REQUEST_URI'];
 
         $request = new static($url, Headers::getFromGlobals(), (array) filter_input_array(INPUT_GET), (array) filter_input_array(INPUT_POST), $_FILES, (array) filter_input_array(INPUT_COOKIE));
@@ -232,8 +232,11 @@ class Request
 
         $this->setScheme($url['scheme']);
         $this->setHost($url['host']);
-        $this->setPort(isset($url['port']) ? $url['port'] : 80);
         $this->setPath(isset($url['path']) ? $url['path'] : '');
+
+        if (isset($url['port'])) {
+            $this->setPort($url['port']);
+        }
 
         if (isset($url['query'])) {
             parse_str(html_entity_decode($url['query']), $get);
