@@ -4,12 +4,11 @@ use Fol\Http\Response;
 
 class HttpTest extends PHPUnit_Framework_TestCase {
 	public function testRequest () {
-		$request = Request::create('/index');
+		$request = Request::create('/index', 'GET', [], []);
 
 		$this->assertEquals($request->getPath(), '/index');
 		$this->assertEquals($request->getMethod(), 'GET');
 		$this->assertEquals($request->getFormat(), 'html');
-		$this->assertEquals($request->getLanguage(['en']), 'en');
 		$this->assertFalse($request->isAjax());
 		$this->assertEquals($request->getScheme(), 'http');
 		$this->assertEquals($request->getHost(), 'localhost');
@@ -45,17 +44,9 @@ class HttpTest extends PHPUnit_Framework_TestCase {
 		$request->headers->set('X-Requested-With', 'xmlhttprequest');
 		$this->assertTrue($request->isAjax());
 
-		//Language
-		$language = $request->getLanguage(['gl-es', 'en']);
-		$this->assertEquals($language, 'gl-es', $request->headers->get('Accept-Language'));
-
-		$request->headers->set('Accept-Language', 'en,gl-es,es;q=0.5');
-
-		$language = $request->getLanguage(['gl-es', 'en']);
-		$this->assertEquals($language, 'en');
-
 		return $request;
 	}
+
 
 	/**
 	 * @depends testRequest

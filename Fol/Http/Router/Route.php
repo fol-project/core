@@ -23,6 +23,7 @@ class Route extends Container
     protected $port;
     protected $path;
     protected $format;
+    protected $language;
 
 
     /**
@@ -85,7 +86,7 @@ class Route extends Container
      */
     public function match(Request $request)
     {
-        return $this->checkRequest($request, ['ip', 'method', 'scheme', 'host', 'port', 'path', 'format']);
+        return $this->checkRequest($request, ['ip', 'method', 'scheme', 'host', 'port', 'path', 'format', 'language']);
     }
 
 
@@ -115,6 +116,10 @@ class Route extends Container
             $url .= ":{$port}";
         }
 
+        if ($format && $path) {
+            $path .= ".{$format}";
+        }
+
         $url .= $path;
 
         if ($parameters) {
@@ -122,6 +127,34 @@ class Route extends Container
         }
 
         return $url;
+    }
+
+
+    /**
+     * Reverse the route, returning a Request object
+     *
+     * @param array $defaults   Defaults values for scheme, host, port, path and format
+     * @param array $parameters Optional array of parameters to use in URL
+     *
+     * @return Fol\Http\Request The request instance
+     */
+    public function generateRequest (array $defaults, array $parameters = array())
+    {
+        $request = new Request($this->generate($defaults, $parameters));
+
+        if ($this->method) {
+            $request->setMethod(is_array($this->method) ? $this->method[0] : $this->method);
+        }
+
+        if ($this->ip) {
+            $request->setIp(is_array($this->ip) ? $this->ip[0] : $this->ip);
+        }
+
+        if ($this->language) {
+            $request->setLanguage(is_array($this->language) ? $this->language[0] : $this->language);
+        }
+
+        return $request;
     }
 
 

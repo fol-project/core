@@ -96,16 +96,17 @@ class Request
      * @param string $url        The request url or path
      * @param string $method     The method of the request (GET, POST, PUT, DELETE)
      * @param array  $vars       The parameters of the request (GET, POST, etc)
+     * @param array  $headers    The headers of the request
      *
      * @return Fol\Http\Request The object with the specified data
      */
-    public static function create ($url = '', $method = 'GET', array $vars = array())
+    public static function create ($url = '', $method = 'GET', array $vars = array(), array $headers = array())
     {
         if (strpos($url, '://') === false) {
             $url = BASE_URL.$url;
         }
 
-        $request = new static($url);
+        $request = new static($url, $headers);
 
         $request->setIp('127.0.0.1');
         $request->setMethod($method);
@@ -266,7 +267,7 @@ class Request
 
         $url .= $this->getPath($format);
 
-        if (($query === true) && ($query = $this->get->length())) {
+        if (($query === true) && ($query = $this->get->get())) {
             $url .= '?'.http_build_query($query);
         }
 
