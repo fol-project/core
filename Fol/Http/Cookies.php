@@ -45,17 +45,6 @@ class Cookies implements \ArrayAccess
 
 
     /**
-     * Function executed only to restore a previous saved state
-     *
-     * @param array $items Items to restore
-     */
-    public function setState($items)
-    {
-        $this->items = $items;
-    }
-
-
-    /**
      * Magic function to converts all cookies to a string
      */
     public function __toString()

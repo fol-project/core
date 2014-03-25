@@ -177,15 +177,6 @@ class Headers implements \ArrayAccess
 
 
     /**
-     * Magic function to recover the object exported by var_export
-     */
-    public static function __set_state($array)
-    {
-        return new static($array['items']);
-    }
-
-
-    /**
      * Sends the headers if don't have been send before
      *
      * @return boolean True if headers has been sent and false if headers had been sent before
