@@ -6,8 +6,11 @@
  */
 namespace Fol\Http;
 
+use Fol\ContainerTrait;
+
 class Headers implements \ArrayAccess
 {
+    use ContainerTrait;
 
     /**
      * list of standard mime-types used
@@ -76,26 +79,6 @@ class Headers implements \ArrayAccess
         504 => 'Gateway Timeout',
         505 => 'HTTP Version Not Supported',
     );
-
-
-    protected $items = [];
-
-
-    /**
-     * ArrayAcces interface methods
-     */
-    public function offsetExists ($offset) {
-        return $this->has($offset);
-    }
-    public function offsetGet ($offset) {
-        return $this->get($offset);
-    }
-    public function offsetSet ($offset, $value) {
-        $this->set($offset, $value);
-    }
-    public function offsetUnset ($offset) {
-        $this->delete($offset);
-    }
 
 
     /**
@@ -203,41 +186,7 @@ class Headers implements \ArrayAccess
 
 
     /**
-     * Magic function to convert all headers to a string
-     */
-    public function __toString()
-    {
-        $text = '';
-
-        foreach ($this->items as $name => $value) {
-            if (is_string($value)) {
-                $text .= "$name: $value\n";
-            } else {
-                foreach ($value as $value) {
-                    $text .= "$name: $value\n";
-                }
-            }
-        }
-
-        return $text;
-    }
-
-
-    /**
-     * Constructor function. You can set parameters
-     *
-     * @param $parameters Data to save
-     */
-    public function __construct (array $parameters = array())
-    {
-        if ($parameters) {
-            $this->set($parameters);
-        }
-    }
-
-
-    /**
-     * Sends the headers if don't have been send by the developer
+     * Sends the headers if don't have been send before
      *
      * @return boolean True if headers has been sent and false if headers had been sent before
      */

@@ -6,20 +6,11 @@
  */
 namespace Fol\Http;
 
-class Input extends Container
-{
+use Fol\ContainerTrait;
 
-    /**
-     * Constructor class. You can define the items directly
-     *
-     * @param array $items The items to store
-     */
-    public function __construct(array $items = null)
-    {
-        if ($items !== null) {
-            $this->set($items);
-        }
-    }
+class Input implements \ArrayAccess
+{
+    use ContainerTrait;
 
 
     /**
@@ -35,6 +26,10 @@ class Input extends Container
      */
     public function get($name = null, $default = null)
     {
+        if ($name === null) {
+            return $this->items;
+        }
+
         if (is_string($name) && (strpos($name, '[') !== false) && (strpos($name, ']') !== false)) {
             $subarrays = explode('[', str_replace(']', '', $name));
             $value = $this->items;
@@ -48,7 +43,11 @@ class Input extends Container
             }
         }
 
-        return parent::get($name, $default);
+        if (isset($this->items[$name]) && $this->items[$name] !== '') {
+            return $this->items[$name];
+        }
+
+        return $default;
     }
 
 

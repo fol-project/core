@@ -9,26 +9,10 @@ namespace Fol;
 
 class Config implements \ArrayAccess
 {
+    use ContainerTrait;
+
     protected $configPaths = [];
     protected $environment;
-    protected $items = [];
-
-
-    /**
-     * ArrayAcces interface methods
-     */
-    public function offsetExists ($offset) {
-        return $this->has($offset);
-    }
-    public function offsetGet ($offset) {
-        return $this->get($offset);
-    }
-    public function offsetSet ($offset, $value) {
-        $this->set($offset, $value);
-    }
-    public function offsetUnset ($offset) {
-        $this->delete($offset);
-    }
 
 
     /**
@@ -84,27 +68,6 @@ class Config implements \ArrayAccess
 
 
     /**
-     * Magic function to convert all data loaded in a string (for debug purposes)
-     *
-     * echo (string) $data;
-     */
-    public function __toString()
-    {
-        $text = '';
-
-        foreach ($this->items as $name => $value) {
-            if (is_array($value)) {
-                $value = json_encode($value);
-            }
-
-            $text .= "$name: $value\n";
-        }
-
-        return $text;
-    }
-
-
-    /**
      * Read data from php file (that returns the value)
      *
      * @param string $name The name of the data (must be the name of the files where the data are stored)
@@ -148,80 +111,6 @@ class Config implements \ArrayAccess
         }
 
         return $this->items[$name];
-    }
-
-
-    /**
-     * Sets a new value
-     *
-     * $data->set('database', array(
-     *     'host' => 'localhost',
-     *     'database' => 'my-database',
-     *     'user' => 'admin',
-     *     'password' => '1234',
-     * ));
-     *
-     * You can use an array directly to store more than one data:
-     *
-     * $data->set(array(
-     * 	   'database' => array(
-     *         'host' => 'localhost',
-     *         'database' => 'my-database',
-     *         'user' => 'admin',
-     *         'password' => '1234'
-     *     ),
-     *     'database2' => array(
-     *         'host' => 'localhost',
-     *         'database' => 'my-database',
-     *         'user' => 'admin',
-     *         'password' => '1234'
-     *     ),
-     * ));
-     *
-     * @param string $name  The data name or an array with all data name and value
-     * @param array  $value The value of the data
-     *
-     * @return $this
-     */
-    public function set($name, array $value = null)
-    {
-        if (is_array($name)) {
-            $this->items = array_replace($this->items, $name);
-        } else {
-            $this->items[$name] = $value;
-        }
-
-        return $this;
-    }
-
-
-    /**
-     * Deletes a data value
-     *
-     * $data->delete('database');
-     *
-     * @param string $name The name of the data
-     *
-     * @return $this
-     */
-    public function delete($name)
-    {
-        unset($this->items[$name]);
-
-        return $this;
-    }
-
-
-    /**
-     * Checks if a configuration is loaded
-     *
-     * @param string $name The configuration name
-     *
-     * @return boolean True if the parameter exists (even if it's null) or false if not
-     */
-    public function has($name)
-    {
-        return array_key_exists($name, $this->items);
     }
 
 

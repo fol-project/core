@@ -4,11 +4,38 @@
  *
  * Simple class used to store variables (GET, POST, FILES, etc)
  */
-namespace Fol\Http;
+namespace Fol;
 
-class Container implements \ArrayAccess
+trait ContainerTrait
 {
     protected $items = [];
+
+    /**
+     * Magic function to recover the object exported by var_export
+     */
+    public static function __set_state($array)
+    {
+        $instance = new static();
+
+        if ($array['items']) {
+            $instance->setState($array['items']);
+        }
+
+        return $instance;
+    }
+
+
+    /**
+     * Constructor class. You can define the items directly
+     *
+     * @param array $items The items to store
+     */
+    public function __construct(array $items = null)
+    {
+        if ($items !== null) {
+            $this->set($items);
+        }
+    }
 
 
     /**
@@ -88,6 +115,8 @@ class Container implements \ArrayAccess
      *
      * @param string $name  The parameter name. You can define an array with name => value to insert various parameters
      * @param mixed  $value The parameter value.
+     *
+     * @return $this
      */
     public function set($name, $value = null)
     {
@@ -96,6 +125,8 @@ class Container implements \ArrayAccess
         } else {
             $this->items[$name] = $value;
         }
+
+        return $this;
     }
 
 
@@ -106,6 +137,8 @@ class Container implements \ArrayAccess
      * $params->delete() Deletes all parameter
      *
      * @param string $name The parameter name
+     *
+     * @return $this
      */
     public function delete($name = null)
     {
@@ -114,6 +147,8 @@ class Container implements \ArrayAccess
         } else {
             unset($this->items[$name]);
         }
+
+        return $this;
     }
 
 
@@ -127,5 +162,16 @@ class Container implements \ArrayAccess
     public function has($name)
     {
         return array_key_exists($name, $this->items);
+    }
+
+
+    /**
+     * Function executed only to restore a previous saved state
+     *
+     * @param array $items Items to restore
+     */
+    public function setState(array $items)
+    {
+        $this->items = $items;
     }
 }

@@ -6,10 +6,12 @@
  */
 namespace Fol\Http\Sessions;
 
-use Fol\Http\Container;
+use Fol\ContainerTrait;
 
-class Session extends Container
+class Session implements \ArrayAccess
 {
+    use ContainerTrait;
+
     protected $id;
     protected $name;
 

@@ -6,22 +6,13 @@
  */
 namespace Fol\Http;
 
+use Fol\ContainerTrait;
+
 class Cookies implements \ArrayAccess
 {
+    use ContainerTrait;
+
     protected $defaults;
-    protected $items = [];
-
-
-    /**
-     * Magic function to recover the object exported by var_export
-     */
-    public static function __set_state($array)
-    {
-        $cookies = new static();
-        $cookies->setState($array['items']);
-
-        return $cookies;
-    }
 
 
     public function __construct()
@@ -29,23 +20,6 @@ class Cookies implements \ArrayAccess
         $url = parse_url(BASE_URL);
 
         $this->setDefaults(0, (empty($url['path']) ? '/' : $url['path']), $url['host'], ($url['scheme'] === 'https'), false);
-    }
-
-
-    /**
-     * ArrayAcces interface methods
-     */
-    public function offsetExists ($offset) {
-        return $this->has($offset);
-    }
-    public function offsetGet ($offset) {
-        return $this->get($offset);
-    }
-    public function offsetSet ($offset, $value) {
-        $this->set($offset, $value);
-    }
-    public function offsetUnset ($offset) {
-        $this->delete($offset);
     }
 
 
@@ -143,27 +117,6 @@ class Cookies implements \ArrayAccess
 
 
     /**
-     * Gets one or all cookies
-     *
-     * @param string $name   The cookie name
-     *
-     * @return array The cookie data or null
-     */
-    public function get($name = null, $default = null)
-    {
-        if ($name === null) {
-            return $this->items;
-        }
-
-        if (isset($this->items[$name])) {
-            return $this->items[$name];
-        }
-
-        return $default;
-    }
-
-
-    /**
      * Sets a new cookie
      *
      * @param string  $name     The cookie name
@@ -210,36 +163,5 @@ class Cookies implements \ArrayAccess
     public function setDelete($name, $path = null, $domain = null, $secure = null, $httponly = null)
     {
         $this->set($name, '', 1, $path, $domain, $secure, $httponly);
-    }
-
-
-    /**
-     * Deletes the cookie in the object (not in the browser)
-     *
-     * $params->delete('name') Deletes one parameter
-     * $params->delete() Deletes all parameter
-     *
-     * @param string $name The parameter name
-     */
-    public function delete($name = null)
-    {
-        if ($name === null) {
-            $this->items = [];
-        } else {
-            unset($this->items[$name]);
-        }
-    }
-
-
-    /**
-     * Checks if a parameter exists
-     *
-     * @param string $name The parameter name
-     *
-     * @return boolean True if the parameter exists (even if it's null) or false if not
-     */
-    public function has($name)
-    {
-        return array_key_exists($name, $this->items);
     }
 }

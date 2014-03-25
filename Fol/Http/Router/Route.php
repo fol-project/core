@@ -6,13 +6,16 @@
  */
 namespace Fol\Http\Router;
 
-use Fol\Http\Container;
+use Fol\ContainerTrait;
+
 use Fol\Http\Request;
 use Fol\Http\Response;
 use Fol\Http\HttpException;
 
-class Route extends Container
+class Route implements \ArrayAccess
 {
+    use ContainerTrait;
+
     protected $name;
     protected $target;
 

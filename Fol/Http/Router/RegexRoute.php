@@ -6,7 +6,6 @@
  */
 namespace Fol\Http\Router;
 
-use Fol\Http\Container;
 use Fol\Http\Request;
 use Fol\Http\Response;
 use Fol\Http\HttpException;
