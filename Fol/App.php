@@ -14,6 +14,7 @@ abstract class App
     private $path;
     private $namespace;
 
+
     /**
      * Magic function to get registered services.
      *
@@ -28,10 +29,12 @@ abstract class App
         }
     }
 
+
     public function __invoke($request = null)
     {
         throw new \Exception('This app is not callable. The magic method "__invoke" is required to use it.');
     }
+
 
     /**
      * Register a new service
@@ -52,6 +55,7 @@ abstract class App
         $this->services[$name] = $resolver;
     }
 
+
     /**
      * Returns the namespace of the app
      *
@@ -69,6 +73,7 @@ abstract class App
 
         return $this->namespace.(($namespace[0] === '\\') ? '' : '\\').$namespace;
     }
+
 
     /**
      * Returns the absolute path of the app
@@ -88,6 +93,7 @@ abstract class App
         return FileSystem::fixPath($this->path.'/'.implode('/', func_get_args()));
     }
 
+
     /**
      * Returns the absolute url of the public directory of the path
      *
@@ -105,6 +111,7 @@ abstract class App
 
         return $this->publicUrl.FileSystem::fixPath('/'.implode('/', func_get_args()));
     }
+
 
     /**
      * Returns a registered service or a class instance

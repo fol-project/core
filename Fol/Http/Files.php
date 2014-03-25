@@ -18,15 +18,21 @@ class Files extends Input
 
 
     /**
-     * Constructor class. You can define the items directly
+     * Detects global $_FILES array and retuns it
+     * Fix the $files order by converting from default wierd schema
+     * [first][name][second][0], [first][error][second][0]...
+     * to a more straightforward one.
+     * [first][second][0][name], [first][second][0][error]...
      *
-     * @param array $items The items to store
+     * @return array The files values fixed
      */
-    public function __construct (array $items = null)
+    public static function getFromGlobals()
     {
-        if ($items !== null) {
-            $this->items = $this->fixArray($items);
+        if (empty($_FILES)) {
+            return [];
         }
+
+        return self::fixArray($_FILES);
     }
 
 
@@ -40,14 +46,14 @@ class Files extends Input
      *
      * @return array The files values fixed
      */
-    private function fixArray($files)
+    private static function fixArray($files)
     {
         if (isset($files['name'], $files['tmp_name'], $files['size'], $files['type'], $files['error'])) {
-            return $this->moveToRight($files);
+            return self::moveToRight($files);
         }
 
         foreach ($files as &$file) {
-            $file = $this->fixArray($file);
+            $file = self::fixArray($file);
         }
 
         return $files;
@@ -61,7 +67,7 @@ class Files extends Input
      *
      * @return array The files values fixed
      */
-    private function moveToRight($files)
+    private static function moveToRight($files)
     {
         if (!is_array($files['name'])) {
             return $files;
@@ -79,7 +85,7 @@ class Files extends Input
             );
 
             if (is_array($name)) {
-                $reordered = $this->moveToRight($reordered);
+                $reordered = self::moveToRight($reordered);
             }
 
             $results[$index] = $reordered;
@@ -87,6 +93,7 @@ class Files extends Input
 
         return $results;
     }
+
 
 
     /**

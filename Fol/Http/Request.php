@@ -40,7 +40,7 @@ class Request
         $port = !empty($_SERVER['X_FORWARDED_PORT']) ? $_SERVER['X_FORWARDED_PORT'] : (!empty($_SERVER['SERVER_PORT']) ? $_SERVER['SERVER_PORT'] : 80);
         $url = "{$scheme}://".$_SERVER['SERVER_NAME'].":{$port}".$_SERVER['REQUEST_URI'];
 
-        $request = new static($url, Headers::getFromGlobals(), (array) filter_input_array(INPUT_GET), (array) filter_input_array(INPUT_POST), $_FILES, (array) filter_input_array(INPUT_COOKIE));
+        $request = new static($url, Headers::getFromGlobals(), (array) filter_input_array(INPUT_GET), (array) filter_input_array(INPUT_POST), Files::getFromGlobals(), (array) filter_input_array(INPUT_COOKIE));
 
         //Detect request method
         if (($method = $_SERVER['REQUEST_METHOD']) === 'POST' && !empty($_SERVER['X_HTTP_METHOD_OVERRIDE'])) {
