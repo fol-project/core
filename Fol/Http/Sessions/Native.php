@@ -39,7 +39,7 @@ class Native extends Session
 
                 parent::__construct(session_id(), session_name());
                 
-                $this->items = $_SESSION;
+                $this->items =& $_SESSION;
         }
     }
 
@@ -50,7 +50,6 @@ class Native extends Session
     public function __destruct()
     {
         if ((session_status() === PHP_SESSION_ACTIVE) && (session_name() === $this->name) && (session_id() === $this->id)) {
-            $_SESSION = $this->items;
             session_write_close();
         }
     }
