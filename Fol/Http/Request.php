@@ -18,13 +18,14 @@ class Request
     private $format = 'html';
     private $language;
 
+    private $parentRequest;
+
     public $get;
     public $post;
     public $files;
     public $cookies;
     public $route;
     public $headers;
-    public $content;
 
 
     /**
@@ -177,6 +178,50 @@ class Request
 
 
     /**
+     * Sets the parent request
+     *
+     * @param Fol\Http\Request The parent request
+     */
+    public function setParentRequest(Request $request)
+    {
+        $this->request = $request;
+    }
+
+
+    /**
+     * Gets the parent request
+     *
+     * @return Fol\Http\Request The parent request or null
+     */
+    public function getParentRequest()
+    {
+        return $this->request;
+    }
+
+
+    /**
+     * Gets the main request
+     *
+     * @return Fol\Http\Request The parent request or null
+     */
+    public function getMainRequest()
+    {
+        return $this->request ? $this->request->getMainRequest() : $this;
+    }
+
+
+    /**
+     * Check whether the request is main or not
+     *
+     * @return boolean
+     */
+    public function isMainRequest()
+    {
+        return $this->request ? false : true;
+    }
+
+
+    /**
      * Creates a subrequest based in this request
      *
      * @param string $url        The request url or path
@@ -191,10 +236,7 @@ class Request
 
         $request->setIp($this->getIp());
         $request->setLanguage($this->getLanguage());
-
-        if (isset($this->session)) {
-            $request->setSession($this->getSession());
-        }
+        $request->setParentRequest($this);
 
         return $request;
     }
@@ -363,7 +405,7 @@ class Request
      */
     public function setLanguage($language)
     {
-        $this->language = $language;
+        $this->language = strtolower($language);
     }
 
 
@@ -506,6 +548,6 @@ class Request
      */
     public function getSession()
     {
-        return $this->session;
+        return $this->session ?: $this->getMainRequest()->getSession();
     }
 }
