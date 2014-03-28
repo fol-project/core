@@ -6,13 +6,16 @@
  */
 namespace Fol\Http\Router;
 
+use Fol\ContainerTrait;
+
 use Fol\Http\Request;
 use Fol\Http\Response;
 use Fol\Http\HttpException;
 
 class Router
 {
-    private $routes = [];
+    use ContainerTrait;
+
     private $errorController;
     private $routeFactory;
 
@@ -73,20 +76,15 @@ class Router
     {
         if (is_array($name)) {
             foreach ($name as $name => $config) {
-                $this->routes[$name] = $route = $this->routeFactory->createRoute($name, $config, $this->basePath);
+                $this->set($name, $this->routeFactory->createRoute($name, $config, $this->basePath));
             }
 
             return;
         }
 
-        $route = $this->routeFactory->createRoute($name, $config, $this->basePath);
-
-        if ($name === null) {
-            $this->routes[] = $route;
-        } else {
-            $this->routes[$name] = $route;
-        }
+        $this->set($name, $this->routeFactory->createRoute($name, $config, $this->basePath));
     }
+
 
     /**
      * Error factory method
@@ -99,6 +97,7 @@ class Router
         $this->errorController = $this->routeFactory->createErrorRoute($target);
     }
 
+
     /**
      * Match given request url and request method and see if a route has been defined for it
      * If so, return route's target
@@ -106,7 +105,7 @@ class Router
      */
     public function match(Request $request)
     {
-        foreach ($this->routes as $route) {
+        foreach ($this->items as $route) {
             if ($route->match($request)) {
                 return $route;
             }
@@ -114,24 +113,6 @@ class Router
 
         return false;
     }
-
-
-    /**
-     * Search a router by name
-     *
-     * @param string $name The route name
-     *
-     * @return Fol\Http\Route The route found or false
-     */
-    public function getByName($name)
-    {
-        if (!isset($this->routes[$name])) {
-            return false;
-        }
-
-        return $this->routes[$name];
-    }
-
 
 
     /**
@@ -144,11 +125,11 @@ class Router
      */
     public function getUrl ($name, array $params = array())
     {
-        if (!isset($this->routes[$name])) {
+        if (!isset($this->items[$name])) {
             throw new \Exception("No route with the name $name has been found.");
         }
 
-        return $this->routes[$name]->generate($this->defaults, $params);
+        return $this->items[$name]->generate($this->defaults, $params);
     }
 
 
