@@ -69,7 +69,7 @@ class Request
 
         if ($validLanguages === null) {
             $request->setLanguage(isset($userLanguages[0]) ? Headers::getLanguage($userLanguages[0]) : null);
-        } else if (!$userLanguages) {
+        } elseif (!$userLanguages) {
             $request->setLanguage(isset($validLanguages[0]) ? Headers::getLanguage($validLanguages[0]) : null);
         } else {
             $commonLanguages = array_values(array_intersect($userLanguages, $validLanguages));
@@ -202,7 +202,7 @@ class Request
     /**
      * Gets the main request
      *
-     * @return Fol\Http\Request The parent request or null
+     * @return Fol\Http\Request The parent request or itself
      */
     public function getMain()
     {
@@ -217,7 +217,7 @@ class Request
      */
     public function isMain()
     {
-        return $this->parentRequest ? false : true;
+        return empty($this->parentRequest);
     }
 
 
