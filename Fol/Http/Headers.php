@@ -13,7 +13,7 @@ class Headers implements \ArrayAccess
     use ContainerTrait;
 
     /**
-     * list of standard mime-types used
+     * list of standard formats -> mime-types
      */
     public static $formats = [
         'atom' => ['application/atom+xml'],
@@ -36,7 +36,7 @@ class Headers implements \ArrayAccess
     /**
      * List of standard http status codes
      */
-    public static $status = array(
+    public static $status = [
         100 => 'Continue',
         101 => 'Switching Protocols',
         200 => 'OK',
@@ -78,7 +78,150 @@ class Headers implements \ArrayAccess
         503 => 'Service Unavailable',
         504 => 'Gateway Timeout',
         505 => 'HTTP Version Not Supported',
-    );
+    ];
+
+
+    /**
+     * List of standards http languages
+     */
+    public static $languages = [
+        'aa' => 'Afar',
+        'ab' => 'Abkhazian',
+        'af' => 'Afrikaans',
+        'am' => 'Amharic',
+        'ar' => 'Arabic',
+        'as' => 'Assamese',
+        'ay' => 'Aymara',
+        'az' => 'Azerbaijani',
+        'ba' => 'Bashkir',
+        'be' => 'Byelorussian',
+        'bg' => 'Bulgarian',
+        'bh' => 'Bihari',
+        'bi' => 'Bislama',
+        'bn' => 'Bengali',
+        'bo' => 'Tibetan',
+        'br' => 'Breton',
+        'ca' => 'Catalan',
+        'co' => 'Corsican',
+        'cs' => 'Czech',
+        'cy' => 'Welsh',
+        'da' => 'Danish',
+        'de' => 'German',
+        'dz' => 'Bhutani',
+        'el' => 'Greek',
+        'en' => 'English',
+        'eo' => 'Esperanto',
+        'es' => 'Spanish',
+        'et' => 'Estonian',
+        'eu' => 'Basque',
+        'fa' => 'Persian',
+        'fi' => 'Finnish',
+        'fj' => 'Fiji',
+        'fo' => 'Faeroese',
+        'fr' => 'French',
+        'fy' => 'Frisian',
+        'ga' => 'Irish',
+        'gd' => 'Gaelic',
+        'gl' => 'Galician',
+        'gn' => 'Guarani',
+        'gu' => 'Gujarati',
+        'ha' => 'Hausa',
+        'hi' => 'Hindi',
+        'hr' => 'Croatian',
+        'hu' => 'Hungarian',
+        'hy' => 'Armenian',
+        'ia' => 'Interlingua',
+        'ie' => 'Interlingue',
+        'ik' => 'Inupiak',
+        'in' => 'Indonesian',
+        'is' => 'Icelandic',
+        'it' => 'Italian',
+        'iw' => 'Hebrew',
+        'ja' => 'Japanese',
+        'ji' => 'Yiddish',
+        'jw' => 'Javanese',
+        'ka' => 'Georgian',
+        'kk' => 'Kazakh',
+        'kl' => 'Greenlandic',
+        'km' => 'Cambodian',
+        'kn' => 'Kannada',
+        'ko' => 'Korean',
+        'ks' => 'Kashmiri',
+        'ku' => 'Kurdish',
+        'ky' => 'Kirghiz',
+        'la' => 'Latin',
+        'ln' => 'Lingala',
+        'lo' => 'Laothian',
+        'lt' => 'Lithuanian',
+        'lv' => 'Latvian',
+        'mg' => 'Malagasy',
+        'mi' => 'Maori',
+        'mk' => 'Macedonian',
+        'ml' => 'Malayalam',
+        'mn' => 'Mongolian',
+        'mo' => 'Moldavian',
+        'mr' => 'Marathi',
+        'ms' => 'Malay',
+        'mt' => 'Maltese',
+        'my' => 'Burmese',
+        'na' => 'Nauru',
+        'ne' => 'Nepali',
+        'nl' => 'Dutch',
+        'no' => 'Norwegian',
+        'oc' => 'Occitan',
+        'om' => 'Oromo',
+        'or' => 'Oriya',
+        'pa' => 'Punjabi',
+        'pl' => 'Polish',
+        'ps' => 'Pashto',
+        'pt' => 'Portuguese',
+        'qu' => 'Quechua',
+        'rm' => 'Rhaeto-Romance',
+        'rn' => 'Kirundi',
+        'ro' => 'Romanian',
+        'ru' => 'Russian',
+        'rw' => 'Kinyarwanda',
+        'sa' => 'Sanskrit',
+        'sd' => 'Sindhi',
+        'sg' => 'Sangro',
+        'sh' => 'Serbo-Croatian',
+        'si' => 'Singhalese',
+        'sk' => 'Slovak',
+        'sl' => 'Slovenian',
+        'sm' => 'Samoan',
+        'sn' => 'Shona',
+        'so' => 'Somali',
+        'sq' => 'Albanian',
+        'sr' => 'Serbian',
+        'ss' => 'Siswati',
+        'st' => 'Sesotho',
+        'su' => 'Sudanese',
+        'sv' => 'Swedish',
+        'sw' => 'Swahili',
+        'ta' => 'Tamil',
+        'te' => 'Tegulu',
+        'tg' => 'Tajik',
+        'th' => 'Thai',
+        'ti' => 'Tigtinya',
+        'tk' => 'Turkmen',
+        'tl' => 'Tagalog',
+        'tn' => 'Setswana',
+        'to' => 'Tonga',
+        'tr' => 'Turkish',
+        'ts' => 'Tsonga',
+        'tt' => 'Tatar',
+        'tw' => 'Twi',
+        'uk' => 'Ukrainian',
+        'ur' => 'Urdu',
+        'uz' => 'Uzbek',
+        'vi' => 'Vietnamese',
+        'vo' => 'Volapuk',
+        'wo' => 'Wolof',
+        'xh' => 'Xhosa',
+        'yo' => 'Yoruba',
+        'zh' => 'Chinese',
+        'zu' => 'Zulu'
+    ];
 
 
     /**
@@ -113,7 +256,7 @@ class Headers implements \ArrayAccess
     /**
      * Gets the status text related with a status code.
      *
-     * $headers->getStatusText(404) Returns "Not Found"
+     * Headers::getStatusText(404) Returns "Not Found"
      *
      * @param integer $code The Http code
      *
@@ -129,7 +272,7 @@ class Headers implements \ArrayAccess
     /**
      * Gets the format related with a mimetype. Search in self::$formats array.
      *
-     * $headers->getFormat('text/css') Returns "css"
+     * Headers::getFormat('text/css') Returns "css"
      *
      * @param string $mimetype The mimetype to search
      *
@@ -150,7 +293,7 @@ class Headers implements \ArrayAccess
     /**
      * Gets the mimetype related with a format. This is the opposite of getFormat()
      *
-     * $headers->getMimetype('css') Returns "text/css"
+     * Headers::getMimetype('css') Returns "text/css"
      *
      * @param string $format The format to search
      *
@@ -159,6 +302,23 @@ class Headers implements \ArrayAccess
     public static function getMimetype($format)
     {
         return isset(self::$formats[$format][0]) ? self::$formats[$format][0] : false;
+    }
+
+
+    /**
+     * Gets the language code
+     *
+     * Headers::getLanguageCode('gl-es') Returns "gl"
+     *
+     * @param string $language The raw language code
+     *
+     * @return string The simplified language code or false
+     */
+    public static function getLanguage($language)
+    {
+        $language = strtolower(substr($language, 0, 2));
+
+        return isset(self::$languages[$language]) ? self::$languages[$language] : false;
     }
 
 

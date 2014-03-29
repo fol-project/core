@@ -68,13 +68,13 @@ class Request
         $userLanguages = array_keys($request->headers->getParsed('Accept-Language'));
 
         if ($validLanguages === null) {
-            $request->setLanguage(isset($userLanguages[0]) ? $userLanguages[0] : null);
+            $request->setLanguage(isset($userLanguages[0]) ? Headers::getLanguage($userLanguages[0]) : null);
         } else if (!$userLanguages) {
-            $request->setLanguage(isset($validLanguages[0]) ? $validLanguages[0] : null);
+            $request->setLanguage(isset($validLanguages[0]) ? Headers::getLanguage($validLanguages[0]) : null);
         } else {
             $commonLanguages = array_values(array_intersect($userLanguages, $validLanguages));
 
-            $request->setLanguage(isset($commonLanguages[0]) ? $commonLanguages[0] : $validLanguages[0]);
+            $request->setLanguage(Headers::getLanguage(isset($commonLanguages[0]) ? $commonLanguages[0] : $validLanguages[0]));
         }
 
         //Detect request payload
@@ -182,9 +182,9 @@ class Request
      *
      * @param Fol\Http\Request The parent request
      */
-    public function setParentRequest(Request $request)
+    public function setParent(Request $request)
     {
-        $this->request = $request;
+        $this->parentRequest = $request;
     }
 
 
@@ -193,9 +193,9 @@ class Request
      *
      * @return Fol\Http\Request The parent request or null
      */
-    public function getParentRequest()
+    public function getParent()
     {
-        return $this->request;
+        return $this->parentRequest;
     }
 
 
@@ -204,9 +204,9 @@ class Request
      *
      * @return Fol\Http\Request The parent request or null
      */
-    public function getMainRequest()
+    public function getMain()
     {
-        return $this->request ? $this->request->getMainRequest() : $this;
+        return $this->parentRequest ? $this->parentRequest->getMain() : $this;
     }
 
 
@@ -215,9 +215,9 @@ class Request
      *
      * @return boolean
      */
-    public function isMainRequest()
+    public function isMain()
     {
-        return $this->request ? false : true;
+        return $this->parentRequest ? false : true;
     }
 
 

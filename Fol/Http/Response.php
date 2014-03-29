@@ -20,7 +20,6 @@ class Response
     public static function __set_state($array)
     {
         $Response = new static($array['content'], $array['status'][0]);
-        $Response->setContentType($array['content_type']);
 
         $Response->headers = $array['headers'];
         $Response->cookies = $array['cookies'];
@@ -70,14 +69,42 @@ class Response
 
 
     /**
+     * Sets the request format
+     *
+     * @param string $format The new format value
+     */
+    public function setFormat($format)
+    {
+        if ($mimetype = Headers::getMimeType($format)) {
+            $this->headers->set('Content-Type', "$mimetype; charset=UTF-8");
+        }
+    }
+
+
+    /**
+     * Sets the request language
+     *
+     * @param string $language The new language
+     */
+    public function setLanguage($language)
+    {
+        $this->headers->set('Content-Language', $language);
+    }
+
+
+    /**
      * Prepare the Response according a request
      *
      * @param Fol\Http\Request $request The original request
      */
     public function prepare(Request $request)
     {
-        if (!$this->headers->has('Content-Type') && ($format = $request->getFormat()) && ($mimetype = Headers::getMimeType($format))) {
-            $this->headers->set('Content-Type', "$mimetype; charset=UTF-8");
+        if (!$this->headers->has('Content-Type') && ($format = $request->getFormat())) {
+            $this->setFormat($format);
+        }
+
+        if (!$this->headers->has('Content-Language') && ($language = $request->getLanguage())) {
+            $this->setLanguage($language);
         }
 
         if ($this->headers->has('Transfer-Encoding')) {
@@ -85,7 +112,7 @@ class Response
         }
 
         if ($request->getMethod() === 'HEAD') {
-            $this->setContent(null);
+            $this->setContent('');
         }
     }
 
