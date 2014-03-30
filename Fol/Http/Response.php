@@ -40,7 +40,7 @@ class Response
         $this->setContent($content);
         $this->setStatus($status);
 
-        $this->headers = new ResponseHeaders($headers);
+        $this->headers = new Headers($headers);
         $this->cookies = new Cookies();
 
         if (!$this->headers->has('Date')) {
@@ -169,7 +169,7 @@ class Response
      */
     public function setStatus($code, $text = null)
     {
-        $this->status = array($code, ($text ?: ResponseHeaders::getStatusText($code)));
+        $this->status = array($code, ($text ?: Headers::getStatusText($code)));
     }
 
 
@@ -288,6 +288,17 @@ class Response
     public function setExpires($datetime)
     {
         $this->headers->setDateTime('Expires', $datetime);
+    }
+
+
+    /**
+     * Defines an Age header
+     *
+     * @param string/Datetime $datetime
+     */
+    public function setAge($datetime)
+    {
+        $this->headers->setDateTime('Age', $datetime);
     }
 
 

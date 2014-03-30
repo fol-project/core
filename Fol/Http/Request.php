@@ -146,7 +146,7 @@ class Request
         $this->post = new Input($post);
         $this->files = new Files($files);
         $this->cookies = new Input($cookies);
-        $this->headers = new RequestHeaders($headers);
+        $this->headers = new Headers($headers);
 
         foreach (array_keys($this->headers->getParsed('Accept')) as $mimetype) {
             if ($format = Headers::getFormat($mimetype)) {
@@ -549,5 +549,16 @@ class Request
     public function getSession()
     {
         return $this->session ?: $this->getMainRequest()->getSession();
+    }
+
+
+    /**
+     * Defines a If-Modified-Since header
+     *
+     * @param string/Datetime $datetime
+     */
+    public function setIfModifiedSince($datetime)
+    {
+        $this->headers->setDateTime('If-Modified-Since', $datetime);
     }
 }

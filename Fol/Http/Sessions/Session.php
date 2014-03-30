@@ -21,7 +21,8 @@ class Session implements \ArrayAccess
      *
      * @throws an Exception is the session is disabled
      */
-    public function __construct($id = null, $name = null, array $config = array()) {
+    public function __construct($id = null, $name = null, array $config = array())
+    {
         $this->id = $id;
         $this->name = $name;
     }
