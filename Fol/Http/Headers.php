@@ -306,20 +306,26 @@ class Headers implements \ArrayAccess
 
 
     /**
-     * Gets the language code
+     * Gets the language
      *
      * Headers::getLanguageCode('gl-es') Returns "gl"
      *
      * @param string $language The raw language code
+     * @param boolean $returnName Set true to return "Galician" instead "gl" (for example)
      *
      * @return string The simplified language code or false
      */
-    public static function getLanguage($language)
+    public static function getLanguage($language, $returnName = false)
     {
         $language = strtolower(substr($language, 0, 2));
 
-        return isset(self::$languages[$language]) ? self::$languages[$language] : false;
+        if (!isset(self::$languages[$language])) {
+            return false;
+        }
+
+        return $returnName ? self::$languages[$language] : $language;
     }
+
 
 
     /**
