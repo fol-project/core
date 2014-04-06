@@ -41,16 +41,23 @@ trait ContainerTrait
     /**
      * ArrayAcces interface methods
      */
-    public function offsetExists ($offset) {
+    public function offsetExists($offset)
+    {
         return $this->has($offset);
     }
-    public function offsetGet ($offset) {
+
+    public function offsetGet($offset)
+    {
         return $this->get($offset);
     }
-    public function offsetSet ($offset, $value) {
+
+    public function offsetSet($offset, $value)
+    {
         $this->set($offset, $value);
     }
-    public function offsetUnset ($offset) {
+
+    public function offsetUnset($offset)
+    {
         $this->delete($offset);
     }
 

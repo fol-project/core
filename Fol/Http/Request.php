@@ -236,7 +236,7 @@ class Request
 
         $request->setIp($this->getIp());
         $request->setLanguage($this->getLanguage());
-        $request->setParentRequest($this);
+        $request->setParent($this);
 
         return $request;
     }
@@ -416,7 +416,7 @@ class Request
      */
     public function getIp()
     {
-        return $this->id;
+        return $this->ip;
     }
 
 

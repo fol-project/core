@@ -336,7 +336,7 @@ class Headers implements \ArrayAccess
      *
      * @return string The normalized text
      */
-    private static function normalize($string)
+    public static function normalize($string)
     {
         return str_replace(' ', '-', ucwords(strtolower(str_replace('-', ' ', $string))));
     }

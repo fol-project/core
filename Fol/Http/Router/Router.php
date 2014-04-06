@@ -72,7 +72,7 @@ class Router
      * @param string $name   string The route name.
      * @param array  $config Array of optional arguments.
      */
-    public function map ($name, array $config = array())
+    public function map($name, array $config = array())
     {
         if (is_array($name)) {
             foreach ($name as $name => $config) {
@@ -123,7 +123,7 @@ class Router
      *
      * @return string The url to the route
      */
-    public function getUrl ($name, array $params = array())
+    public function getUrl($name, array $params = array())
     {
         if (!isset($this->items[$name])) {
             throw new \Exception("No route with the name $name has been found.");

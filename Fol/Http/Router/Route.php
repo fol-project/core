@@ -35,7 +35,7 @@ class Route implements \ArrayAccess
      * @param string $name   The route name
      * @param array  $config The available options
      */
-    public function __construct ($name, array $config = array())
+    public function __construct($name, array $config = array())
     {
         $this->name = $name;
         $this->target = $config['target'];
@@ -101,7 +101,7 @@ class Route implements \ArrayAccess
      *
      * @return string The url to the route
      */
-    public function generate (array $defaults, array $parameters = array())
+    public function generate(array $defaults, array $parameters = array())
     {
         $scheme = $host = $port = $path = $format = '';
 
@@ -141,7 +141,7 @@ class Route implements \ArrayAccess
      *
      * @return Fol\Http\Request The request instance
      */
-    public function generateRequest (array $defaults, array $parameters = array())
+    public function generateRequest(array $defaults, array $parameters = array())
     {
         $request = new Request($this->generate($defaults, $parameters));
 
