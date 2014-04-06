@@ -37,7 +37,7 @@ abstract class App
      * Register a new service
      *
      * @param string|array  $name     The service name
-     * @param Closure       $resolver A function that returns a service instance
+     * @param \Closure       $resolver A function that returns a service instance
      */
     public function register($name, \Closure $resolver = null)
     {
@@ -75,7 +75,6 @@ abstract class App
     /**
      * Returns the absolute path of the app
      *
-     * @param string $path1, $path2, ... Optional paths to append
      */
     public function getPath()
     {
@@ -94,7 +93,6 @@ abstract class App
     /**
      * Returns the absolute url of the public directory of the path
      *
-     * @param string $path1, $path2, ... Optional paths to append
      */
     public function getPublicUrl()
     {

@@ -7,7 +7,6 @@
 namespace Fol\Http\Router;
 
 use Fol\ContainerTrait;
-
 use Fol\Http\Request;
 use Fol\Http\Response;
 use Fol\Http\HttpException;
@@ -21,7 +20,6 @@ class ErrorRoute implements \ArrayAccess
     /**
      * Constructor
      *
-     * @param array $options One available option: target
      */
     public function __construct(array $config)
     {

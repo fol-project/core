@@ -370,7 +370,7 @@ class Headers implements \ArrayAccess
     /**
      * Stores new headers. You can define an array to store more than one at the same time
      *
-     * @param string|array   $name    The header name
+     * @param string   $name    The header name
      * @param string|boolean $value   The header value
      * @param boolean        $replace True to replace a previous header with the same name
      */
@@ -508,7 +508,7 @@ class Headers implements \ArrayAccess
      * $headers->delete('content-type') Deletes one header
      * $headers->delete() Deletes all headers
      *
-     * @param $name The header name
+     * @param string $name The header name
      */
     public function delete($name = null)
     {

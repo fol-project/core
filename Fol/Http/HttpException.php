@@ -6,8 +6,6 @@
  */
 namespace Fol\Http;
 
-use Fol\Errors;
-
 class HttpException extends \Exception
 {
 
@@ -16,6 +14,7 @@ class HttpException extends \Exception
      *
      * @param string  $message The http message
      * @param integer $code    The http error code. By default is 500
+     * @param \Exception $previous
      */
     public function __construct($message, $code = 500, $previous = null)
     {

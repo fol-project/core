@@ -7,7 +7,6 @@
 namespace Fol\Http\Router;
 
 use Fol\ContainerTrait;
-
 use Fol\Http\Request;
 use Fol\Http\Response;
 use Fol\Http\HttpException;
@@ -26,7 +25,7 @@ class Router
     /**
      * Constructor function. Defines the base url
      *
-     * @param Fol\Router\RouteFactory $routeFactory
+     * @param RouteFactory $routeFactory
      */
     public function __construct(RouteFactory $routeFactory)
     {
@@ -42,7 +41,6 @@ class Router
     /**
      * Change the base path
      *
-     * @param string $basePath
      */
     public function setDefaults($scheme, $host, $port = null)
     {
@@ -136,7 +134,7 @@ class Router
     /**
      * Handle a request
      *
-     * @param Fol\Request $request
+     * @param Request $request
      * @param array $arguments The arguments passed to the controller (after $request and $response instances)
      *
      * @throws Exception If no errorController is defined and an exception is thrown

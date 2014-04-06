@@ -7,7 +7,6 @@
 namespace Fol\Http\Router;
 
 use Fol\ContainerTrait;
-
 use Fol\Http\Request;
 use Fol\Http\Response;
 use Fol\Http\HttpException;
@@ -53,8 +52,8 @@ class Route implements \ArrayAccess
     /**
      * Check the request
      *
-     * @param Fol\Http\Request $request The request to check
-     * @param array $params The params to check
+     * @param Request $request The request to check
+     * @param string[] $params The params to check
      *
      * @return bool
      */
@@ -139,7 +138,7 @@ class Route implements \ArrayAccess
      * @param array $defaults   Defaults values for scheme, host, port, path and format
      * @param array $parameters Optional array of parameters to use in URL
      *
-     * @return Fol\Http\Request The request instance
+     * @return Request The request instance
      */
     public function generateRequest(array $defaults, array $parameters = array())
     {
@@ -164,10 +163,10 @@ class Route implements \ArrayAccess
     /**
      * Execute the route and returns the response object
      *
-     * @param Fol\Http\Request $request The request to send to controller
+     * @param Request $request The request to send to controller
      * @param array $arguments The arguments passed to the controller (after $request and $response instances)
      *
-     * @return Fol\Http\Response
+     * @return Response
      */
     public function execute(Request $request, array $arguments = array())
     {

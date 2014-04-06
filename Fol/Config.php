@@ -96,7 +96,7 @@ class Config implements \ArrayAccess
      * Gets the data. Loads automatically the data if it has not been loaded.
      * If no name is defined, returns all loaded data
      *
-     * @param $name The name of the data
+     * @param string $name The name of the data
      *
      * @return mixed The data or null
      */
@@ -119,7 +119,7 @@ class Config implements \ArrayAccess
      *
      * @param string $name The name of the data
      *
-     * @return this
+     * @return Config
      */
     public function saveFile($name, $configPath = null)
     {

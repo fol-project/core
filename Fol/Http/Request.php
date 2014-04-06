@@ -33,7 +33,7 @@ class Request
      *
      * @param array $validLanguages You can define a list of valid languages, so if an accept language is in the list, returns that language. If doesn't exists, returns the first accept language.
      *
-     * @return Fol\Http\Request The object with the global data
+     * @return Request The object with the global data
      */
     public static function createFromGlobals(array $validLanguages = null)
     {
@@ -99,7 +99,7 @@ class Request
      * @param array  $vars       The parameters of the request (GET, POST, etc)
      * @param array  $headers    The headers of the request
      *
-     * @return Fol\Http\Request The object with the specified data
+     * @return Request The object with the specified data
      */
     public static function create ($url = '', $method = 'GET', array $vars = array(), array $headers = array())
     {
@@ -191,7 +191,7 @@ class Request
     /**
      * Gets the parent request
      *
-     * @return Fol\Http\Request The parent request or null
+     * @return Request The parent request or null
      */
     public function getParent()
     {
@@ -228,7 +228,7 @@ class Request
      * @param string $method     The method of the request (GET, POST, PUT, DELETE)
      * @param array  $vars       The parameters of the request (GET, POST, etc)
      *
-     * @return Fol\Http\Request The object with the specified data
+     * @return Request The object with the specified data
      */
     public function createSubRequest($url = '', $method = 'GET', array $vars = array())
     {

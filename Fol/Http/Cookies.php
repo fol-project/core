@@ -110,7 +110,7 @@ class Cookies implements \ArrayAccess
      *
      * @param string  $name     The cookie name
      * @param string  $value    The cookie value
-     * @param mixed   $expire   The cookie expiration time. It can be a number or a DateTime instance
+     * @param integer   $expire   The cookie expiration time. It can be a number or a DateTime instance
      * @param string  $path     The cookie path
      * @param string  $domain   The cookie domain
      * @param boolean $secure   If the cookie is secure, only will be send in secure connection (https)

@@ -95,7 +95,7 @@ class Response
     /**
      * Prepare the Response according a request
      *
-     * @param Fol\Http\Request $request The original request
+     * @param Request $request The original request
      */
     public function prepare(Request $request)
     {

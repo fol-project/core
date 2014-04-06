@@ -128,7 +128,7 @@ class Errors
     /**
      * Execute all registered callbacks
      *
-     * @param Exception The exception passed to the callbacks
+     * @param Exception \Exception exception passed to the callbacks
      */
     public static function handleException(\Exception $exception)
     {
@@ -148,7 +148,7 @@ class Errors
     /**
      * Returns an exception info as a string according with the ACCESS_INTERFACE
      *
-     * @param Exception $exception
+     * @param \Exception $exception
      *
      * @return string
      */
@@ -174,7 +174,7 @@ class Errors
     /**
      * Returns an exception info as HTML
      *
-     * @param Exception $exception
+     * @param \Exception $exception
      *
      * @return string
      */
@@ -201,7 +201,7 @@ EOT;
     /**
      * Returns an exception info as plain text
      *
-     * @param Exception $exception
+     * @param \Exception $exception
      *
      * @return string
      */
@@ -221,7 +221,7 @@ EOT;
     /**
      * Returns an exception info as array
      *
-     * @param Exception $exception
+     * @param \Exception $exception
      *
      * @return array
      */
@@ -253,7 +253,7 @@ EOT;
     /**
      * Returns an exception info as json
      *
-     * @param Exception $exception
+     * @param \Exception $exception
      *
      * @return string
      */

@@ -58,7 +58,7 @@ class RouteFactory
      * @param array  $config   Route configuration (path, target, etc)
      * @param string $basePath The path to prepend
      *
-     * @return Fol\Http\Router\Route
+     * @return Route
      */
     public function createRoute ($name, array $config, $basePath)
     {
@@ -85,7 +85,7 @@ class RouteFactory
      *
      * @param string $target The error target (ControllerClass::method)
      *
-     * @return Fol\Router\ErrorRoute
+     * @return ErrorRoute
      */
     public function createErrorRoute($target)
     {

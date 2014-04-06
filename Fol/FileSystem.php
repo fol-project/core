@@ -63,7 +63,7 @@ class FileSystem
      * @param string $path     The file path (relative to the current path)
      * @param string $openMode The open mode. See fopen function to get all available modes
      *
-     * @return SplFileObject
+     * @return \SplFileObject
      *
      * @see  SplFileObject class
      */
@@ -78,7 +78,7 @@ class FileSystem
      *
      * @param string $path The file path (relative to the current path)
      *
-     * @return SplFileInfo
+     * @return \SplFileInfo
      *
      * @see  SplFileInfo class
      */
@@ -110,7 +110,7 @@ class FileSystem
     /**
      * Returns a recursive iterator to explore all directories and subdirectories
      *
-     * @return RecursiveIteratorIterator
+     * @return \RecursiveIteratorIterator
      */
     public function getRecursiveIterator($path = null)
     {
@@ -120,7 +120,7 @@ class FileSystem
     /**
      * Returns an iterator to explore the current path
      *
-     * @return FilesystemIterator
+     * @return \FilesystemIterator
      */
     public function getIterator($path = null)
     {
