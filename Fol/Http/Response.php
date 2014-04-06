@@ -108,7 +108,7 @@ class Response
         }
 
         if ($this->headers->has('Transfer-Encoding')) {
-            $this->headers->remove('Content-Length');
+            $this->headers->delete('Content-Length');
         }
 
         if ($request->getMethod() === 'HEAD') {
@@ -208,7 +208,7 @@ class Response
         $this->setContent('');
 
         foreach (array('Allow', 'Content-Encoding', 'Content-Language', 'Content-Length', 'Content-MD5', 'Content-Type', 'Last-Modified') as $name) {
-            $this->headers->remove($header);
+            $this->headers->delete($name);
         }
     }
 

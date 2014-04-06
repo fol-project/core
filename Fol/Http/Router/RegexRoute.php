@@ -145,8 +145,6 @@ class RegexRoute extends Route
      */
     public function generate (array $defaults, array $parameters = array())
     {
-        $replace = [];
-
         $path = $this->path;
 
         foreach ($parameters as $name => $value) {
@@ -170,6 +168,10 @@ class RegexRoute extends Route
 
         if ($port && $port != 80) {
             $url .= ":{$port}";
+        }
+
+        if ($format && $path) {
+            $path .= ".{$format}";
         }
 
         $url .= $path;

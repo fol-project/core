@@ -30,10 +30,7 @@ abstract class App
     }
 
 
-    public function __invoke($request = null)
-    {
-        throw new \Exception('This app is not callable. The magic method "__invoke" is required to use it.');
-    }
+    abstract public function __invoke($request = null);
 
 
     /**

@@ -548,7 +548,7 @@ class Request
      */
     public function getSession()
     {
-        return $this->session ?: $this->getMainRequest()->getSession();
+        return $this->session ?: $this->getMain()->getSession();
     }
 
 

@@ -69,7 +69,7 @@ class FileSystem
      */
     public function openFile($path = null, $openMode = 'r')
     {
-        return new \SplFileObject($this->getPath($path));
+        return new \SplFileObject($this->getPath($path), $openMode);
     }
 
 

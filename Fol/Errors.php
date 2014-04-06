@@ -259,6 +259,6 @@ EOT;
      */
     public static function getJsonException(\Exception $exception, $deep = 0)
     {
-        return json_encode(self::getArrayException($exception), JSON_PRETTY_PRINT|JSON_NUMERIC_CHECK|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
+        return json_encode(self::getArrayException($exception, $deep), JSON_PRETTY_PRINT|JSON_NUMERIC_CHECK|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
     }
 }

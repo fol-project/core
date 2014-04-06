@@ -19,7 +19,6 @@ class Native extends Session
         switch (session_status()) {
             case PHP_SESSION_DISABLED:
                 throw new \Exception('Session are disabled');
-                break;
 
             case PHP_SESSION_NONE:
                 if ($name !== null) {

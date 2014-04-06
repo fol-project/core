@@ -10,6 +10,7 @@ class Templates
 {
     private $sections = [];
     private $wrapper;
+    private $functions = [];
 
     protected $renders = [];
     protected $templates = [];
@@ -279,7 +280,7 @@ class Templates
     /**
      * Simple method to detect if a value must be iterabled or not
      */
-    private static function isIterable($data)
+    protected static function isIterable($data)
     {
         if (is_array($data)) {
             return (empty($data) || isset($data[0]));

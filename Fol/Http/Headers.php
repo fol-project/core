@@ -442,7 +442,7 @@ class Headers implements \ArrayAccess
      */
     public function getParsed($name)
     {
-        return static::toArray($this->get($name));
+        return self::toArray($this->get($name));
     }
 
 
@@ -454,7 +454,7 @@ class Headers implements \ArrayAccess
      */
     public function setParsed($name, array $value)
     {
-        $this->set($name, static::toString($value));
+        $this->set($name, self::toString($value));
     }
 
 
