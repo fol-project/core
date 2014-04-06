@@ -66,26 +66,26 @@ class RegexRoute extends Route
                     $filters[$name] = '([^/]+)';
                 }
             }
-        }
 
-        $this->regex = $this->path;
+            $this->regex = $this->path;
 
-        if ($filters) {
-            $keys = $vals = [];
+            if ($filters) {
+                $keys = $vals = [];
 
-            foreach ($filters as $name => $filter) {
-                if ($filter[0] !== '(') {
-                    throw new \Exception("Filter for parameter '$name' must start with '('.");
-                } elseif (substr($filter, -1) === '?') {
-                    $keys[] = "/{:$name}";
-                    $vals[] = "(/(?P<$name>".substr($filter, 1, -1).')?';
-                } else {
-                    $keys[] = "{:$name}";
-                    $vals[] = "(?P<$name>".substr($filter, 1);
+                foreach ($filters as $name => $filter) {
+                    if ($filter[0] !== '(') {
+                        throw new \Exception("Filter for parameter '$name' must start with '('.");
+                    } elseif (substr($filter, -1) === '?') {
+                        $keys[] = "/{:$name}";
+                        $vals[] = "(/(?P<$name>".substr($filter, 1, -1).')?';
+                    } else {
+                        $keys[] = "{:$name}";
+                        $vals[] = "(?P<$name>".substr($filter, 1);
+                    }
                 }
-            }
 
-            $this->regex = str_replace($keys, $vals, $this->regex);
+                $this->regex = str_replace($keys, $vals, $this->regex);
+            }
         }
 
         $this->path = str_replace(['(', ')', '?', '*'], '', $this->path);

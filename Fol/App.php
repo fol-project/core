@@ -36,8 +36,8 @@ abstract class App
     /**
      * Register a new service
      *
-     * @param string|array  $name     The service name
-     * @param \Closure       $resolver A function that returns a service instance
+     * @param string|int|array $name     The service name
+     * @param \Closure         $resolver A function that returns a service instance
      */
     public function register($name, \Closure $resolver = null)
     {
@@ -117,24 +117,24 @@ abstract class App
      */
     public function get($name)
     {
-        if (empty($this->services[$name])) {
-            $className = $this->getNamespace($name);
-
-            if (!class_exists($className)) {
-                throw new \Exception("'$name' does not exist and it not registered");
-            }
-
+        if (isset($this->services[$name])) {
             if (func_num_args() === 1) {
-                return new $className;
+                return $this->services[$name]();
             }
 
-            return (new \ReflectionClass($className))->newInstanceArgs(array_slice(func_get_args(), 1));
+            return call_user_func_array($this->services[$name], array_slice(func_get_args(), 1));
+        }
+
+        $className = $this->getNamespace($name);
+
+        if (!class_exists($className)) {
+            throw new \Exception("'$name' does not exist and it not registered");
         }
 
         if (func_num_args() === 1) {
-            return $this->services[$name]();
+            return new $className;
         }
 
-        return call_user_func_array($this->services[$name], array_slice(func_get_args(), 1));
+        return (new \ReflectionClass($className))->newInstanceArgs(array_slice(func_get_args(), 1));
     }
 }

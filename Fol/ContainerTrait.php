@@ -125,11 +125,11 @@ trait ContainerTrait
      *
      * @return $this
      */
-    public function set($name, $value = null)
+    public function set($name = null, $value = null)
     {
         if (is_array($name)) {
             $this->items = array_replace($this->items, $name);
-        } else {
+        } elseif ($name) {
             $this->items[$name] = $value;
         }
 

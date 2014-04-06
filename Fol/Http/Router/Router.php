@@ -70,8 +70,8 @@ class Router
      * Route factory method
      * Maps the given URL to the given target.
      *
-     * @param string|array $name   The route name.
-     * @param array        $config Array of optional arguments.
+     * @param string|int|array $name   The route name.
+     * @param array            $config Array of optional arguments.
      */
     public function map($name, array $config = array())
     {
