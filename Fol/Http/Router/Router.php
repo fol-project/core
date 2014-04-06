@@ -41,6 +41,9 @@ class Router
     /**
      * Change the base path
      *
+     * @param string  $scheme
+     * @param string  $host
+     * @param integer $port
      */
     public function setDefaults($scheme, $host, $port = null)
     {

@@ -53,7 +53,7 @@ class Route implements \ArrayAccess
      * Check the request
      *
      * @param Request $request The request to check
-     * @param string[] $params The params to check
+     * @param array   $params The params to check
      *
      * @return bool
      */

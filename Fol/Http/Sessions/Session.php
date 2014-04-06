@@ -19,9 +19,9 @@ class Session implements \ArrayAccess
     /**
      * Construct and loads the session data
      *
-     * @throws an Exception is the session is disabled
      * @param string $id
      * @param string $name
+     * @param array  $config
      */
     public function __construct($id = null, $name = null, array $config = array())
     {

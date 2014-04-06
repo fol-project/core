@@ -119,7 +119,7 @@ class Config implements \ArrayAccess
      *
      * @param string $name The name of the data
      *
-     * @return Config
+     * @return $this
      */
     public function saveFile($name, $configPath = null)
     {

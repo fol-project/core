@@ -128,7 +128,7 @@ class Errors
     /**
      * Execute all registered callbacks
      *
-     * @param Exception \Exception exception passed to the callbacks
+     * @param \Exception $exception exception passed to the callbacks
      */
     public static function handleException(\Exception $exception)
     {

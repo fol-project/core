@@ -20,6 +20,7 @@ class ErrorRoute implements \ArrayAccess
     /**
      * Constructor
      *
+     * @param array $config One available configuration: target
      */
     public function __construct(array $config)
     {

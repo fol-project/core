@@ -108,13 +108,13 @@ class Cookies implements \ArrayAccess
     /**
      * Sets a new cookie
      *
-     * @param string  $name     The cookie name
-     * @param string  $value    The cookie value
-     * @param integer   $expire   The cookie expiration time. It can be a number or a DateTime instance
-     * @param string  $path     The cookie path
-     * @param string  $domain   The cookie domain
-     * @param boolean $secure   If the cookie is secure, only will be send in secure connection (https)
-     * @param boolean $httponly If is set true, the cookie only will be accessed via http, so javascript cannot access to it.
+     * @param string                   $name     The cookie name
+     * @param string                   $value    The cookie value
+     * @param integer|string|\Datetime $expire   The cookie expiration time. It can be a number or a DateTime instance
+     * @param string                   $path     The cookie path
+     * @param string                   $domain   The cookie domain
+     * @param boolean                  $secure   If the cookie is secure, only will be send in secure connection (https)
+     * @param boolean                  $httponly If is set true, the cookie only will be accessed via http, so javascript cannot access to it.
      */
     public function set($name, $value = null, $expire = null, $path = null, $domain = null, $secure = null, $httponly = null)
     {
