@@ -228,7 +228,7 @@ class Templates
     protected function renderFile($_file, array $_data = null)
     {
         if ($_data !== null) {
-            extract((array) $_data, EXTR_SKIP);
+            extract($_data, EXTR_SKIP);
         }
 
         unset($_data);

@@ -167,7 +167,7 @@ class Terminal
             cli_set_process_title("FOL process: $command");
         }
 
-        $status = null;
+        $status = $errbuf = null;
 
         while (($buffer = fgets($pipes[1])) !== null || ($errbuf = fgets($pipes[2])) !== null) {
             $status = proc_get_status($process);

@@ -36,8 +36,8 @@ abstract class App
     /**
      * Register a new service
      *
-     * @param string  $name     The service name
-     * @param Closure $resolver A function that returns a service instance
+     * @param string|array  $name     The service name
+     * @param Closure       $resolver A function that returns a service instance
      */
     public function register($name, \Closure $resolver = null)
     {
@@ -119,7 +119,7 @@ abstract class App
      */
     public function get($name)
     {
-        if (!isset($this->services[$name])) {
+        if (empty($this->services[$name])) {
             $className = $this->getNamespace($name);
 
             if (!class_exists($className)) {

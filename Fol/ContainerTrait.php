@@ -120,8 +120,8 @@ trait ContainerTrait
     /**
      * Sets one parameter or various new parameters
      *
-     * @param string $name  The parameter name. You can define an array with name => value to insert various parameters
-     * @param mixed  $value The parameter value.
+     * @param string|array $name  The parameter name. You can define an array with name => value to insert various parameters
+     * @param mixed        $value The parameter value.
      *
      * @return $this
      */

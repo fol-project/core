@@ -54,19 +54,19 @@ class RegexRoute extends Route
             }
         }
 
-        preg_match_all("/\{:(.*?)(:(.*?))?\}/", $this->path, $matches, PREG_SET_ORDER);
+        if (preg_match_all("/\{:(.*?)(:(.*?))?\}/", $this->path, $matches, PREG_SET_ORDER)) {
+            $filters = [];
 
-        $filters = [];
+            foreach ($matches as $match) {
+                $whole = $match[0];
+                $name = $match[1];
 
-        foreach ($matches as $match) {
-            $whole = $match[0];
-            $name = $match[1];
-
-            if (isset($match[3])) {
-                $filters[$name] = ($match[3] === '?') ? '([^/]+)?' : $match[3];
-                $this->path = str_replace($whole, "{:$name}", $this->path);
-            } else {
-                $filters[$name] = '([^/]+)';
+                if (isset($match[3])) {
+                    $filters[$name] = ($match[3] === '?') ? '([^/]+)?' : $match[3];
+                    $this->path = str_replace($whole, "{:$name}", $this->path);
+                } else {
+                    $filters[$name] = '([^/]+)';
+                }
             }
         }
 

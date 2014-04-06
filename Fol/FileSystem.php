@@ -280,7 +280,7 @@ class FileSystem
     /**
      * Private function to save a file from an url
      *
-     * @param array  $original Original file url
+     * @param string $original Original file url
      * @param string $name     Name used for the new file
      *
      * @return string The created filename or false if there was an error
@@ -289,7 +289,7 @@ class FileSystem
     {
         if ($name === null) {
             $name = pathinfo($original, PATHINFO_BASENAME);
-        } elseif (!pathinfo($name, PATHINFO_EXTENSION) && ($extension = pathinfo(parse_url($original, PHP_URL_PATH), PATHINFO_EXTENSION))) {
+        } elseif (!pathinfo($name, PATHINFO_EXTENSION) && ($originalPath = parse_url($original, PHP_URL_PATH)) && ($extension = pathinfo($originalPath, PATHINFO_EXTENSION))) {
             $name .= ".$extension";
         }
 

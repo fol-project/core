@@ -370,9 +370,9 @@ class Headers implements \ArrayAccess
     /**
      * Stores new headers. You can define an array to store more than one at the same time
      *
-     * @param string  $name    The header name
-     * @param string  $value   The header value
-     * @param boolean $replace True to replace a previous header with the same name
+     * @param string|array   $name    The header name
+     * @param string|boolean $value   The header value
+     * @param boolean        $replace True to replace a previous header with the same name
      */
     public function set($name, $value = true, $replace = true)
     {
@@ -484,10 +484,10 @@ class Headers implements \ArrayAccess
     /**
      * Define a header using a Datetime object and returns it
      *
-     * @param string          $name     The header name
-     * @param Datetime|string $datetime The datetime object. You can define also an string so the Datetime object will be created
+     * @param string           $name     The header name
+     * @param \Datetime|string $datetime The datetime object. You can define also an string so the Datetime object will be created
      *
-     * @return Datetime The datetime object
+     * @return \Datetime The datetime object
      */
     public function setDateTime($name, $datetime = null)
     {
