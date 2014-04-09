@@ -51,18 +51,7 @@ class Request
         $request->setMethod($method ?: 'GET');
 
         //Detect client ip
-        foreach (['HTTP_CLIENT_IP', 'HTTP_X_FORWARDED_FOR', 'REMOTE_ADDR'] as $key) {
-            if (empty($_SERVER[$key])) {
-                continue;
-            }
-
-            foreach (explode(',', $_SERVER[$key]) as $ip) {
-                if (!empty($ip) && $ip !== 'unknown') {
-                    $request->setIp($ip);
-                    break 2;
-                }
-            }
-        }
+        $request->setIp(Headers::getIpFromGlobals());
 
         //Detect client language
         $userLanguages = array_keys($request->headers->getParsed('Accept-Language'));
@@ -292,25 +281,19 @@ class Request
     /**
      * Returns the full url
      *
-     * @param boolean $absolute True to return the absolute url (with scheme and host)
-     * @param boolean $format   True to add the format of the request at the end of the path
-     * @param boolean $query    True to add the query to the url (false by default)
+     * @param boolean $query True to add the query to the url (false by default)
      *
      * @return string The current url
      */
-    public function getUrl($absolute = true, $format = true, $query = false)
+    public function getUrl($query = false)
     {
-        $url = '';
+        $url = $this->getScheme().'://'.$this->getHost();
 
-        if ($absolute === true) {
-            $url .= $this->getScheme().'://'.$this->getHost();
-
-            if ($this->getPort() !== 80) {
-                $url .= ':'.$this->getPort();
-            }
+        if ($this->getPort() !== 80) {
+            $url .= ':'.$this->getPort();
         }
 
-        $url .= $this->getPath($format);
+        $url .= $this->getPath(true);
 
         if (($query === true) && ($query = $this->get->get())) {
             $url .= '?'.http_build_query($query);
@@ -351,17 +334,7 @@ class Request
             $path = preg_replace('/'.$match[0].'$/', '', $path);
         }
 
-        if (empty($path)) {
-            $path = '/';
-        } elseif ($path !== '/' && (substr($path, -1) === '/')) {
-            $path = substr($path, 0, -1);
-        }
-
-        if ($path[0] !== '/') {
-            $path = "/$path";
-        }
-
-        $this->path = $path;
+        $this->path = preg_replace('|^/?(.*)/?$|U', '/$1', $path);
     }
 
 
@@ -555,7 +528,7 @@ class Request
     /**
      * Defines a If-Modified-Since header
      *
-     * @param string/Datetime $datetime
+     * @param string|Datetime $datetime
      */
     public function setIfModifiedSince($datetime)
     {

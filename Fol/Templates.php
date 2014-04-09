@@ -20,7 +20,7 @@ class Templates
     /**
      * Constructor method. You must define the base folder where the templates file are stored
      *
-     * @param string/array $paths The base folder paths
+     * @param string|array $paths The base folder paths
      */
     public function __construct($paths)
     {
@@ -30,7 +30,7 @@ class Templates
     /**
      * Adds new base folders where search for the templates files
      *
-     * @param string/array $paths   The base folder paths
+     * @param string|array $paths   The base folder paths
      * @param boolean      $prepend If it's true, insert the new folder at begining of the array.
      */
     public function addFolders($paths, $prepend = true)
@@ -51,7 +51,7 @@ class Templates
      *
      * @param string     $name       The template name (for example: menu)
      * @param string     $file       The file path of the template (for example: menu.php)
-     * @param bool/array $data       Set null or an array to save the rendered file
+     * @param bool|array $data       Set null or an array to save the rendered file
      * @param bool       $failSilent Set true to do not throw the exception if the template does not exists
      */
     public function register($name, $file = null, $data = false, $failSilent = false)
@@ -244,9 +244,9 @@ class Templates
     /**
      * Render a template and return its content
      *
-     * @param string                           $template   The template name or file path
-     * @param array/Iterator/IteratorAggregate $data       An optional array of object extending Iterator/IteratorAggregate data used in the template. If the array is numerical or the object extends Iterator/IteratorAggregate interfaces, renders the template once for each item
-     * @param bool                             $failSilent Set true to do not throw the exception if the template does not exists
+     * @param string                             $template   The template name or file path
+     * @param array|\Iterator|\IteratorAggregate $data       An optional array of object extending Iterator|IteratorAggregate data used in the template. If the array is numerical or the object extends Iterator/IteratorAggregate interfaces, renders the template once for each item
+     * @param bool                               $failSilent Set true to do not throw the exception if the template does not exists
      *
      * @return string The template rendered
      */

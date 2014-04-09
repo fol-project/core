@@ -89,7 +89,7 @@ class Session implements \ArrayAccess
     /**
      * Set a new flash value
      *
-     * @param string/array $name  The variable name or an array of variables
+     * @param string|array $name  The variable name or an array of variables
      * @param string       $value The value of the variable
      */
     public function setFlash($name, $value = null)

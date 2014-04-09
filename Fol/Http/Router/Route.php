@@ -163,8 +163,8 @@ class Route implements \ArrayAccess
     /**
      * Execute the route and returns the response object
      *
-     * @param Request $request The request to send to controller
-     * @param array $arguments The arguments passed to the controller (after $request and $response instances)
+     * @param Request $request   The request to send to controller
+     * @param array   $arguments The arguments passed to the controller (after $request and $response instances)
      *
      * @return Response
      */

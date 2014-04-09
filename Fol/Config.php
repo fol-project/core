@@ -18,7 +18,7 @@ class Config implements \ArrayAccess
     /**
      * Constructor method. You must define the base folder where the config files are stored
      *
-     * @param string/array $paths The base folder paths
+     * @param string|array $paths The base folder paths
      */
     public function __construct($paths)
     {
@@ -48,7 +48,7 @@ class Config implements \ArrayAccess
     /**
      * Adds new base folders where search for the config files
      *
-     * @param string/array $paths   The base folder paths
+     * @param string|array $paths   The base folder paths
      * @param boolean      $prepend If it's true, insert the new folder at begining of the array.
      *
      * @return $this

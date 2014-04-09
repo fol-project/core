@@ -75,6 +75,7 @@ abstract class App
     /**
      * Returns the absolute path of the app
      *
+     * @return string
      */
     public function getPath()
     {
@@ -93,6 +94,7 @@ abstract class App
     /**
      * Returns the absolute url of the public directory of the path
      *
+     * @return string
      */
     public function getPublicUrl()
     {

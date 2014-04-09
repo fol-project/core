@@ -254,6 +254,28 @@ class Headers implements \ArrayAccess
 
 
     /**
+     * Detects the client ip from $_SERVER array
+     *
+     * @return string|null
+     */
+    public static function getIpFromGlobals()
+    {
+        foreach (['HTTP_CLIENT_IP', 'HTTP_X_FORWARDED_FOR', 'REMOTE_ADDR'] as $key) {
+            if (empty($_SERVER[$key])) {
+                continue;
+            }
+
+            foreach (explode(',', $_SERVER[$key]) as $ip) {
+                if (!empty($ip) && $ip !== 'unknown') {
+                    return $ip;
+                }
+            }
+        }
+    }
+
+
+
+    /**
      * Gets the status text related with a status code.
      *
      * Headers::getStatusText(404) Returns "Not Found"

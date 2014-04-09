@@ -272,7 +272,7 @@ class Response
     /**
      * Defines a Last-Modified header
      *
-     * @param string/Datetime $datetime
+     * @param string|Datetime $datetime
      */
     public function setLastModified($datetime)
     {
@@ -283,7 +283,7 @@ class Response
     /**
      * Defines a Expire header
      *
-     * @param string/Datetime $datetime
+     * @param string|Datetime $datetime
      */
     public function setExpires($datetime)
     {
@@ -294,7 +294,7 @@ class Response
     /**
      * Defines an Age header
      *
-     * @param string/Datetime $datetime
+     * @param string|Datetime $datetime
      */
     public function setAge($datetime)
     {
