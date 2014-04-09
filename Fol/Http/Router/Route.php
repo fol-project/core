@@ -82,7 +82,7 @@ class Route implements \ArrayAccess
     /**
      * Check if the route match with the request
      *
-     * @param Fol\Http\Request The request to check
+     * @param Request The request to check
      *
      * @return bool
      */

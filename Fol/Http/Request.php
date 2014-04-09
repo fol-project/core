@@ -169,7 +169,7 @@ class Request
     /**
      * Sets the parent request
      *
-     * @param Fol\Http\Request The parent request
+     * @param Request The parent request
      */
     public function setParent(Request $request)
     {
@@ -191,7 +191,7 @@ class Request
     /**
      * Gets the main request
      *
-     * @return Fol\Http\Request The parent request or itself
+     * @return Request The parent request or itself
      */
     public function getMain()
     {
@@ -506,7 +506,7 @@ class Request
     /**
      * Set the request session
      *
-     * @param Fol\Http\Sessions\Session A session instance
+     * @param Sessions\Session A session instance
      */
     public function setSession(Sessions\Session $session)
     {
@@ -517,7 +517,7 @@ class Request
     /**
      * Returns the session
      *
-     * @return Fol\Http\Sessions\Session The session instance or null
+     * @return Sessions\Session The session instance or null
      */
     public function getSession()
     {
@@ -528,7 +528,7 @@ class Request
     /**
      * Defines a If-Modified-Since header
      *
-     * @param string|Datetime $datetime
+     * @param string|\Datetime $datetime
      */
     public function setIfModifiedSince($datetime)
     {

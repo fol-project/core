@@ -51,14 +51,14 @@ class Templates
      *
      * @param string     $name       The template name (for example: menu)
      * @param string     $file       The file path of the template (for example: menu.php)
-     * @param bool|array $data       Set null or an array to save the rendered file
+     * @param null|array $data       Set null or an array to save the rendered file
      * @param bool       $failSilent Set true to do not throw the exception if the template does not exists
      */
-    public function register($name, $file = null, $data = false, $failSilent = false)
+    public function register($name, $file = null, $data = null, $failSilent = false)
     {
         $this->templates[$name] = isset($this->templates[$file]) ? $this->templates[$file] : $file;
 
-        if ($data !== false) {
+        if ($data !== null) {
             $this->saveRender($name, $this->render($name, $data, $failSilent));
         }
     }

@@ -12,7 +12,7 @@ class Native extends Session
     /**
      * Constructs and load the session data
      *
-     * @throws an Exception is the session is disabled
+     * @throws \Exception if the session is disabled
      */
     public function __construct($id = null, $name = null, array $config = array())
     {

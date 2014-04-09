@@ -70,8 +70,8 @@ class Router
      * Route factory method
      * Maps the given URL to the given target.
      *
-     * @param string|int|array $name   The route name.
-     * @param array            $config Array of optional arguments.
+     * @param mixed $name   The route name.
+     * @param array $config Array of optional arguments.
      */
     public function map($name, array $config = array())
     {
@@ -88,9 +88,8 @@ class Router
 
 
     /**
-     * Error factory method
-     *
      * Define the router used on errors
+     *
      * @param mixed $target The target of this route
      */
     public function setError($target)
@@ -101,8 +100,10 @@ class Router
 
     /**
      * Match given request url and request method and see if a route has been defined for it
-     * If so, return route's target
-     * If called multiple times
+     *
+     * @param Request $request
+     *
+     * @return Route|false
      */
     public function match(Request $request)
     {
@@ -140,9 +141,9 @@ class Router
      * @param Request $request
      * @param array $arguments The arguments passed to the controller (after $request and $response instances)
      *
-     * @throws Exception If no errorController is defined and an exception is thrown
+     * @throws HttpException If no errorController is defined and an exception is thrown
      *
-     * @return Fol\Response
+     * @return Response
      */
     public function handle(Request $request, array $arguments = array())
     {

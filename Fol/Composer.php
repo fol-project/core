@@ -14,7 +14,7 @@ class Composer
     /**
      * Script executed by composer on post-create-project-cmd event
      *
-     * @param Composer\Script\Event $event The event object
+     * @param \Composer\Script\Event $event The event object
      */
     public static function postCreateProject(Event $event)
     {
@@ -24,7 +24,7 @@ class Composer
     /**
      * Define the constants (for example the constants ENVIRONMET and BASE_URL)
      *
-     * @param Composer\IO\IOInterface $io The IO class to ask the questions
+     * @param \Composer\IO\IOInterface $io The IO class to ask the questions
      */
     private static function setConstants(IOInterface $io)
     {
