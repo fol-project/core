@@ -30,7 +30,7 @@ abstract class App
     }
 
 
-    abstract public function __invoke($request = null);
+    abstract public function __invoke(Http\Request $request);
 
 
     /**

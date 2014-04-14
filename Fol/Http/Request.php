@@ -334,7 +334,7 @@ class Request
             $path = preg_replace('/'.$match[0].'$/', '', $path);
         }
 
-        $this->path = preg_replace('|^/?(.*)/?$|U', '/$1', $path);
+        $this->path = preg_replace('|^/?([^/].*)?/?$|U', '/$1', $path);
     }
 
 
