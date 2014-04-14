@@ -7,12 +7,46 @@
 
 namespace Fol;
 
+use Fol\Terminal;
+use Fol\Http\Request;
+
 abstract class App
 {
     private $services;
     private $publicUrl;
     private $path;
     private $namespace;
+
+
+    /**
+     * Run the app (from an http context)
+     */
+    public static function run ()
+    {
+        $app = new static();
+        $request = Request::createFromGlobals();
+
+        $app($request)->send();
+    }
+
+
+    /**
+     * Run the app (from cli context)
+     *
+     * @param array $options The argv options
+     */
+    public static function runCli (array $options)
+    {
+        $options = Terminal::parseOptions($options, [
+            1 => [Terminal::OPTION_SET, ['GET', 'POST', 'HEAD', 'PUT', 'DELETE']],
+            2 => Terminal::OPTION_REQUIRED
+        ]);
+
+        $request = Request::create($options[2], $options[1], $options);
+
+        $app = new static();
+        $app($request)->send();
+    }
 
 
     /**
