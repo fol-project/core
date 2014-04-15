@@ -145,6 +145,10 @@ class RegexRoute extends Route
     {
         $path = $this->path;
 
+        if ($this->wildcard && !isset($parameters[$this->wildcard])) {
+            $parameters[$this->wildcard] = '';
+        }
+
         foreach ($parameters as $name => $value) {
             if (strpos($path, "{:$name}") !== false) {
                 $path = str_replace("{:$name}", rawurlencode($value), $path);
