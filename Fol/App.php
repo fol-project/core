@@ -31,25 +31,6 @@ abstract class App
 
 
     /**
-     * Run the app (from cli context)
-     *
-     * @param array $options The argv options
-     */
-    public static function runCli (array $options)
-    {
-        $options = Terminal::parseOptions($options, [
-            1 => [Terminal::OPTION_SET, ['GET', 'POST', 'HEAD', 'PUT', 'DELETE']],
-            2 => Terminal::OPTION_REQUIRED
-        ]);
-
-        $request = Request::create($options[2], $options[1], $options);
-
-        $app = new static();
-        $app($request)->send();
-    }
-
-
-    /**
      * Magic function to get registered services.
      *
      * @param string $name The name of the service

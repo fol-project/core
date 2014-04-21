@@ -8,17 +8,53 @@ namespace Fol;
 
 class Terminal
 {
-    const OPTION_BOOLEAN = 1;
-    const OPTION_REQUIRED = 2;
-    const OPTION_OPTIONAL = 3;
-    const OPTION_SET = 4;
+    /**
+     * Executes a method from cli
+     * 
+     * @param array $options The arguments passed
+     * 
+     * @return mixed The value returned by the method
+     */
+    public static function executeFromCli (array $options)
+    {
+        //Removes file argument
+        array_shift($options);
+
+        $callable = [get_called_class(), array_shift($options)];
+
+        if (!method_exists($callable[0], $callable[1])) {
+            throw new \Exception("The method {$callable[0]}::{$callable[1]} does not exists");
+        }
+
+        $method = new \ReflectionMethod($callable[0], $callable[1]);
+        $options = self::parseOptions($options);
+        $parameters = [];
+
+        foreach ($method->getParameters() as $parameter) {
+            $name = $parameter->getName();
+
+            if (isset($options[$name])) {
+                $parameters[] = $options[$name];
+                unset($options[$name]);
+            } elseif (isset($options[0])) {
+                $parameters[] = array_shift($options);
+            } elseif ($parameter->isOptional()) {
+                $parameters[] = $parameter->getDefaultValue();
+            } else {
+                throw new \Exception("The parameter '{$name}' is required");
+            }
+        }
+
+        $parameters[] = $options;
+
+        echo call_user_func_array($callable, $parameters);
+    }
 
 
     /**
      * Parses an array of arguments ($argv) and returns the validated arguments
      *
-     * @param array $options   The array of options to parse
-     * @param array $validator An optional array to validate data. Each key (option name) must have one of the OPTION_* constant
+     * @param array $options  The array of options to parse
      *
      * @return array An array with two subarrays: the numeric options and named options
      */
@@ -59,54 +95,6 @@ class Terminal
             $vars[$k] = $option;
         }
 
-        if ($validator !== null) {
-            foreach ($validator as $name => $property) {
-                $default = null;
-
-                if (is_array($property)) {
-                    list($property, $default) = $property;
-                }
-
-                switch ($property) {
-                    case self::OPTION_BOOLEAN:
-                        if (isset($vars[$name])) {
-                            if ($vars[$name] !== true) {
-                                throw new \Exception("The option '$name' does not accept values");
-                            }
-                        } else {
-                            $vars[$name] = (bool)$default;
-                        }
-                        break;
-
-                    case self::OPTION_REQUIRED:
-                        if (empty($vars[$name])) {
-                            throw new \Exception("The option '$name' is required");
-                        }
-                        break;
-
-                    case self::OPTION_OPTIONAL:
-                        if (isset($vars[$name])) {
-                            if ($vars[$name] === true) {
-                                throw new \Exception("The option '$name' must have a value");
-                            }
-                        } else {
-                            $vars[$name] = $default;
-                        }
-                        break;
-
-                    case self::OPTION_SET:
-                        if (!isset($vars[$name]) || !in_array($vars[$name], $default)) {
-                            throw new \Exception("The option '$name' must be one of these values: ".implode(', ', $default));
-                        }
-
-                        break;
-
-                    default:
-                        throw new \Exception("Option property for '$name' is not valid ($property)");
-                }
-            }
-        }
-
         return $vars;
     }
 
@@ -144,14 +132,14 @@ class Terminal
      * Executes a command.
      *
      * @param string   $command  The command to execute
-     * @param string   $cwd      Working directory passed to proc_open
      * @param callable $callback Function executed for each update in the strout
+     * @param string   $cwd      Working directory passed to proc_open
      * @param array    $env      Environment variables passed to proc_open
      * @param array    $options  Options passed to proc_open
      *
-     * @return int The exit code of the proccess
+     * @return int The exit code of the process
      */
-    public static function execute($command, $cwd = null, callable $callback = null, array $env = null, array $options = null)
+    public static function execute($command, callable $callback = null, $cwd = null, array $env = null, array $options = null)
     {
         $descriptorspec = [
             0 => ['pipe', 'r'],
@@ -163,6 +151,27 @@ class Terminal
             throw new \Exception("Error executing the command '$command'");
         }
 
+        return self::executeProcess($process, $pipes, function ($stdout, $stderr, $status) {
+            if (!empty($stdout)) {
+                echo $stdout;
+            } else if (!empty($stderr)) {
+                echo "ERR: $stderr";
+            }
+        });
+    }
+
+
+    /**
+     * Executes a process.
+     *
+     * @param process  $process  The process resource to execute
+     * @param array    $pipes    Array with the file pointers to the process pipes
+     * @param callable $callback Function executed for each update in the strout
+     *
+     * @return integer The exit code of the process
+     */
+    public static function executeProcess($process, array &$pipes, callable $callback)
+    {
         if (function_exists('cli_set_process_title')) {
             cli_set_process_title("FOL process: $command");
         }
@@ -172,15 +181,7 @@ class Terminal
         while (($buffer = fgets($pipes[1])) !== null || ($errbuf = fgets($pipes[2])) !== null) {
             $status = proc_get_status($process);
 
-            if ($callback !== null) {
-                $callback($buffer, $errbuf, $status);
-            } elseif (strlen($buffer)) {
-                echo $buffer;
-            } elseif (strlen($errbuf)) {
-                echo "ERR: " . $errbuf;
-            }
-
-            if ($status['running'] === false) {
+            if (($callback($buffer, $errbuf, $status) !== false) || ($status['running'] === false)) {
                 break;
             }
         }
@@ -189,7 +190,7 @@ class Terminal
             fclose($pipe);
         }
 
-        if ($status && $status['running'] === true) {
+        if (!empty($status['running'])) {
             proc_terminate($process);
 
             return proc_close($process);
