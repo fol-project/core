@@ -6,12 +6,13 @@
  */
 namespace Fol\Http\Sessions;
 
+use Fol\Http\Request;
+use Fol\Http\Response;
 use Fol\Http\Cookies;
 
 class Native extends Session
 {
     protected $cookie;
-    protected $removeCookie;
 
 
     /**
@@ -25,13 +26,8 @@ class Native extends Session
             $this->name = session_name();
         }
 
-        if ($this->id === null) {
-            if ($request->cookies->has($this->name)) {
-                $this->id = $request->cookies->get($this->name);
-            } else {
-                session_name($this->name);
-                $this->id = session_id();
-            }
+        if (!$this->id && $request->cookies->get($this->name)) {
+            $this->id = $request->cookies->get($this->name);
         }
 
         $this->start();
@@ -54,15 +50,19 @@ class Native extends Session
         }
 
         session_name($this->name);
-        session_id($this->id);
+
+        if ($this->id) {
+            session_id($this->id);
+        }
 
         ini_set('session.use_only_cookies', 1);
 
         $this->cookie = Cookies::getDefaultsFromGlobals(['httponly' => true]);
 
-        session_set_cookie_params($this->cookie['lifetime'], $this->cookie['path'], $this->cookie['domain'], $this->cookie['secure'], $this->cookie['httponly']);
+        session_set_cookie_params($this->cookie['expire'], $this->cookie['path'], $this->cookie['domain'], $this->cookie['secure'], $this->cookie['httponly']);
         session_start();
 
+        $this->id = session_id();
         $this->items =& $_SESSION;
     }
 
@@ -72,7 +72,7 @@ class Native extends Session
      */
     public function prepare(Response $response)
     {
-        if ($this->removeCookie === true) {
+        if (!$this->id) {
             $response->cookies->setDelete($this->name, $this->cookie['path'], $this->cookie['domain'], $this->cookie['secure'], $this->cookie['httponly']);
         }
     }
@@ -121,7 +121,7 @@ class Native extends Session
     {
         $this->delete();
 
-        $this->removeCookie = true;
+        $this->id = null;
 
         session_destroy();
     }

@@ -510,7 +510,13 @@ class Request
      */
     public function setSession(Sessions\Session $session)
     {
-        $this->session = $session;
+        if ($this->isMain()) {
+            $session->setRequest($this);
+
+            $this->session = $session;
+        } else {
+            $this->getMain()->setSession($session);
+        }
     }
 
 
@@ -521,7 +527,11 @@ class Request
      */
     public function getSession()
     {
-        return $this->session ?: $this->getMain()->getSession();
+        if ($this->isMain()) {
+            return $this->session;
+        }
+
+        return $this->getMain()->getSession();
     }
 
 

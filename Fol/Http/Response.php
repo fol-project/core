@@ -114,6 +114,10 @@ class Response
         if ($request->getMethod() === 'HEAD') {
             $this->setContent('');
         }
+
+        if (($session = $request->getSession())) {
+            $session->prepare($this);
+        }
     }
 
 
