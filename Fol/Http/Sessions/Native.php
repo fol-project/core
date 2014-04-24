@@ -6,39 +6,74 @@
  */
 namespace Fol\Http\Sessions;
 
+use Fol\Http\Cookies;
+
 class Native extends Session
 {
+    protected $cookie;
+    protected $removeCookie;
+
 
     /**
-     * Constructs and load the session data
-     *
+     * {@inheritDoc}
+     * 
      * @throws \Exception if the session is disabled
      */
-    public function __construct($id = null, $name = null, array $config = array())
+    public function setRequest(Request $request)
     {
-        switch (session_status()) {
-            case PHP_SESSION_DISABLED:
-                throw new \Exception('Session are disabled');
+        if ($this->name === null) {
+            $this->name = session_name();
+        }
 
-            case PHP_SESSION_NONE:
-                if ($name !== null) {
-                    session_name($name);
-                }
+        if ($this->id === null) {
+            if ($request->cookies->has($this->name)) {
+                $this->id = $request->cookies->get($this->name);
+            } else {
+                session_name($this->name);
+                $this->id = session_id();
+            }
+        }
 
-                if ($id !== null) {
-                    session_id($id);
-                }
+        $this->start();
+    }
 
-                ini_set('session.use_only_cookies', 1);
 
-                $config += ['httponly' => true, 'path' => parse_url(BASE_URL, PHP_URL_PATH) ?: '/'] + session_get_cookie_params();
+    /**
+     * Starts the session
+     * 
+     * @throws \RuntimeException if session cannot be started
+     */
+    protected function start()
+    {
+        if (session_status() === PHP_SESSION_DISABLED) {
+            throw new \RuntimeException('Native sessions are disabled');
+        }
 
-                session_set_cookie_params($config['lifetime'], $config['path'], $config['domain'], $config['secure'], $config['httponly']);
-                session_start();
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            throw new \RuntimeException('Failed to start the session: already started by PHP.');
+        }
 
-                parent::__construct(session_id(), session_name());
-                
-                $this->items =& $_SESSION;
+        session_name($this->name);
+        session_id($this->id);
+
+        ini_set('session.use_only_cookies', 1);
+
+        $this->cookie = Cookies::getDefaultsFromGlobals(['httponly' => true]);
+
+        session_set_cookie_params($this->cookie['lifetime'], $this->cookie['path'], $this->cookie['domain'], $this->cookie['secure'], $this->cookie['httponly']);
+        session_start();
+
+        $this->items =& $_SESSION;
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    public function prepare(Response $response)
+    {
+        if ($this->removeCookie === true) {
+            $response->cookies->setDelete($this->name, $this->cookie['path'], $this->cookie['domain'], $this->cookie['secure'], $this->cookie['httponly']);
         }
     }
 
@@ -85,6 +120,8 @@ class Native extends Session
     public function destroy()
     {
         $this->delete();
+
+        $this->removeCookie = true;
 
         session_destroy();
     }

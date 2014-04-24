@@ -15,11 +15,37 @@ class Cookies implements \ArrayAccess
     protected $defaults;
 
 
-    public function __construct()
+    /**
+     * Returns the default values for the cookies using global values
+     * 
+     * @param array $defaults User custom defaults
+     * 
+     * @return array
+     */
+    public static function getDefaultsFromGlobals(array $defaults = array())
     {
         $url = parse_url(BASE_URL);
 
-        $this->setDefaults(0, (empty($url['path']) ? '/' : $url['path']), $url['host'], ($url['scheme'] === 'https'), false);
+        return $defaults + [
+            'expire' => 0,
+            'path' => (empty($url['path']) ? '/' : $url['path']),
+            'domain' => $url['host'],
+            'secure' => ($url['scheme'] === 'https'),
+            'httponly' => false
+        ];
+    }
+
+
+    /**
+     * Constructor
+     * 
+     * @param array $defaults Defaults values for the cookies
+     */
+    public function __construct(array $defaults = array())
+    {
+        $defaults = static::getDefaultsFromGlobals($defaults);
+
+        $this->setDefaults($defaults['expire'], $defaults['path'], $defaults['domain'], $defaults['secure'], $defaults['httponly']);
     }
 
 

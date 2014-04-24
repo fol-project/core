@@ -7,13 +7,16 @@
 namespace Fol\Http\Sessions;
 
 use Fol\ContainerTrait;
+use Fol\Http\Request;
+use Fol\Http\Response;
 
-class Session implements \ArrayAccess
+class Session implements \ArrayAccess, SessionInterface
 {
     use ContainerTrait;
 
     protected $id;
     protected $name;
+    protected $request;
 
 
     /**
@@ -21,13 +24,27 @@ class Session implements \ArrayAccess
      *
      * @param string $id
      * @param string $name
-     * @param array  $config
      */
-    public function __construct($id = null, $name = null, array $config = array())
+    public function __construct($id = null, $name = null)
     {
         $this->id = $id;
         $this->name = $name;
     }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    public function setRequest(Request $request)
+    {
+        $this->request = $request;
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    public function prepare(Response $response) {}
 
 
     /**
@@ -58,6 +75,9 @@ class Session implements \ArrayAccess
 
     /**
      * Regenerate the id for the current session
+     * 
+     * @param boolean $destroy  Set true to destroy the current data
+     * @param integer $lifetime The new session duration
      */
     public function regenerate($destroy = false, $lifetime = null) {}
 
