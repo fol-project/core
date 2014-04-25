@@ -30,9 +30,9 @@ class ErrorRoute implements \ArrayAccess
     /**
      * Execute the route
      *
-     * @param \Fol\Http\HttpException
-     * @param \Fol\Http\Request
-     * @param array $arguments The arguments passed to the controller (after $request and $response instances)
+     * @param HttpException $exception
+     * @param Request       $request
+     * @param array         $arguments The arguments passed to the controller (after $request and $response instances)
      */
     public function execute(HttpException $exception, Request $request, array $arguments = array())
     {

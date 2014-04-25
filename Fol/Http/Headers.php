@@ -392,17 +392,17 @@ class Headers implements \ArrayAccess
     /**
      * Stores new headers. You can define an array to store more than one at the same time
      *
-     * @param string|int|array $name    The header name
-     * @param string|boolean   $value   The header value
-     * @param boolean          $replace True to replace a previous header with the same name
+     * @param string|array   $name    The header name
+     * @param string|boolean $value   The header value
+     * @param boolean        $replace True to replace a previous header with the same name
      */
     public function set($name, $value = true, $replace = true)
     {
         if (is_array($name)) {
             $replace = (bool) $value;
 
-            foreach ($name as $name => $value) {
-                $this->set($name, $value, $replace);
+            foreach ($name as $n => $value) {
+                $this->set($n, $value, $replace);
             }
 
             return;
@@ -487,7 +487,7 @@ class Headers implements \ArrayAccess
      * @param string $name    The header name
      * @param string $default The default value if the header does not exists
      *
-     * @return Datetime The value in a datetime object or false
+     * @return \Datetime The value in a datetime object or false
      */
     public function getDateTime($name, $default = 'now')
     {

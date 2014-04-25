@@ -28,6 +28,7 @@ class FileSystem
         return $path;
     }
 
+
     /**
      * Constructor
      *
@@ -40,10 +41,11 @@ class FileSystem
         }
     }
 
+
     /**
      * Returns the current path or a relative path
      *
-     * @param string $path The relative path. If it's not defined, returns the current path
+     * @param null|string $path The relative path. If it's not defined, returns the current path
      *
      * @return string
      */
@@ -60,8 +62,8 @@ class FileSystem
     /**
      * Open a file and returns a splFileObject instance.
      *
-     * @param string $path     The file path (relative to the current path)
-     * @param string $openMode The open mode. See fopen function to get all available modes
+     * @param null|string $path     The file path (relative to the current path)
+     * @param string      $openMode The open mode. See fopen function to get all available modes
      *
      * @return \SplFileObject
      *
@@ -76,7 +78,7 @@ class FileSystem
     /**
      * Returns a SplFileInfo instance to access to the file info
      *
-     * @param string $path The file path (relative to the current path)
+     * @param null|string $path The file path (relative to the current path)
      *
      * @return \SplFileInfo
      *
@@ -107,8 +109,11 @@ class FileSystem
         return $this;
     }
 
+
     /**
      * Returns a recursive iterator to explore all directories and subdirectories
+     * 
+     * @param null|string $path Relative path with the new position
      *
      * @return \RecursiveIteratorIterator
      */
@@ -117,8 +122,11 @@ class FileSystem
         return new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($this->getPath($path), \FilesystemIterator::SKIP_DOTS), \RecursiveIteratorIterator::CHILD_FIRST);
     }
 
+
     /**
      * Returns an iterator to explore the current path
+     * 
+     * @param null|string $path Relative path with the new position
      *
      * @return \FilesystemIterator
      */
@@ -127,9 +135,12 @@ class FileSystem
         return new \FilesystemIterator($this->getPath($path));
     }
 
+
     /**
      * Remove all files and subdirectories of the current path
      *
+     * @param null|string $path Relative path with the new position
+     * 
      * @return $this
      */
     public function clear($path = null)
@@ -149,12 +160,15 @@ class FileSystem
         return $this;
     }
 
+
     /**
      * Remove the current path and all its content
+     * 
+     * @param null|string $path Relative path with the new position
      *
      * @return $this
      */
-    public function remove($path)
+    public function remove($path = null)
     {
         if ($this->getInfo($path)->isDir()) {
             $this->clear($path);
@@ -167,16 +181,17 @@ class FileSystem
         return $this;
     }
 
+
     /**
      * Creates a new directory
      *
-     * @param string  $name      Directory name. If it's not specified, use the current defined path
-     * @param integer $mode      Permissions assigned to the directory
-     * @param boolean $recursive Creates the directory in recursive mode or not. True by default
+     * @param null|string  $name      Directory name. If it's not specified, use the current defined path
+     * @param integer      $mode      Permissions assigned to the directory
+     * @param boolean      $recursive Creates the directory in recursive mode or not. True by default
      *
      * @return $this
      */
-    public function mkdir($name = '', $mode = 0777, $recursive = true)
+    public function mkdir($name = null, $mode = 0777, $recursive = true)
     {
         $path = $this->getPath($name);
 
@@ -191,8 +206,8 @@ class FileSystem
     /**
      * Copy a file
      *
-     * @param mixed  $original The original file. It can be an array (from $_FILES), an url, a base64 file or a path
-     * @param string $name     The name of the created file. If it's not specified, use the same name of the original file. For base64 files, this parameter is required.
+     * @param mixed       $original The original file. It can be an array (from $_FILES), an url, a base64 file or a path
+     * @param null|string $name     The name of the created file. If it's not specified, use the same name of the original file. For base64 files, this parameter is required.
      *
      * @return string The created filename or false if there was an error
      */
@@ -219,15 +234,16 @@ class FileSystem
         return $name;
     }
 
+
     /**
      * Private function to save a file from upload ($_FILES)
      *
-     * @param array  $original Original file data
-     * @param string $name     Name used for the new file
+     * @param array       $original Original file data
+     * @param null|string $name     Name used for the new file
      *
      * @return string The created filename or false if there was an error
      */
-    private function saveFromUpload(array $original, $name)
+    private function saveFromUpload(array $original, $name = null)
     {
         if (empty($input['tmp_name']) || !empty($input['error'])) {
             return false;
@@ -247,6 +263,7 @@ class FileSystem
 
         return $name;
     }
+
 
     /**
      * Private function to save a file from base64 string
@@ -277,15 +294,16 @@ class FileSystem
         return $name;
     }
 
+
     /**
      * Private function to save a file from an url
      *
-     * @param string $original Original file url
-     * @param string $name     Name used for the new file
+     * @param string      $original Original file url
+     * @param null|string $name     Name used for the new file
      *
      * @return string The created filename or false if there was an error
      */
-    private function saveFromUrl($original, $name)
+    private function saveFromUrl($original, $name = null)
     {
         if ($name === null) {
             $name = pathinfo($original, PATHINFO_BASENAME);

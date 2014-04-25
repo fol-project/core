@@ -93,6 +93,64 @@ class Route implements \ArrayAccess
 
 
     /**
+     * Get the route properties
+     * 
+     * @param array $properties The properties to return
+     * @param array $defaults   The default values used in undefined properties
+     * 
+     * @return array
+     */
+    protected function getProperties (array $properties, array $defaults)
+    {
+        $values = [];
+
+        foreach ($properties as $name) {
+            if ($this->$name) {
+                $values[$name] = is_array($this->$name) ? $this->$name[0] : $this->$name;
+            } else if (isset($defaults[$name])) {
+                $values[$name] = $defaults[$name];
+            } else {
+                $values[$name] = '';
+            }
+        }
+
+        return $values;
+    }
+
+
+    /**
+     * Generate an url using the properties values
+     * 
+     * @param array $properties The url properties
+     * @param array $parameters GET parameters
+     * 
+     * @return string
+     */
+    protected static function buildUrl(array $properties, array $parameters)
+    {
+        $url = $properties['scheme'].'://'.$properties['host'];
+
+        if ($properties['port'] && $properties['port'] != 80) {
+            $url .= ':'.$properties['port'];
+        }
+
+        if ($properties['path']) {
+            $url .= $properties['path'];
+
+            if ($properties['format']) {
+                $url .= .'.'.$properties['format'];
+            }
+        }
+
+        if ($parameters) {
+            $url .= '?'.http_build_query($parameters);
+        }
+
+        return $url;
+    }
+
+
+    /**
      * Reverse the route
      *
      * @param array $defaults   Defaults values for scheme, host, port, path and format
@@ -102,33 +160,9 @@ class Route implements \ArrayAccess
      */
     public function generate(array $defaults, array $parameters = array())
     {
-        $scheme = $host = $port = $path = $format = '';
+        $values = $this->getProperties(['scheme', 'host', 'port', 'path', 'format'], $defaults);
 
-        foreach (['scheme', 'host', 'port', 'path', 'format'] as $name) {
-            if ($this->$name) {
-                $$name = is_array($this->$name) ? $this->$name[0] : $this->$name;
-            } else if (isset($defaults[$name])) {
-                $$name = $defaults[$name];
-            }
-        }
-
-        $url = "{$scheme}://{$host}";
-
-        if ($port && $port != 80) {
-            $url .= ":{$port}";
-        }
-
-        if ($format && $path) {
-            $path .= ".{$format}";
-        }
-
-        $url .= $path;
-
-        if ($parameters) {
-            $url .= '?'.http_build_query($parameters);
-        }
-
-        return $url;
+        return static::buildUrl($values, $parameters);
     }
 
 

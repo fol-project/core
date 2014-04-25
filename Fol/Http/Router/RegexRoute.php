@@ -32,10 +32,6 @@ class RegexRoute extends Route
      */
     private function setRegex()
     {
-        if (!preg_match('/[\*\:]/', $this->path)) {
-            return;
-        }
-
         if (substr($this->path, -2) === '/*') {
             $this->path = substr($this->path, 0, -2).'(/{:__wildcard__:(.*)})?';
             $this->wildcard = '__wildcard__';
@@ -51,6 +47,8 @@ class RegexRoute extends Route
                 $this->path = substr($this->path, 0, $pos)."/{:{$this->wildcard}:(.+)}";
             }
         }
+
+        unset($matches);
 
         if (preg_match_all("/\{:(.*?)(:(.*?))?\}/", $this->path, $matches, PREG_SET_ORDER)) {
             $filters = [];
@@ -113,7 +111,7 @@ class RegexRoute extends Route
     /**
      * Check if the route match with the request
      *
-     * @param Request The request to check
+     * @param Request $request The request to check
      *
      * @return bool
      */
@@ -156,32 +154,9 @@ class RegexRoute extends Route
             }
         }
 
-        $scheme = $host = $port = $format = '';
+        $values = $this->getProperties(['scheme', 'host', 'port', 'format'], $defaults);
+        $values['path'] = $path;
 
-        foreach (['scheme', 'host', 'port', 'format'] as $name) {
-            if ($this->$name) {
-                $$name = is_array($this->$name) ? $this->$name[0] : $this->$name;
-            } else if (isset($defaults[$name])) {
-                $$name = $defaults[$name];
-            }
-        }
-
-        $url = "{$scheme}://{$host}";
-
-        if ($port && $port != 80) {
-            $url .= ":{$port}";
-        }
-
-        if ($format && $path) {
-            $path .= ".{$format}";
-        }
-
-        $url .= $path;
-
-        if ($parameters) {
-            $url .= '?'.http_build_query($parameters);
-        }
-
-        return $url;
+        return static::buildUrl($values, $parameters);
     }
 }

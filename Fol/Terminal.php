@@ -164,7 +164,7 @@ class Terminal
     /**
      * Executes a process.
      *
-     * @param process  $process  The process resource to execute
+     * @param resource $process  The process resource to execute
      * @param array    $pipes    Array with the file pointers to the process pipes
      * @param callable $callback Function executed for each update in the strout
      *
@@ -173,7 +173,7 @@ class Terminal
     public static function executeProcess($process, array &$pipes, callable $callback)
     {
         if (function_exists('cli_set_process_title')) {
-            cli_set_process_title("FOL process: $command");
+            cli_set_process_title("FOL process");
         }
 
         $status = $errbuf = null;

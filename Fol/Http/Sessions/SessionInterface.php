@@ -13,6 +13,8 @@ interface SessionInterface
 	 * Sets the request used to manage this session
 	 * 
 	 * @param Request $request
+	 * 
+	 * @return void
 	 */
 	public function setRequest(Request $request);
 
@@ -21,6 +23,8 @@ interface SessionInterface
 	 * Prepare the session before send the response
 	 * 
 	 * @param Response $response
+	 * 
+	 * @return void
 	 */
 	public function prepare(Response $response);
 }

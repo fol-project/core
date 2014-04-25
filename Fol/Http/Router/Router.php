@@ -120,8 +120,8 @@ class Router
     /**
      * Reverse route a named route
      *
-     * @param string $name     The name of the route to reverse route.
-     * @param array  $params   Optional array of parameters to use in URL
+     * @param string $name   The name of the route to reverse route.
+     * @param array  $params Optional array of parameters to use in URL
      *
      * @return string The url to the route
      */
@@ -139,7 +139,7 @@ class Router
      * Handle a request
      *
      * @param Request $request
-     * @param array $arguments The arguments passed to the controller (after $request and $response instances)
+     * @param array   $arguments The arguments passed to the controller (after $request and $response instances)
      *
      * @throws HttpException If no errorController is defined and an exception is thrown
      *

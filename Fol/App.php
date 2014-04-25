@@ -7,7 +7,6 @@
 
 namespace Fol;
 
-use Fol\Terminal;
 use Fol\Http\Request;
 
 abstract class App
@@ -16,18 +15,6 @@ abstract class App
     private $publicUrl;
     private $path;
     private $namespace;
-
-
-    /**
-     * Run the app (from an http context)
-     */
-    public static function run ()
-    {
-        $app = new static();
-        $request = Request::createFromGlobals();
-
-        $app($request)->send();
-    }
 
 
     /**

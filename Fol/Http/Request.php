@@ -169,7 +169,7 @@ class Request
     /**
      * Sets the parent request
      *
-     * @param Request The parent request
+     * @param Request $request The parent request
      */
     public function setParent(Request $request)
     {

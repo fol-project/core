@@ -36,7 +36,7 @@ class Errors
     /**
      * Register a logger class
      *
-     * @param Psr\Log\LoggerInterface $logger
+     * @param LoggerInterface $logger
      */
     public static function setLogger(LoggerInterface $logger)
     {
@@ -60,7 +60,7 @@ class Errors
     /**
      * Removes the last handler and returns it
      *
-     * @return callable or null
+     * @return callable|null
      */
     public static function popHandler()
     {
@@ -202,6 +202,7 @@ EOT;
      * Returns an exception info as plain text
      *
      * @param \Exception $exception
+     * @param integer    $deep
      *
      * @return string
      */
@@ -222,6 +223,7 @@ EOT;
      * Returns an exception info as array
      *
      * @param \Exception $exception
+     * @param integer    $deep
      *
      * @return array
      */
@@ -254,6 +256,7 @@ EOT;
      * Returns an exception info as json
      *
      * @param \Exception $exception
+     * @param integer    $deep
      *
      * @return string
      */
