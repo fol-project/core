@@ -17,6 +17,8 @@ class Session implements \ArrayAccess, SessionInterface
     protected $id;
     protected $name;
     protected $request;
+    protected $userResolver;
+    protected $user;
 
 
     /**
@@ -29,6 +31,37 @@ class Session implements \ArrayAccess, SessionInterface
     {
         $this->id = $id;
         $this->name = $name;
+    }
+
+
+    /**
+     * Defines how the user will be called
+     * 
+     * @param callable $userCal
+     */
+    public function defineUser(\Closure $resolver)
+    {
+        $this->userResolver = $resolver;
+    }
+
+
+    /**
+     * Resolves the user resolver and returns thee result
+     * 
+     * @return mixed
+     */
+    public function getUser()
+    {
+        if (!isset($this->user)) {
+            if (!$this->userResolver) {
+                throw new \Exception("You must specify a function to get the user");
+            }
+
+            $resolver = $this->userResolver;
+            $this->user = $resolver($this, $this->request);
+        }
+
+        return $this->user;
     }
 
 
@@ -70,6 +103,17 @@ class Session implements \ArrayAccess, SessionInterface
     public function getId()
     {
         return $this->id;
+    }
+
+
+    /**
+     * Get the session name
+     *
+     * @return string The name
+     */
+    public function getName()
+    {
+        return $this->name;
     }
 
 

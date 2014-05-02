@@ -138,7 +138,7 @@ class Route implements \ArrayAccess
             $url .= $properties['path'];
 
             if ($properties['format']) {
-                $url .= .'.'.$properties['format'];
+                $url .= '.'.$properties['format'];
             }
         }
 

@@ -2,12 +2,13 @@
 /**
  * Fol\App
  *
- * This is the abstract class that all apps must extend. Provides the basic functionality parameters (paths, urls, namespace, parent, etc)
+ * This is the abstract class that all apps must extend.
  */
 
 namespace Fol;
 
 use Fol\Http\Request;
+use Fol\Http\Response;
 
 abstract class App
 {
@@ -15,6 +16,7 @@ abstract class App
     private $publicUrl;
     private $path;
     private $namespace;
+    private $currentRequest;
 
 
     /**
@@ -32,20 +34,58 @@ abstract class App
     }
 
 
-    abstract public function __invoke(Http\Request $request);
+    /**
+     * User custom request execution
+     * 
+     * @param Http\Request $request
+     * 
+     * @return Http\Response
+     */
+    abstract protected function handleRequest(Http\Request $request);
 
 
     /**
-     * Register a new service
+     * Magic function to execute a request in this app
+     * 
+     * @param Http\Request $request
+     * 
+     * @return Http\Response
+     */
+    public function __invoke (Request $request)
+    {
+        $previousRequest = $this->currentRequest;
+        $this->currentRequest = $request;
+
+        $response = $this->handleRequest($request);
+
+        $this->currentRequest = $previousRequest;
+
+        return $response;
+    }
+
+
+    /**
+     * Returns the current request
+     * 
+     * @return null|Http\Request
+     */
+    public function getCurrentRequest()
+    {
+        return $this->currentRequest;
+    }
+
+
+    /**
+     * Define new services
      *
      * @param string|int|array $name     The service name
      * @param \Closure         $resolver A function that returns a service instance
      */
-    public function register($name, \Closure $resolver = null)
+    public function define($name, \Closure $resolver = null)
     {
         if (is_array($name)) {
             foreach ($name as $name => $resolver) {
-                $this->register($name, $resolver);
+                $this->define($name, $resolver);
             }
 
             return;
