@@ -151,13 +151,17 @@ class Terminal
             throw new \Exception("Error executing the command '$command'");
         }
 
-        return self::executeProcess($process, $pipes, function ($stdout, $stderr, $status) {
-            if (!empty($stdout)) {
-                echo $stdout;
-            } else if (!empty($stderr)) {
-                echo "ERR: $stderr";
-            }
-        });
+        if ($callback === null) {
+            $callback = function ($stdout, $stderr, $status) {
+                if (!empty($stdout)) {
+                    echo $stdout;
+                } else if (!empty($stderr)) {
+                    echo "ERR: $stderr";
+                }
+            };
+        }
+
+        return self::executeProcess($process, $pipes, $callback);
     }
 
 
@@ -181,7 +185,7 @@ class Terminal
         while (($buffer = fgets($pipes[1])) !== null || ($errbuf = fgets($pipes[2])) !== null) {
             $status = proc_get_status($process);
 
-            if (($callback($buffer, $errbuf, $status) !== false) || ($status['running'] === false)) {
+            if (($callback($buffer, $errbuf, $status) === false) || ($status['running'] === false)) {
                 break;
             }
         }
