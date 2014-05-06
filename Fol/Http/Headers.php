@@ -224,56 +224,6 @@ class Headers implements \ArrayAccess
     ];
 
 
-    /**
-     * Detects http header from a $_SERVER array
-     *
-     * @return array The headers found
-     */
-    public static function getFromGlobals()
-    {
-        $headers = [];
-
-        foreach ($_SERVER as $name => $value) {
-            if (strpos($name, 'HTTP_') === 0) {
-                $headers[str_replace('_', '-', substr($name, 5))] = $value;
-                continue;
-            }
-
-            if (in_array($name, array('CONTENT_LENGTH', 'CONTENT_MD5', 'CONTENT_TYPE'))) {
-                $headers[str_replace('_', '-', $name)] = $value;
-            }
-        }
-
-        if (isset($_SERVER['PHP_AUTH_USER'])) {
-            $pass = isset($_SERVER['PHP_AUTH_PW']) ? $_SERVER['PHP_AUTH_PW'] : '';
-            $headers['AUTHORIZATION'] = 'Basic '.base64_encode($_SERVER['PHP_AUTH_USER'].':'.$pass);
-        }
-
-        return $headers;
-    }
-
-
-    /**
-     * Detects the client ip from $_SERVER array
-     *
-     * @return string|null
-     */
-    public static function getIpFromGlobals()
-    {
-        foreach (['HTTP_CLIENT_IP', 'HTTP_X_FORWARDED_FOR', 'REMOTE_ADDR'] as $key) {
-            if (empty($_SERVER[$key])) {
-                continue;
-            }
-
-            foreach (explode(',', $_SERVER[$key]) as $ip) {
-                if (!empty($ip) && $ip !== 'unknown') {
-                    return $ip;
-                }
-            }
-        }
-    }
-
-
 
     /**
      * Gets the status text related with a status code.

@@ -6,6 +6,8 @@
  */
 namespace Fol\Http;
 
+use Fol\Http\Globals;
+
 class Request
 {
     private $ip;
@@ -37,21 +39,10 @@ class Request
      */
     public static function createFromGlobals(array $validLanguages = null)
     {
-        $scheme = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http';
-        $port = !empty($_SERVER['X_FORWARDED_PORT']) ? $_SERVER['X_FORWARDED_PORT'] : (!empty($_SERVER['SERVER_PORT']) ? $_SERVER['SERVER_PORT'] : 80);
-        $url = "{$scheme}://".$_SERVER['SERVER_NAME'].":{$port}".$_SERVER['REQUEST_URI'];
+        $request = new static(Globals::getUrl(), Globals::getHeaders(), Globals::getGet(), Globals::getPost(), Globals::getFiles(), Globals::getCookies());
 
-        $request = new static($url, Headers::getFromGlobals(), (array) filter_input_array(INPUT_GET), (array) filter_input_array(INPUT_POST), Files::getFromGlobals(), (array) filter_input_array(INPUT_COOKIE));
-
-        //Detect request method
-        if (($method = $_SERVER['REQUEST_METHOD']) === 'POST' && !empty($_SERVER['X_HTTP_METHOD_OVERRIDE'])) {
-            $method = $_SERVER['X_HTTP_METHOD_OVERRIDE'];
-        }
-
-        $request->setMethod($method ?: 'GET');
-
-        //Detect client ip
-        $request->setIp(Headers::getIpFromGlobals());
+        $request->setMethod(Globals::getMethod());
+        $request->setIp(Globals::getIp());
 
         //Detect client language
         $userLanguages = array_keys($request->headers->getParsed('Accept-Language'));
@@ -69,10 +60,10 @@ class Request
         //Detect request payload
         $contentType = $request->headers->get('Content-Type');
 
-        if ((strpos($contentType, 'application/x-www-form-urlencoded') === 0) && in_array($request->getMethod(), ['PUT', 'DELETE']) && ($content = file_get_contents('php://input'))) {
+        if ((strpos($contentType, 'application/x-www-form-urlencoded') === 0) && in_array($request->getMethod(), ['POST', 'PUT', 'DELETE']) && ($content = Globals::getInput())) {
             parse_str($content, $data);
             $request->post->set($data);
-        } elseif ((strpos($contentType, 'application/json') === 0) && in_array($request->getMethod(), ['POST', 'PUT', 'DELETE']) && ($content = file_get_contents('php://input'))) {
+        } elseif ((strpos($contentType, 'application/json') === 0) && in_array($request->getMethod(), ['POST', 'PUT', 'DELETE']) && ($content = Globals::getInput())) {
             $request->post->set(json_decode($content, true));
         }
 
