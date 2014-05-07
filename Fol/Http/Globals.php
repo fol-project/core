@@ -242,12 +242,27 @@ class Globals
 
 
     /**
-     * Gets the global input value
+     * Gets the global request payload
      * 
-     * @return string
+     * @return null|array
      */
-    public static function getInput()
+    public static function getPayload()
     {
-        return file_get_contents('php://input');
+        if (!in_array(self::getMethod(), ['POST', 'PUT', 'DELETE'])) {
+            return null;
+        }
+
+        $contentType = self::get('CONTENT_TYPE');
+
+        if (strpos($contentType, 'application/x-www-form-urlencoded') === 0) {
+            parse_str(file_get_contents('php://input'), $data);
+            return $data;
+        }
+
+        if (strpos($contentType, 'application/json') === 0) {
+            return json_decode(file_get_contents('php://input'), true);
+        }
+
+        return null;
     }
 }

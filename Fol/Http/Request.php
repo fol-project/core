@@ -58,13 +58,8 @@ class Request
         }
 
         //Detect request payload
-        $contentType = $request->headers->get('Content-Type');
-
-        if ((strpos($contentType, 'application/x-www-form-urlencoded') === 0) && in_array($request->getMethod(), ['POST', 'PUT', 'DELETE']) && ($content = Globals::getInput())) {
-            parse_str($content, $data);
+        if ($data = Globals::getPayload()) {
             $request->post->set($data);
-        } elseif ((strpos($contentType, 'application/json') === 0) && in_array($request->getMethod(), ['POST', 'PUT', 'DELETE']) && ($content = Globals::getInput())) {
-            $request->post->set(json_decode($content, true));
         }
 
         return $request;
