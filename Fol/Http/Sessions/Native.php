@@ -72,19 +72,12 @@ class Native extends Session
      */
     public function prepare(Response $response)
     {
-        if (!$this->id) {
-            $response->cookies->setDelete($this->name, $this->cookie['path'], $this->cookie['domain'], $this->cookie['secure'], $this->cookie['httponly']);
-        }
-    }
-
-
-    /**
-     * Saves the session data on destruct
-     */
-    public function __destruct()
-    {
         if ((session_status() === PHP_SESSION_ACTIVE) && (session_name() === $this->name) && (session_id() === $this->id)) {
             session_write_close();
+        }
+
+        if (!$this->id) {
+            $response->cookies->setDelete($this->name, $this->cookie['path'], $this->cookie['domain'], $this->cookie['secure'], $this->cookie['httponly']);
         }
     }
 

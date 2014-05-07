@@ -27,6 +27,7 @@ class Templates
         $this->addFolders($paths);
     }
 
+
     /**
      * Adds new base folders where search for the templates files
      *
@@ -186,8 +187,8 @@ class Templates
     /**
      * Private function that renders a template file and returns its content
      *
-     * @param string $file The template file
-     * @param array  $data An array of variables used locally in the template.
+     * @param string     $file The template file
+     * @param null|array $data An array of variables used locally in the template.
      *
      * @return string The file content
      */
@@ -244,9 +245,9 @@ class Templates
     /**
      * Render a template and return its content
      *
-     * @param string                             $template   The template name or file path
-     * @param array|\Iterator|\IteratorAggregate $data       An optional array of object extending Iterator|IteratorAggregate data used in the template. If the array is numerical or the object extends Iterator/IteratorAggregate interfaces, renders the template once for each item
-     * @param bool                               $failSilent Set true to do not throw the exception if the template does not exists
+     * @param string                                  $template   The template name or file path
+     * @param null|array|\Iterator|\IteratorAggregate $data       An optional array of object extending Iterator|IteratorAggregate data used in the template. If the array is numerical or the object extends Iterator/IteratorAggregate interfaces, renders the template once for each item
+     * @param bool                                    $failSilent Set true to do not throw the exception if the template does not exists
      *
      * @return string The template rendered
      */
@@ -276,6 +277,7 @@ class Templates
 
         return $this->renderTemplateFile($file, $data);
     }
+
 
     /**
      * Simple method to detect if a value must be iterabled or not

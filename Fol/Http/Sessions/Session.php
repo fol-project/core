@@ -37,7 +37,7 @@ class Session implements \ArrayAccess, SessionInterface
     /**
      * Defines how the user will be called
      * 
-     * @param callable $userCal
+     * @param callable $resolver
      */
     public function defineUser(\Closure $resolver)
     {
