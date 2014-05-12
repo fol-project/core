@@ -22,8 +22,8 @@ class Request
 
     private $parentRequest;
 
-    public $get;
-    public $post;
+    public $query;
+    public $request;
     public $files;
     public $cookies;
     public $route;
@@ -59,7 +59,7 @@ class Request
 
         //Detect request payload
         if ($data = Globals::getPayload()) {
-            $request->post->set($data);
+            $request->request->set($data);
         }
 
         return $request;
@@ -94,10 +94,10 @@ class Request
 
         if ($vars) {
             if (in_array(strtoupper($method), array('POST', 'PUT', 'DELETE'))) {
-                $request->post->set($vars);
+                $request->request->set($vars);
                 $request->headers->set('Content-Type', 'application/x-www-form-urlencoded');
             } else {
-                $request->get->set($vars);
+                $request->query->set($vars);
             }
         }
 
@@ -115,10 +115,10 @@ class Request
      * @param array  $files      The FILES parameters
      * @param array  $cookies    The request cookies
      */
-    public function __construct($url = null, array $headers = array(), array $get = array(), array $post = array(), array $files = array(), array $cookies = array())
+    public function __construct($url = null, array $headers = array(), array $query = array(), array $request = array(), array $files = array(), array $cookies = array())
     {
-        $this->get = new Input($get);
-        $this->post = new Input($post);
+        $this->query = new Input($query);
+        $this->request = new Input($request);
         $this->files = new Files($files);
         $this->cookies = new Input($cookies);
         $this->headers = new Headers($headers);
@@ -138,14 +138,11 @@ class Request
 
     /**
      * Magic function to clone the internal objects
-     *
-     * Note that session is not cloned because is shared in all requests
-     * unless is changed manually
      */
     public function __clone()
     {
-        $this->get = clone $this->get;
-        $this->post = clone $this->post;
+        $this->query = clone $this->query;
+        $this->request = clone $this->request;
         $this->files = clone $this->files;
         $this->cookies = clone $this->cookies;
         $this->headers = clone $this->headers;
@@ -224,8 +221,8 @@ class Request
     {
         $text = $this->getMethod().' '.$this->getUrl();
         $text .= "\nFormat: ".$this->getFormat();
-        $text .= "\nGet:\n".$this->get;
-        $text .= "\nPost:\n".$this->post;
+        $text .= "\nQuery:\n".$this->query;
+        $text .= "\nRequest:\n".$this->request;
         $text .= "\nFiles:\n".$this->files;
         $text .= "\nCookies:\n".$this->cookies;
         $text .= "\nHeaders:\n".$this->headers;
@@ -257,9 +254,9 @@ class Request
         }
 
         if (isset($url['query'])) {
-            parse_str(html_entity_decode($url['query']), $get);
+            parse_str(html_entity_decode($url['query']), $query);
 
-            $this->get->set($get);
+            $this->query->set($query);
         }
     }
 
@@ -281,7 +278,7 @@ class Request
 
         $url .= $this->getPath(true);
 
-        if (($query === true) && ($query = $this->get->get())) {
+        if (($query === true) && ($query = $this->query->get())) {
             $url .= '?'.http_build_query($query);
         }
 
