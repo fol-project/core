@@ -18,9 +18,6 @@ class Router
     private $errorController;
     private $routeFactory;
 
-    private $basePath;
-    private $defaults;
-
 
     /**
      * Constructor function. Defines the base url
@@ -30,39 +27,6 @@ class Router
     public function __construct(RouteFactory $routeFactory)
     {
         $this->routeFactory = $routeFactory;
-
-        $components = parse_url(BASE_URL);
-
-        $this->setDefaults($components['scheme'], $components['host'], isset($components['port']) ? $components['port'] : null);
-        $this->setBasePath(isset($components['path']) ? $components['path'] : '');
-    }
-
-
-    /**
-     * Change the base path
-     *
-     * @param string  $scheme
-     * @param string  $host
-     * @param integer $port
-     */
-    public function setDefaults($scheme, $host, $port = null)
-    {
-        $this->defaults = [
-            'scheme' => $scheme,
-            'host' => $host,
-            'port' => $port
-        ];
-    }
-
-
-    /**
-     * Change the base path
-     *
-     * @param string $basePath
-     */
-    public function setBasePath($basePath)
-    {
-        $this->basePath = $basePath;
     }
 
 

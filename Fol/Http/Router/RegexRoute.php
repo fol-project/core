@@ -11,83 +11,41 @@ use Fol\Http\Request;
 class RegexRoute extends Route
 {
     protected $regex;
-    protected $wildcard;
 
 
     /**
-     * Constructor
-     *
-     * @param string $name   The route name
-     * @param array  $config The available options
+     * {@inheritDoc}
      */
-    public function __construct ($name, array $config = array())
+    public function __construct ($name, array $config = array(), $target)
     {
-        parent::__construct($name, $config);
-        $this->setRegex();
+        parent::__construct($name, $config, $target);
+
+        if (empty($config['regex'])) {
+            $this->regex = self::setRegex($this->path, isset($config['filters']) ? $config['filters'] : []);
+        }  else {
+            $this->regex = $config['regex'];
+        }
     }
 
 
     /**
-     * Generates the path regex
+     * Generates the regex
+     * 
+     * @param string $path
+     * @param array  $filters
+     * 
+     * @return string
      */
-    private function setRegex()
+    private static function setRegex($path, array $filters)
     {
-        if (substr($this->path, -2) === '/*') {
-            $this->path = substr($this->path, 0, -2).'(/{:__wildcard__:(.*)})?';
-            $this->wildcard = '__wildcard__';
-        }
+        $regex = preg_replace_callback('/\{([^\}]*)\}/', function ($matches) use ($filters) {
+            $name = $matches[1];
+            $filter = isset($filters[$name]) ? $filters[$name] : '[^/]+';
 
-        if (preg_match('/\/\{:([\w-]+)([\+\*])\}$/i', $this->path, $matches)) {
-            $this->wildcard = $matches[1];
-            $pos = strrpos($this->path, $matches[0]);
+            return "(?P<{$name}>{$filter})";
+        }, $path);
 
-            if ($matches[2] === '*') {
-                $this->path = substr($this->path, 0, $pos)."(/{:{$this->wildcard}:(.*)})?";
-            } else {
-                $this->path = substr($this->path, 0, $pos)."/{:{$this->wildcard}:(.+)}";
-            }
-        }
-
-        unset($matches);
-
-        if (preg_match_all("/\{:(.*?)(:(.*?))?\}/", $this->path, $matches, PREG_SET_ORDER)) {
-            $filters = [];
-
-            foreach ($matches as $match) {
-                $whole = $match[0];
-                $name = $match[1];
-
-                if (isset($match[3])) {
-                    $filters[$name] = ($match[3] === '?') ? '([^/]+)?' : $match[3];
-                    $this->path = str_replace($whole, "{:$name}", $this->path);
-                } else {
-                    $filters[$name] = '([^/]+)';
-                }
-            }
-
-            $this->regex = $this->path;
-
-            if ($filters) {
-                $keys = $vals = [];
-
-                foreach ($filters as $name => $filter) {
-                    if ($filter[0] !== '(') {
-                        throw new \Exception("Filter for parameter '$name' must start with '('.");
-                    } elseif (substr($filter, -1) === '?') {
-                        $keys[] = "/{:$name}";
-                        $vals[] = "(/(?P<$name>".substr($filter, 1, -1).')?';
-                    } else {
-                        $keys[] = "{:$name}";
-                        $vals[] = "(?P<$name>".substr($filter, 1);
-                    }
-                }
-
-                $this->regex = str_replace($keys, $vals, $this->regex);
-            }
-        }
-
-        $this->path = str_replace(['(', ')', '?', '*'], '', $this->path);
-        $this->regex = '#^'.$this->regex.'$#';
+        return "#{$regex}#";
     }
 
 
@@ -96,12 +54,20 @@ class RegexRoute extends Route
      *
      * @param string $path The path
      *
-     * @return bool
+     * @return array|false
      */
     public function checkRegex($path)
     {
         if (preg_match($this->regex, $path, $matches)) {
-            return $matches;
+            $params = [];
+
+            foreach ($matches as $key => $value) {
+                if (is_string($key)) {
+                    $params[$key] = $value;
+                }
+            }
+
+            return $params;
         }
 
         return false;
@@ -134,29 +100,25 @@ class RegexRoute extends Route
     /**
      * Reverse the route
      *
-     * @param array $defaults   Defaults values for scheme, host, port, path and format
      * @param array $parameters Optional array of parameters to use in URL
      *
      * @return string The url to the route
      */
-    public function generate (array $defaults, array $parameters = array())
+    public function generate (array $parameters = array())
     {
         $path = $this->path;
 
-        if ($this->wildcard && !isset($parameters[$this->wildcard])) {
-            $parameters[$this->wildcard] = '';
-        }
-
         foreach ($parameters as $name => $value) {
-            if (strpos($path, "{:$name}") !== false) {
-                $path = str_replace("{:$name}", rawurlencode($value), $path);
+            if (strpos($path, '{'.$name.'}') !== false) {
+                $path = str_replace('{'.$name.'}', rawurlencode($value), $path);
                 unset($parameters[$name]);
             }
         }
 
-        $values = $this->getProperties(['scheme', 'host', 'port', 'format'], $defaults);
+        $values = $this->getProperties(['scheme', 'host', 'port', 'format']);
         $values['path'] = $path;
+        $values['query'] = $parameters;
 
-        return static::buildUrl($values, $parameters);
+        return static::buildUrl($values);
     }
 }

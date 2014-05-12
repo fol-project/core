@@ -9,15 +9,30 @@ namespace Fol\Http\Router;
 class RouteFactory
 {
     private $namespace;
+    private $baseUrl;
+
 
     /**
      * Constructor
      *
      * @param string $namespace The namespace where the controllers are
      */
-    public function __construct($namespace = '')
+    public function __construct($namespace = '', $baseUrl = null)
     {
         $this->namespace = $namespace;
+
+        if ($baseUrl === null) {
+            $baseUrl = BASE_URL;
+        }
+
+        $components = parse_url(BASE_URL);
+
+        $this->baseUrl = [
+            'scheme' => $components['scheme'],
+            'host' => $components['host'],
+            'port' => isset($components['port']) ? $components['port'] : 80,
+            'path' => $components['path']
+        ];
     }
 
 
@@ -56,27 +71,37 @@ class RouteFactory
      *
      * @param string $name     Route name
      * @param array  $config   Route configuration (path, target, etc)
-     * @param string $basePath The path to prepend
+     * @param string $target   The route target
      *
      * @return Route
      */
-    public function createRoute ($name, array $config, $basePath)
+    public function createRoute ($name, array $config, $target)
     {
-        $config['target'] = $this->getTarget($config['target']);
+        $target = $this->getTarget($config['target']);
 
-        if ($basePath) {
-            $config['path'] = $basePath.$config['path'];
+        $config['path'] = $this->baseUrl['path'].$config['path'];
+
+        if (!isset($config['scheme'])) {
+            $config['scheme'] = $this->baseUrl['scheme'];
+        }
+
+        if (!isset($config['host'])) {
+            $config['host'] = $this->baseUrl['host'];
+        }
+
+        if (!isset($config['port'])) {
+            $config['port'] = $this->baseUrl['port'];
         }
 
         if (isset($config['path'][1])) {
             $config['path'] = rtrim($config['path'], '/');
         }
 
-        if (strpos($config['path'], '{:') !== false) {
-            return new RegexRoute($name, $config);
+        if (isset($config['regex']) || strpos($config['path'], '{') !== false) {
+            return new RegexRoute($name, $config, $target);
         }
 
-        return new Route($name, $config);
+        return new Route($name, $config, $target);
     }
 
 

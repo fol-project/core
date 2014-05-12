@@ -3,7 +3,7 @@ use Fol\Http\Request;
 use Fol\Http\Response;
 
 class HttpTest extends PHPUnit_Framework_TestCase {
-	public function _testRequest () {
+	public function testRequest () {
 		$request = Request::create('/index', 'GET', [], []);
 
 		$this->assertEquals($request->getPath(), '/index');
@@ -26,13 +26,13 @@ class HttpTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals($request->getUrl(), 'http://localhost/index2.json');
 
 		//GET params
-		$request->get->set([
+		$request->query->set([
 			'param1' => 1,
 			'param2' => 2
 		]);
-		$this->assertEquals($request->get->get('param1'), 1);
-		$this->assertEquals($request->get->get('param2'), 2);
-		$this->assertEquals($request->get->get(), [
+		$this->assertEquals($request->query->get('param1'), 1);
+		$this->assertEquals($request->query->get('param2'), 2);
+		$this->assertEquals($request->query->get(), [
 			'param1' => 1,
 			'param2' => 2
 		]);
@@ -71,7 +71,7 @@ class HttpTest extends PHPUnit_Framework_TestCase {
 	/**
 	 * @depends testRequest
 	 */
-	public function _testResponse (Request $request) {
+	public function testResponse (Request $request) {
 		$response = new Response();
 		$response->prepare($request);
 

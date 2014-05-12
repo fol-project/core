@@ -15,17 +15,17 @@ class Route implements \ArrayAccess
 {
     use ContainerTrait;
 
-    protected $name;
-    protected $target;
+    public $name;
+    public $target;
 
-    protected $ip;
-    protected $method;
-    protected $scheme;
-    protected $host;
-    protected $port;
-    protected $path;
-    protected $format;
-    protected $language;
+    public $ip;
+    public $method;
+    public $scheme;
+    public $host;
+    public $port;
+    public $path;
+    public $format;
+    public $language;
 
 
     /**
@@ -33,19 +33,19 @@ class Route implements \ArrayAccess
      *
      * @param string $name   The route name
      * @param array  $config The available options
+     * @param mixed  $target The route target
      */
-    public function __construct($name, array $config = array())
+    public function __construct($name, array $config = array(), $target)
     {
         $this->name = $name;
-        $this->target = $config['target'];
+        $this->target = $target;
 
-        $this->ip = isset($config['ip']) ? $config['ip'] : null;
-        $this->method = isset($config['method']) ? $config['method'] : null;
-        $this->scheme = isset($config['scheme']) ? $config['scheme'] : null;
-        $this->host = isset($config['host']) ? $config['host'] : null;
-        $this->port = isset($config['port']) ? $config['port'] : null;
-        $this->path = isset($config['path']) ? $config['path'] : null;
-        $this->format = isset($config['format']) ? $config['format'] : null;
+
+        foreach (['ip', 'method', 'scheme', 'host', 'port', 'path', 'format', 'language'] as $key) {
+            if (isset($config[$key])) {
+                $this->$key = $config[$key];
+            }
+        }
     }
 
 
@@ -96,22 +96,15 @@ class Route implements \ArrayAccess
      * Get the route properties
      * 
      * @param array $properties The properties to return
-     * @param array $defaults   The default values used in undefined properties
      * 
      * @return array
      */
-    protected function getProperties (array $properties, array $defaults)
+    protected function getProperties (array $properties)
     {
         $values = [];
 
         foreach ($properties as $name) {
-            if ($this->$name) {
-                $values[$name] = is_array($this->$name) ? $this->$name[0] : $this->$name;
-            } else if (isset($defaults[$name])) {
-                $values[$name] = $defaults[$name];
-            } else {
-                $values[$name] = '';
-            }
+            $values[$name] = is_array($this->$name) ? $this->$name[0] : (string) $this->$name;
         }
 
         return $values;
@@ -122,13 +115,20 @@ class Route implements \ArrayAccess
      * Generate an url using the properties values
      * 
      * @param array $properties The url properties
-     * @param array $parameters GET parameters
      * 
      * @return string
      */
-    protected static function buildUrl(array $properties, array $parameters)
+    protected static function buildUrl(array $properties)
     {
-        $url = $properties['scheme'].'://'.$properties['host'];
+        $url = '';
+
+        if ($properties['scheme']) {
+            $url .= $properties['scheme'].':';
+        }
+
+        if ($properties['host']) {
+            $url .= '//'.$properties['host'];
+        }
 
         if ($properties['port'] && $properties['port'] != 80) {
             $url .= ':'.$properties['port'];
@@ -142,8 +142,8 @@ class Route implements \ArrayAccess
             }
         }
 
-        if ($parameters) {
-            $url .= '?'.http_build_query($parameters);
+        if ($properties['query']) {
+            $url .= '?'.http_build_query($properties['query']);
         }
 
         return $url;
@@ -153,30 +153,29 @@ class Route implements \ArrayAccess
     /**
      * Reverse the route
      *
-     * @param array $defaults   Defaults values for scheme, host, port, path and format
      * @param array $parameters Optional array of parameters to use in URL
      *
      * @return string The url to the route
      */
-    public function generate(array $defaults, array $parameters = array())
+    public function generate(array $parameters = array())
     {
-        $values = $this->getProperties(['scheme', 'host', 'port', 'path', 'format'], $defaults);
+        $values = $this->getProperties(['scheme', 'host', 'port', 'path', 'format']);
+        $values['query'] = $parameters;
 
-        return static::buildUrl($values, $parameters);
+        return static::buildUrl($values);
     }
 
 
     /**
      * Reverse the route, returning a Request object
      *
-     * @param array $defaults   Defaults values for scheme, host, port, path and format
      * @param array $parameters Optional array of parameters to use in URL
      *
      * @return Request The request instance
      */
-    public function generateRequest(array $defaults, array $parameters = array())
+    public function generateRequest(array $parameters = array())
     {
-        $request = new Request($this->generate($defaults, $parameters));
+        $request = new Request($this->generate($parameters));
 
         if ($this->method) {
             $request->setMethod(is_array($this->method) ? $this->method[0] : $this->method);
