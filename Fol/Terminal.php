@@ -196,12 +196,8 @@ class Terminal
 
         if (!empty($status['running'])) {
             proc_terminate($process);
-
-            return proc_close($process);
         }
 
-        $return = proc_close($process);
-
-        return strlen($status['exitcode']) ? $status['exitcode'] : $return;
+        return proc_close($process);
     }
 }

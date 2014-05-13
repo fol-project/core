@@ -144,25 +144,12 @@ class Cookies implements \ArrayAccess
      */
     public function set($name, $value = null, $expire = null, $path = null, $domain = null, $secure = null, $httponly = null)
     {
-        $defaults = $this->get($name, $this->defaults);
+        $data = $this->getCookieData($name, $expire, $path, $domain, $secure, $httponly);
 
-        if ($expire === null) {
-            $expire = $defaults['expire'];
-        } elseif ($expire instanceof \DateTime) {
-            $expire = $expire->format('U');
-        } elseif (!is_numeric($expire)) {
-            $expire = strtotime($expire);
-        }
+        $data['name'] = $name;
+        $data['value'] = $value;
 
-        $this->items[$name] = [
-            'name' => $name,
-            'value' => $value,
-            'expire' => $expire,
-            'path' => ($path === null) ? $defaults['path'] : $path,
-            'domain' => ($domain === null) ? $defaults['domain'] : $domain,
-            'secure' => ($secure === null) ? $defaults['secure'] : (bool) $secure,
-            'httponly' => ($httponly === null) ? $defaults['httponly'] : (bool) $httponly
-        ];
+        $this->items[$name] = $data;
     }
 
 
@@ -178,5 +165,35 @@ class Cookies implements \ArrayAccess
     public function setDelete($name, $path = null, $domain = null, $secure = null, $httponly = null)
     {
         $this->set($name, '', 1, $path, $domain, $secure, $httponly);
+    }
+
+
+    /**
+     * Merges and returns the data of a cookie
+     *
+     * @param string                        $name     The cookie name
+     * @param null|integer|string|\Datetime $expire   The cookie expiration time. It can be a number or a DateTime instance
+     * @param null|string                   $path     The cookie path
+     * @param null|string                   $domain   The cookie domain
+     * @param null|boolean                  $secure   If the cookie is secure, only will be send in secure connection (https)
+     * @param null|boolean                  $httponly If is set true, the cookie only will be accessed via http, so javascript cannot access to it.
+     */
+    private function getCookieData($name, $expire, $path, $domain, $secure, $httponly)
+    {
+        $default = $this->get($name, $this->defaults);
+
+        if ($expire instanceof \DateTime) {
+            $expire = $expire->format('U');
+        } elseif (is_string($expire)) {
+            $expire = strtotime($expire);
+        }
+
+        $data = [];
+
+        foreach (['expire', 'path', 'domain', 'secure', 'httponly'] as $key) {
+            $data[$key] = ($$key === null) ? $defaults[$key] : $$key;
+        }
+
+        return $data;
     }
 }
