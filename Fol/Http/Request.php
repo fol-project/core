@@ -23,7 +23,7 @@ class Request
     private $parentRequest;
 
     public $query;
-    public $request;
+    public $data;
     public $files;
     public $cookies;
     public $route;
@@ -59,7 +59,7 @@ class Request
 
         //Detect request payload
         if ($data = Globals::getPayload()) {
-            $request->request->set($data);
+            $request->data->set($data);
         }
 
         return $request;
@@ -94,7 +94,7 @@ class Request
 
         if ($vars) {
             if (in_array(strtoupper($method), array('POST', 'PUT', 'DELETE'))) {
-                $request->request->set($vars);
+                $request->data->set($vars);
                 $request->headers->set('Content-Type', 'application/x-www-form-urlencoded');
             } else {
                 $request->query->set($vars);
@@ -110,15 +110,15 @@ class Request
      *
      * @param string $url        The request url
      * @param array  $headers    The request headers
-     * @param array  $get        The GET parameters
-     * @param array  $post       The POST parameters
+     * @param array  $query      The url parameters
+     * @param array  $data       The request payload data
      * @param array  $files      The FILES parameters
      * @param array  $cookies    The request cookies
      */
-    public function __construct($url = null, array $headers = array(), array $query = array(), array $request = array(), array $files = array(), array $cookies = array())
+    public function __construct($url = null, array $headers = array(), array $query = array(), array $data = array(), array $files = array(), array $cookies = array())
     {
         $this->query = new Input($query);
-        $this->request = new Input($request);
+        $this->data = new Input($data);
         $this->files = new Files($files);
         $this->cookies = new Input($cookies);
         $this->headers = new Headers($headers);
@@ -142,7 +142,7 @@ class Request
     public function __clone()
     {
         $this->query = clone $this->query;
-        $this->request = clone $this->request;
+        $this->data = clone $this->data;
         $this->files = clone $this->files;
         $this->cookies = clone $this->cookies;
         $this->headers = clone $this->headers;
@@ -222,7 +222,7 @@ class Request
         $text = $this->getMethod().' '.$this->getUrl();
         $text .= "\nFormat: ".$this->getFormat();
         $text .= "\nQuery:\n".$this->query;
-        $text .= "\nRequest:\n".$this->request;
+        $text .= "\nData:\n".$this->data;
         $text .= "\nFiles:\n".$this->files;
         $text .= "\nCookies:\n".$this->cookies;
         $text .= "\nHeaders:\n".$this->headers;
