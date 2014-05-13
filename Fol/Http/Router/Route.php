@@ -160,9 +160,8 @@ class Route implements \ArrayAccess
     public function generate(array $parameters = array())
     {
         $values = $this->getProperties(['scheme', 'host', 'port', 'path', 'format']);
-        $values['query'] = $parameters;
 
-        return static::buildUrl($values);
+        return Request::buildUrl($values['scheme'], $values['host'], $values['port'], $values['path'], $values['format'], $parameters);
     }
 
 

@@ -105,6 +105,50 @@ class Request
 
 
     /**
+     * Generates an url
+     * 
+     * @param string  $scheme
+     * @param string  $host
+     * @param integer $port
+     * @param string  $path
+     * @param string  $format
+     * @param array   $query
+     * 
+     * @return string
+     */
+    public static function buildUrl($scheme, $host, $port, $path, $format, array $query = null)
+    {
+        $url = '';
+
+        if ($scheme) {
+            $url .= "{$scheme}:";
+        }
+
+        if ($host) {
+            $url .= "//{$host}";
+        }
+
+        if ($port && (($scheme === 'http' && $port !== 80) || ($scheme === 'https' && $port !== 433))) {
+            $url .= ":{$port}";
+        }
+
+        if ($path) {
+            $url .= $path;
+
+            if ($format && $format !== 'html') {
+                $url .= ".{$format}";
+            }
+        }
+
+        if ($query) {
+            $url .= '?'.http_build_query($query);
+        }
+
+        return $url;
+    }
+
+
+    /**
      * Constructor
      *
      * @param string $url        The request url
@@ -269,35 +313,17 @@ class Request
      */
     public function getUrl($query = false)
     {
-        $url = $this->getScheme().'://'.$this->getHost();
-
-        if ($this->getPort() !== 80) {
-            $url .= ':'.$this->getPort();
-        }
-
-        $url .= $this->getPath(true);
-
-        if (($query === true) && ($query = $this->query->get())) {
-            $url .= '?'.http_build_query($query);
-        }
-
-        return $url;
+        return self::buildUrl($this->getScheme(), $this->getHost(), $this->getPort(), $this->getPath(), $this->getFormat(), ($query === true) ? $this->query->get() : null);
     }
 
 
     /**
      * Gets the current path
      *
-     * @param boolean $format True to add the format of the request at the end of the path
-     *
      * @return string The path
      */
-    public function getPath($format = false)
+    public function getPath()
     {
-        if (($format === true) && ($this->path !== '/') && ($format = $this->getFormat()) && ($format !== 'html')) {
-            return $this->path.'.'.$format;
-        }
-
         return $this->path;
     }
 

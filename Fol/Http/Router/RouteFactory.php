@@ -30,7 +30,7 @@ class RouteFactory
         $this->baseUrl = [
             'scheme' => $components['scheme'],
             'host' => $components['host'],
-            'port' => isset($components['port']) ? $components['port'] : 80,
+            'port' => isset($components['port']) ? $components['port'] : null,
             'path' => isset($components['path']) ? $components['path'] : ''
         ];
     }

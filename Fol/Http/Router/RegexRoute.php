@@ -116,9 +116,7 @@ class RegexRoute extends Route
         }
 
         $values = $this->getProperties(['scheme', 'host', 'port', 'format']);
-        $values['path'] = $path;
-        $values['query'] = $parameters;
 
-        return static::buildUrl($values);
+        return Request::buildUrl($values['scheme'], $values['host'], $values['port'], $path, $values['format'], $parameters);
     }
 }
