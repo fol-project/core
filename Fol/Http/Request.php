@@ -86,10 +86,9 @@ class Request
 
         $request->setIp('127.0.0.1');
         $request->setMethod($method);
-        $request->setPort(80);
 
-        if ($request->getScheme() === 'https') {
-            $request->setPort(443);
+        if (!$request->getPort()) {
+            $request->setPort(($request->getScheme() === 'https') ? 433 : 80);
         }
 
         if ($vars) {

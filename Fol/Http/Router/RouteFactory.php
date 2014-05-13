@@ -31,7 +31,7 @@ class RouteFactory
             'scheme' => $components['scheme'],
             'host' => $components['host'],
             'port' => isset($components['port']) ? $components['port'] : 80,
-            'path' => $components['path']
+            'path' => isset($components['path']) ? $components['path'] : ''
         ];
     }
 
