@@ -58,11 +58,12 @@ class Terminal
      *
      * @return array An array with two subarrays: the numeric options and named options
      */
-    public static function parseOptions(array $options, array $validator = null)
+    public static function parseOptions(array $options)
     {
         $vars = [];
+        $options[] = '';
 
-        for ($k = 0, $total = count($options); $k < $total; $k++) {
+        for ($k = 0, $total = count($options) - 1; $k < $total; $k++) {
             $option = $options[$k];
 
             if (preg_match('#^--([\w]+)(=[\'"]?(.*)[\'"]?)?$#', $option, $match)) {
@@ -73,7 +74,7 @@ class Terminal
                     continue;
                 }
 
-                if (!empty($options[$k + 1]) && $options[$k + 1][0] !== '-' && (!isset($validator[$name]) || $validator[$name] !== self::OPTION_BOOLEAN)) {
+                if ($options[$k + 1][0] !== '-') {
                     $vars[$name] = $options[++$k];
                     continue;
                 }
@@ -83,7 +84,7 @@ class Terminal
             }
 
             if (preg_match('#^-([\w])$#', $option, $match)) {
-                if (!empty($options[$k + 1]) && $options[$k + 1][0] !== '-') {
+                if ($options[$k + 1][0] !== '-') {
                     $vars[$match[1]] = $options[++$k];
                     continue;
                 }

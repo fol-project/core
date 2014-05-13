@@ -10,7 +10,7 @@ use Fol\ContainerTrait;
 
 class Input implements \ArrayAccess
 {
-    use ContainerTrait;
+    use ContainerTrait { get as private parentGet; }
 
 
     /**
@@ -26,10 +26,6 @@ class Input implements \ArrayAccess
      */
     public function get($name = null, $default = null)
     {
-        if ($name === null) {
-            return $this->items;
-        }
-
         if (is_string($name) && (strpos($name, '[') !== false) && (strpos($name, ']') !== false)) {
             $subarrays = explode('[', str_replace(']', '', $name));
             $value = $this->items;
@@ -43,11 +39,7 @@ class Input implements \ArrayAccess
             }
         }
 
-        if (isset($this->items[$name]) && $this->items[$name] !== '') {
-            return $this->items[$name];
-        }
-
-        return $default;
+        return $this->parentGet($name, $default);
     }
 
 
