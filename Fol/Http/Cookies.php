@@ -180,7 +180,7 @@ class Cookies implements \ArrayAccess
      */
     private function getCookieData($name, $expire, $path, $domain, $secure, $httponly)
     {
-        $default = $this->get($name, $this->defaults);
+        $defaults = $this->get($name, $this->defaults);
 
         if ($expire instanceof \DateTime) {
             $expire = $expire->format('U');

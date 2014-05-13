@@ -84,12 +84,14 @@ class Terminal
             }
 
             if (preg_match('#^-([\w])$#', $option, $match)) {
+                $name = $match[1];
+
                 if ($options[$k + 1][0] !== '-') {
-                    $vars[$match[1]] = $options[++$k];
+                    $vars[$name] = $options[++$k];
                     continue;
                 }
 
-                $vars[$match[1]] = true;
+                $vars[$name] = true;
                 continue;
             }
 
