@@ -80,6 +80,10 @@ class RouteFactory
 
         $config['path'] = $this->baseUrl['path'].$config['path'];
 
+        if (isset($config['regex'])) {
+            $config['regex'] = $this->baseUrl['path'].$config['regex'];
+        }
+
         if (!isset($config['scheme'])) {
             $config['scheme'] = $this->baseUrl['scheme'];
         }

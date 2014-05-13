@@ -25,6 +25,8 @@ class RegexRoute extends Route
         }  else {
             $this->regex = $config['regex'];
         }
+
+        $this->regex = "#^{$this->regex}$#";
     }
 
 
@@ -38,14 +40,12 @@ class RegexRoute extends Route
      */
     private static function setRegex($path, array $filters)
     {
-        $regex = preg_replace_callback('/\{([^\}]*)\}/', function ($matches) use ($filters) {
+        return preg_replace_callback('/\{([^\}]*)\}/', function ($matches) use ($filters) {
             $name = $matches[1];
             $filter = isset($filters[$name]) ? $filters[$name] : '[^/]+';
 
             return "(?P<{$name}>{$filter})";
         }, $path);
-
-        return "#{$regex}#";
     }
 
 
