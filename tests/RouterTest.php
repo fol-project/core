@@ -2,8 +2,6 @@
 use Fol\Http\Router\RegexRoute;
 use Fol\Http\Request;
 
-include 'bootstrap.php';
-
 class RouterTest extends PHPUnit_Framework_TestCase {
 	public function testRegexRoute () {
 		$route = new RegexRoute('one', [

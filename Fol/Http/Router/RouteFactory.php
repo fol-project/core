@@ -25,7 +25,7 @@ class RouteFactory
             $baseUrl = BASE_URL;
         }
 
-        $components = parse_url(BASE_URL);
+        $components = parse_url($baseUrl);
 
         $this->baseUrl = [
             'scheme' => $components['scheme'],
@@ -71,11 +71,10 @@ class RouteFactory
      *
      * @param string $name     Route name
      * @param array  $config   Route configuration (path, target, etc)
-     * @param string $target   The route target
      *
      * @return Route
      */
-    public function createRoute ($name, array $config, $target)
+    public function createRoute ($name, array $config)
     {
         $target = $this->getTarget($config['target']);
 

@@ -41,13 +41,13 @@ class Router
     {
         if (is_array($name)) {
             foreach ($name as $name => $config) {
-                $this->set($name, $this->routeFactory->createRoute($name, $config, $this->basePath));
+                $this->set($name, $this->routeFactory->createRoute($name, $config));
             }
 
             return;
         }
 
-        $this->set($name, $this->routeFactory->createRoute($name, $config, $this->basePath));
+        $this->set($name, $this->routeFactory->createRoute($name, $config));
     }
 
 
@@ -95,7 +95,7 @@ class Router
             throw new \Exception("No route with the name $name has been found.");
         }
 
-        return $this->items[$name]->generate($this->defaults, $params);
+        return $this->items[$name]->generate($params);
     }
 
 
