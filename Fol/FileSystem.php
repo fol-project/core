@@ -127,12 +127,43 @@ class FileSystem
      * Returns an iterator to explore the current path
      * 
      * @param null|string $path Relative path with the new position
+     * @param null|integer $flags Flags constants passed to the FilesystemIterator
      *
+     * @see FilesystemIterator
+     * 
      * @return \FilesystemIterator
      */
-    public function getIterator($path = null)
+    public function getIterator($path = null, $flags = null)
     {
-        return new \FilesystemIterator($this->getPath($path));
+        $path = $this->getPath($path);
+
+        if ($flags === null) {
+            return new \FilesystemIterator($path);
+        }
+
+        return new \FilesystemIterator($path, $flags);
+    }
+
+
+    /**
+     * Returns a glob iterator to explore the current path
+     * 
+     * @param null|string  $path  Relative path with the new position
+     * @param null|integer $flags Flags constants passed to the GlobIterator
+     * 
+     * @see GlobIterator
+     *
+     * @return \GlobIterator
+     */
+    public function getGlobIterator($path = null, $flags = null)
+    {
+        $path = $this->getPath($path);
+
+        if ($flags === null) {
+            return new \GlobIterator($path);
+        }
+
+        return new \GlobIterator($path, $flags);
     }
 
 
@@ -196,7 +227,7 @@ class FileSystem
         $path = $this->getPath($name);
 
         if (!is_dir($path)) {
-            mkdir($this->getPath($name), $mode, $recursive);
+            mkdir($path, $mode, $recursive);
         }
 
         return $this;
@@ -225,7 +256,7 @@ class FileSystem
             return $this->saveFromUrl($original, $name);
         }
 
-        $destination = $this->getPath($name);
+        $destination = $this->getDestination($original, $name);
 
         if (!@copy($original, $destination)) {
             throw new \Exception("Unable to copy '$original' to '$destination'");
@@ -241,27 +272,21 @@ class FileSystem
      * @param array       $original Original file data
      * @param null|string $name     Name used for the new file
      *
-     * @return string The created filename or false if there was an error
+     * @return string The created file path or false if there was an error
      */
     private function saveFromUpload(array $original, $name = null)
     {
-        if (empty($input['tmp_name']) || !empty($input['error'])) {
+        if (empty($original['tmp_name']) || !empty($original['error'])) {
             return false;
         }
 
-        if ($name === null) {
-            $name = $original['name'];
-        } elseif (!pathinfo($name, PATHINFO_EXTENSION) && ($extension = pathinfo($original['name'], PATHINFO_EXTENSION))) {
-            $name .= ".$extension";
-        }
+        $destination = $this->getDestination($original['name'], $name);
 
-        $destination = $this->getPath($name);
-
-        if (!@rename($original, $destination)) {
+        if (!@rename($original['tmp_name'], $destination)) {
             throw new \Exception("Unable to copy '$original' to '$destination'");
         }
 
-        return $name;
+        return $destination;
     }
 
 
@@ -273,10 +298,10 @@ class FileSystem
      *
      * @return string The created filename or false if there was an error
      */
-    private function saveFromBase64($original, $name)
+    private function saveFromBase64($original, $name = null)
     {
-        if (empty($name)) {
-            throw new \Exception("The argument 'name' is required for base64 saving files");
+        if (!$name) {
+            $name = uniqid();
         }
 
         $fileData = explode(';base64,', $original, 2);
@@ -285,13 +310,13 @@ class FileSystem
             $name .= '.'.$match[1];
         }
 
-        $destination = $this->getPath($name);
+        $destination = $this->getDestination(null, $name);
 
         if (!@file_put_contents($destination, base64_decode($fileData[1]))) {
             throw new \Exception("Unable to copy base64 to '$destination'");
         }
 
-        return $name;
+        return $destination;
     }
 
 
@@ -305,18 +330,44 @@ class FileSystem
      */
     private function saveFromUrl($original, $name = null)
     {
-        if ($name === null) {
-            $name = pathinfo($original, PATHINFO_BASENAME);
-        } elseif (!pathinfo($name, PATHINFO_EXTENSION) && ($originalPath = parse_url($original, PHP_URL_PATH)) && ($extension = pathinfo($originalPath, PATHINFO_EXTENSION))) {
-            $name .= ".$extension";
-        }
-
-        $destination = $this->getPath($name);
+        $destination = $this->getDestination($original, $name);
 
         if (!($content = @file_get_contents($original)) || !@file_put_contents($destination, $content)) {
             throw new \Exception("Unable to copy '$original' to '$destination'");
         }
 
-        return $name;
+        return $destination;
+    }
+
+
+    /**
+     * Gets the destination filename before save it
+     * 
+     * @param string $oldFilename The original filename
+     * @param string $newFilename The destination filename
+     * 
+     * @return string
+     */
+    private function getDestination ($oldFilename, $newFilename)
+    {
+        if ($newFilename === null) {
+            if ($oldFilename === null) {
+                return $this->getPath(uniqid());
+            }
+
+            return $this->getPath($oldFilename);
+        }
+
+        $destination = $this->getPath($newFilename);
+        
+        if (is_dir($destination)) {
+            return self::fixPath($destination.'/'.$oldFilename);
+        }
+
+        if (!pathinfo($destination, PATHINFO_EXTENSION) && ($path = parse_url($oldFilename, PHP_URL_PATH)) && ($extension = pathinfo($path, PATHINFO_EXTENSION))) {
+            $destination .= ".$extension";
+        }
+
+        return $destination;
     }
 }

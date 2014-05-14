@@ -85,12 +85,14 @@ class Globals
 
 
     /**
-     * Gets the global request ip
+     * Gets the all global request ips
      * 
      * @return string|null
      */
-    public static function getIp()
+    public static function getIps()
     {
+        $ips = [];
+
         foreach (['HTTP_CLIENT_IP', 'HTTP_X_FORWARDED_FOR', 'REMOTE_ADDR'] as $key) {
             if (!self::has($key)) {
                 continue;
@@ -98,10 +100,12 @@ class Globals
 
             foreach (explode(',', self::get($key)) as $ip) {
                 if (!empty($ip) && $ip !== 'unknown') {
-                    return $ip;
+                    $ips[] = $ip;
                 }
             }
         }
+
+        return $ips;
     }
 
 

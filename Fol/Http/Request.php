@@ -11,6 +11,7 @@ use Fol\Http\Globals;
 class Request
 {
     private $ip;
+    private $ips = [];
     private $method = 'GET';
     private $scheme;
     private $host;
@@ -42,7 +43,7 @@ class Request
         $request = new static(Globals::getUrl(), Globals::getHeaders(), Globals::getGet(), Globals::getPost(), Globals::getFiles(), Globals::getCookies());
 
         $request->setMethod(Globals::getMethod());
-        $request->setIp(Globals::getIp());
+        $request->setIps(Globals::getIps());
 
         //Detect client language
         $userLanguages = array_keys($request->headers->getParsed('Accept-Language'));
@@ -263,6 +264,7 @@ class Request
     public function __toString()
     {
         $text = $this->getMethod().' '.$this->getUrl();
+        $text .= "\nIps: ".implode(',', $this->ips);
         $text .= "\nFormat: ".$this->getFormat();
         $text .= "\nQuery:\n".$this->query;
         $text .= "\nData:\n".$this->data;
@@ -391,6 +393,29 @@ class Request
 
 
     /**
+     * Returns all user IPs
+     *
+     * @return array The client IPs
+     */
+    public function getIps()
+    {
+        return $this->ips;
+    }
+
+
+    /**
+     * Set the client IPs
+     *
+     * @param array $ip The client IP
+     */
+    public function setIps(array $ips)
+    {
+        $this->ips = $ips;
+        $this->ip = isset($ips[0]) ? $ips[0] : null;
+    }
+
+
+    /**
      * Returns the real client IP
      *
      * @return string The client IP
@@ -409,6 +434,12 @@ class Request
     public function setIp($ip)
     {
         $this->ip = $ip;
+
+        if (($key = array_search($ip, $this->ips)) !== false) {
+            array_splice($this->ips, $key, 1);
+        }
+
+        array_unshift($this->ips, $ip);
     }
 
 
