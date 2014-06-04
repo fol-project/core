@@ -131,6 +131,8 @@ trait ContainerTrait
             $this->items = array_replace($this->items, $name);
         } elseif ($name) {
             $this->items[$name] = $value;
+        } else {
+            $this->items[] = $value;
         }
 
         return $this;
