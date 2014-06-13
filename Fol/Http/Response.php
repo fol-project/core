@@ -93,6 +93,36 @@ class Response
 
 
     /**
+     * Set basic authentication
+     *
+     * @param string $realm
+     */
+    public function setBasicAuthentication($realm)
+    {
+        $this->setStatus(401);
+        $this->headers->set('WWW-Authenticate', 'Basic realm="'.$realm.'"');
+    }
+
+
+    /**
+     * Set digest authentication
+     *
+     * @param string      $realm
+     * @param string|null $nonce
+     */
+    public function setDigestAuthentication($realm, $nonce = null)
+    {
+        $this->setStatus(401);
+
+        if (!$nonce) {
+            $nonce = uniqid();
+        }
+
+        $this->headers->set('WWW-Authenticate', 'Digest realm="'.$realm.'",qop="auth",nonce="'.$nonce.'",opaque="'.md5($realm).'"');
+    }
+
+
+    /**
      * Prepare the Response according a request
      *
      * @param Request $request The original request

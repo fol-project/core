@@ -20,6 +20,7 @@ class Request
     private $session;
     private $format = 'html';
     private $language;
+    private $authentication;
 
     private $parentRequest;
 
@@ -41,9 +42,10 @@ class Request
     public static function createFromGlobals(array $validLanguages = null)
     {
         $request = new static(Globals::getUrl(), Globals::getHeaders(), Globals::getGet(), Globals::getPost(), Globals::getFiles(), Globals::getCookies());
-
         $request->setMethod(Globals::getMethod());
         $request->setIps(Globals::getIps());
+
+        $request->setAuthentication(Globals::getDigestAuthentication() ?: Globals::getBasicAuthentication());
 
         //Detect client language
         $userLanguages = array_keys($request->headers->getParsed('Accept-Language'));
@@ -539,6 +541,76 @@ class Request
     public function setMethod($method)
     {
         $this->method = strtoupper($method);
+    }
+
+
+    /**
+     * Sets the authentication data
+     *
+     * @param data
+     */
+    public function setAuthentication(array $authentication = null)
+    {
+        $this->authentication = $authentication;
+    }
+
+
+    /**
+     * Gets the authentication data
+     *
+     * @return array|null
+     */
+    public function getAuthentication()
+    {
+        return $this->authentication;
+    }
+
+
+    /**
+     * Gets the request username
+     *
+     * @return string|null
+     */
+    public function getUser()
+    {
+        return isset($this->authentication['username']) ? $this->authentication['username'] : null;
+    }
+
+
+    /**
+     * Gets the request password
+     *
+     * @return string
+     */
+    public function getPassword()
+    {
+        return isset($this->authentication['password']) ? $this->authentication['password'] : null;
+    }
+
+
+    /**
+     * Validate the user password in a digest authentication
+     * 
+     * @param string $password
+     * @param string $realm
+     *
+     * @return boolean
+     */
+    public function checkPassword($password, $realm)
+    {
+        if (empty($this->authentication['type']) || $this->authentication['type'] !== 'digest') {
+            return false;
+        }
+
+        $method = $this->getMethod();
+
+
+        $A1 = md5("{$this->authentication['username']}:{$realm}:{$password}");
+        $A2 = md5("{$method}:{$this->authentication['uri']}");
+
+        $validResponse = md5("{$A1}:{$this->authentication['nonce']}:{$this->authentication['nc']}:{$this->authentication['cnonce']}:{$this->authentication['qop']}:{$A2}");
+
+        return ($this->authentication['response'] === $validResponse);
     }
 
 
