@@ -644,15 +644,4 @@ class Request
 
         return $this->getMain()->getSession();
     }
-
-
-    /**
-     * Defines a If-Modified-Since header
-     *
-     * @param string|\Datetime $datetime
-     */
-    public function setIfModifiedSince($datetime)
-    {
-        $this->headers->setDateTime('If-Modified-Since', $datetime);
-    }
 }
