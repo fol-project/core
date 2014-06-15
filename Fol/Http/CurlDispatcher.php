@@ -53,9 +53,9 @@ class CurlDispatcher
         	return strlen($string);
         });
 
-        $data = $this->request->data->get();
+        $data = $request->data->get();
 
-		foreach ($request->files as $name => $file) {
+		foreach ($request->files->get() as $name => $file) {
 			$data[$name] = new CURLFile($file, '', $name);
 		}
 

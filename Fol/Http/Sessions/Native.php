@@ -57,7 +57,7 @@ class Native extends Session
 
         ini_set('session.use_only_cookies', 1);
 
-        $this->cookie = Cookies::getDefaults(['httponly' => true], BASE_URL);
+        $this->cookie = Cookies::calculateDefaults(BASE_URL, ['httponly' => true]);
 
         session_set_cookie_params($this->cookie['expire'], $this->cookie['path'], $this->cookie['domain'], $this->cookie['secure'], $this->cookie['httponly']);
         session_start();
