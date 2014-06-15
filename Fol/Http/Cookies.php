@@ -12,61 +12,59 @@ class Cookies implements \ArrayAccess
 {
     use ContainerTrait;
 
-    protected $defaults;
+    protected $defaults = [];
 
 
     /**
-     * Returns the default values for the cookies using global values
+     * Returns the default values for the cookies
      * 
-     * @param array $defaults User custom defaults
+     * @param string $baseUrl  Url base to calculate the defaults
+     * @param array  $defaults User custom defaults
      * 
      * @return array
      */
-    public static function getDefaultsFromGlobals(array $defaults = array())
+    public static function calculateDefaults($baseUrl, array $defaults = array())
     {
-        $url = parse_url(BASE_URL);
+        $url = parse_url($baseUrl);
 
         return $defaults + [
-            'expire' => 0,
-            'path' => (empty($url['path']) ? '/' : $url['path']),
+            'name' => null,
+            'value' => null,
             'domain' => $url['host'],
+            'path' => (empty($url['path']) ? '/' : $url['path']),
+            'max-age' => null,
+            'expires' => null,
             'secure' => ($url['scheme'] === 'https'),
+            'discard' => false,
             'httponly' => false
         ];
     }
 
 
     /**
-     * Constructor
-     * 
-     * @param array $defaults Defaults values for the cookies
+     * Sets the cookies default values
+     *
+     * @param array  $defaults User custom defaults
+     * @param string $baseUrl  Url base to calculate the defaults
      */
-    public function __construct(array $defaults = array())
+    public function setDefaults(array $defaults, $baseUrl = null)
     {
-        $defaults = static::getDefaultsFromGlobals($defaults);
+        if ($baseUrl) {
+            $defaults = static::calculateDefaults($baseUrl, $defaults);
+        }
 
-        $this->setDefaults($defaults['expire'], $defaults['path'], $defaults['domain'], $defaults['secure'], $defaults['httponly']);
+        $this->defaults = $defaults;
     }
 
 
     /**
-     * Sets the cookies default values
-     *
-     * @param int     $expire   The cookie expiration time by default
-     * @param string  $path     The cookie path default
-     * @param string  $domain   The cookie domain default
-     * @param boolean $secure   If the cookie is secure by default
-     * @param boolean $httponly If the cookie is httponly by default
+     * Gets the cookies default values
+     * 
+     * @return array
      */
-    public function setDefaults($expire, $path, $domain, $secure, $httponly)
+    public function getDefaults()
     {
-        $this->defaults = [
-            'expire' => $expire,
-            'path' => $path,
-            'domain' => $domain,
-            'secure' => $secure,
-            'httponly' => $httponly
-        ];
+        return $this->defaults;
     }
 
 
@@ -76,34 +74,9 @@ class Cookies implements \ArrayAccess
     public function __toString()
     {
         $text = '';
-        $time = time();
 
-        foreach ($this->items as $item) {
-            $text .= urlencode($item['name']).' = '.urlencode($item['value']).';';
-
-            if ($item['expires'] < $time) {
-                $text .= ' deleted;';
-            }
-
-            $text .= ' expires='.gmdate("D, d-M-Y H:i:s T", $item['expires']).';';
-
-            if ($item['path'] && $item['path'] !== '/') {
-                $text .= ' path='.$item['path'];
-            }
-
-            if ($item['domain']) {
-                $text .= ' domain='.$item['domain'].';';
-            }
-
-            if ($item['secure']) {
-                $text .= ' secure;';
-            }
-
-            if ($item['httponly']) {
-                $text .= ' httponly;';
-            }
-
-            $text .= "\n";
+        foreach (array_keys($this->items) as $name) {
+            $text .= $this->getAsString($name)."\n";
         }
 
         return $text;
@@ -111,7 +84,7 @@ class Cookies implements \ArrayAccess
 
 
     /**
-     * Send the cookies to the browser
+     * Sends the cookies to the browser
      *
      * @return boolean True if all cookies have sent or false on error or if headers have been sent before
      */
@@ -122,8 +95,8 @@ class Cookies implements \ArrayAccess
         }
 
         foreach ($this->items as $cookie) {
-            if (!setcookie($cookie['name'], $cookie['value'], $cookie['expire'], $cookie['path'], $cookie['domain'], $cookie['secure'], $cookie['httponly'])) {
-                throw new \Exception('Error saving the cookie '.$cookie['name']);
+            if (!setcookie($cookie['name'], $cookie['value'], $cookie['expires'], $cookie['path'], $cookie['domain'], $cookie['secure'], $cookie['httponly'])) {
+                throw new \Exception('Error sending the cookie '.$cookie['name']);
             }
         }
 
@@ -136,20 +109,32 @@ class Cookies implements \ArrayAccess
      *
      * @param string                   $name     The cookie name
      * @param string                   $value    The cookie value
-     * @param integer|string|\Datetime $expire   The cookie expiration time. It can be a number or a DateTime instance
+     * @param integer|string|\Datetime $expires  The cookie expiration time. It can be a number or a DateTime instance
      * @param string                   $path     The cookie path
      * @param string                   $domain   The cookie domain
      * @param boolean                  $secure   If the cookie is secure, only will be send in secure connection (https)
      * @param boolean                  $httponly If is set true, the cookie only will be accessed via http, so javascript cannot access to it.
      */
-    public function set($name, $value = null, $expire = null, $path = null, $domain = null, $secure = null, $httponly = null)
+    public function set($name, $value = null, $expires = null, $path = null, $domain = null, $secure = null, $httponly = null)
     {
-        $data = $this->getCookieData($name, $expire, $path, $domain, $secure, $httponly);
+        if ($expires instanceof \DateTime) {
+            $expires = $expires->format('U');
+        } elseif (is_string($expires)) {
+            $expires = strtotime($expires);
+        }
+
+        $data = [];
+
+        foreach (['expires', 'path', 'domain', 'secure', 'httponly'] as $key) {
+            if ($$key !== null) {
+                $data[$key] = $$key;
+            }
+        }
 
         $data['name'] = $name;
         $data['value'] = $value;
 
-        $this->items[$name] = $data;
+        $this->items[$name] = $data + $this->defaults;
     }
 
 
@@ -169,31 +154,92 @@ class Cookies implements \ArrayAccess
 
 
     /**
-     * Merges and returns the data of a cookie
+     * Returns a cookie as string
      *
-     * @param string                        $name     The cookie name
-     * @param null|integer|string|\Datetime $expire   The cookie expiration time. It can be a number or a DateTime instance
-     * @param null|string                   $path     The cookie path
-     * @param null|string                   $domain   The cookie domain
-     * @param null|boolean                  $secure   If the cookie is secure, only will be send in secure connection (https)
-     * @param null|boolean                  $httponly If is set true, the cookie only will be accessed via http, so javascript cannot access to it.
+     * @param string  $name     The cookie name
+     * 
+     * @return string|null
      */
-    private function getCookieData($name, $expire, $path, $domain, $secure, $httponly)
+    public function getAsString($name = null)
     {
-        $defaults = $this->get($name, $this->defaults);
+        if ($name === null) {
+            $cookies = [];
 
-        if ($expire instanceof \DateTime) {
-            $expire = $expire->format('U');
-        } elseif (is_string($expire)) {
-            $expire = strtotime($expire);
+            foreach (array_keys($this->items) as $name) {
+                $cookies[] = $this->getAsString($name);
+            }
+
+            return $cookies;
         }
 
-        $data = [];
-
-        foreach (['expire', 'path', 'domain', 'secure', 'httponly'] as $key) {
-            $data[$key] = ($$key === null) ? $defaults[$key] : $$key;
+        if (!($cookie = $this->get($name))) {
+            return null;
         }
 
-        return $data;
+        $string = urlencode($cookie['name']).'='.urlencode($cookie['value']).';';
+
+        if ($cookie['expires'] < time()) {
+            $string .= ' deleted;';
+        }
+
+        $string .= ' expires='.gmdate("D, d-M-Y H:i:s T", $cookie['expires']).';';
+
+        if ($cookie['path']) {
+            $string .= ' path='.$cookie['path'];
+        }
+
+        if ($cookie['domain']) {
+            $string .= ' domain='.$cookie['domain'].';';
+        }
+
+        if ($cookie['secure']) {
+            $string .= ' secure;';
+        }
+
+        if ($cookie['httponly']) {
+            $string .= ' httponly;';
+        }
+
+        return $string;
+    }
+
+
+    /**
+     * Adds a new cookie from a Set-Cookie header string
+     * 
+     * @param string $cookie
+     * 
+     * @return boolean
+     */
+    public function setFromString($string)
+    {
+        if (strpos($string, 'Set-Cookie:') !== 0) {
+            return false;
+        }
+
+        $string = trim(substr($string, 11));
+        $data = ['expires' => null, 'path' => null, 'domain' => null, 'secure' => null, 'httponly' => null];
+        $pieces = array_filter(array_map('trim', explode(';', $string)));
+
+        if (empty($pieces) || !strpos($pieces[0], '=')) {
+            return false;
+        }
+
+        foreach ($pieces as $part) {
+            $cookieParts = explode('=', $part, 2);
+            $key = trim($cookieParts[0]);
+            $value = isset($cookieParts[1]) ? trim($cookieParts[1], " \n\r\t\0\x0B\"") : true;
+
+            if (empty($data['name'])) {
+                $data['name'] = $key;
+                $data['value'] = $value;
+            } else {
+                $data[strtolower($key)] = $value;
+            }
+        }
+
+        $this->set($data['name'], $data['value'], $data['expires'], $data['path'], $data['domain'], $data['secure'], $data['httponly']);
+
+        return true;
     }
 }

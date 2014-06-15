@@ -42,10 +42,7 @@ class Response
 
         $this->headers = new Headers($headers);
         $this->cookies = new Cookies();
-
-        if (!$this->headers->has('Date')) {
-            $this->headers->setDateTime('Date', new \DateTime());
-        }
+        $this->cookies->setDefaults([], BASE_URL);
     }
 
 
@@ -64,7 +61,12 @@ class Response
      */
     public function __toString()
     {
-        return (string) $this->content;
+        $text = sprintf('HTTP/1.1 %s', $this->status[0], $this->status[1]);
+        $text .= "\nCookies:\n".$this->cookies;
+        $text .= "\nHeaders:\n".$this->headers;
+        $text .= "\n\n".$this->content;
+
+        return $text;
     }
 
 
@@ -139,6 +141,10 @@ class Response
 
         if ($this->headers->has('Transfer-Encoding')) {
             $this->headers->delete('Content-Length');
+        }
+
+        if (!$this->headers->has('Date')) {
+            $this->headers->setDateTime('Date', new \DateTime());
         }
 
         if ($request->getMethod() === 'HEAD') {

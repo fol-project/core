@@ -35,70 +35,6 @@ class Globals
 
 
     /**
-     * Gets the global data from a basic authentication
-     * 
-     * @return array|null
-     */
-    public static function getBasicAuthentication()
-    {
-        if (self::has('PHP_AUTH_USER')) {
-            return [
-                'type' => 'basic',
-                'username' => self::get('PHP_AUTH_USER'),
-                'password' => self::get('PHP_AUTH_PW')
-            ];
-        }
-
-        $authorization = self::get('HTTP_AUTHORIZATION') ?: self::get('REDIRECT_HTTP_AUTHORIZATION');
-
-        if ($authorization && (strpos($authorization, 'basic') === 0)) {
-            $authorization = explode(':', base64_decode(substr($authorization, 6)), 2);
-
-            return [
-                'type' => 'basic',
-                'username' => $authorization[0],
-                'password' => isset($authorization[1]) ? $authorization[1] : null
-            ];
-        }
-    }
-
-
-    /**
-     * Gets the global data from a digest authentication
-     * 
-     * @return array|null
-     */
-    public static function getDigestAuthentication()
-    {
-        $digest = self::get('PHP_AUTH_DIGEST');
-
-        if (!$digest) {
-            $authorization = self::get('HTTP_AUTHORIZATION') ?: self::get('REDIRECT_HTTP_AUTHORIZATION');
-
-            if ($authorization && (strpos($authorization, 'digest') === 0)) {
-                $digest = substr($authorization, 7);
-            }
-        }
-
-        if ($digest) {
-            $needed_parts = ['nonce' => 1, 'nc' => 1, 'cnonce' => 1, 'qop' => 1, 'username' => 1, 'uri' => 1, 'response' => 1];
-            $data = ['type' => 'digest'];
-
-            preg_match_all('@('.implode('|', array_keys($needed_parts)).')=(?:([\'"])([^\2]+?)\2|([^\s,]+))@', $digest, $matches, PREG_SET_ORDER);
-
-            foreach ($matches as $m) {
-                $data[$m[1]] = $m[3] ? $m[3] : $m[4];
-                unset($needed_parts[$m[1]]);
-            }
-
-            if (!$needed_parts) {
-                return $data;
-            }
-        }
-    }
-
-
-    /**
      * Gets the global request scheme
      * 
      * @return string
@@ -193,9 +129,20 @@ class Globals
             }
         }
 
-        if (isset($_SERVER['PHP_AUTH_USER'])) {
-            $pass = isset($_SERVER['PHP_AUTH_PW']) ? $_SERVER['PHP_AUTH_PW'] : '';
-            $headers['AUTHORIZATION'] = 'Basic '.base64_encode($_SERVER['PHP_AUTH_USER'].':'.$pass);
+        //Http authentication header
+        if (!isset($headers['AUTHORIZATION'])) {
+            if (self::has('REDIRECT_HTTP_AUTHORIZATION')) {
+                $headers['AUTHORIZATION'] = self::get('REDIRECT_HTTP_AUTHORIZATION');
+            } else if (self::has('PHP_AUTH_USER')) {
+                $headers['AUTHORIZATION'] = 'Basic '.base64_encode(self::get('PHP_AUTH_USER').':'.self::has('PHP_AUTH_PW'));
+            } else if (self::has('PHP_AUTH_DIGEST')) {
+                $headers['AUTHORIZATION'] = self::get('PHP_AUTH_DIGEST');
+            }
+        }
+
+        //Ips
+        if (!isset($headers['CLIENT_IP']) && !isset($headers['X_FORWARDED_FOR'])) {
+            $headers['CLIENT_IP'] = self::get('REMOTE_ADDR');
         }
 
         return $headers;

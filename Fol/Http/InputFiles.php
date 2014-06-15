@@ -1,12 +1,12 @@
 <?php
 /**
- * Fol\Http\Files
+ * Fol\Http\InputFiles
  *
- * Class to store the files variables ($_FILES)
+ * Class to store the incoming files ($_FILES)
  */
 namespace Fol\Http;
 
-class Files extends Input
+class InputFiles extends Input
 {
     public static $errors = [
         1 => 'The uploaded file exceeds the upload_max_filesize directive in php.ini',

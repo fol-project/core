@@ -10,8 +10,7 @@ use Fol\Http\Globals;
 
 class Request
 {
-    private $ip;
-    private $ips = [];
+    private $ips;
     private $method = 'GET';
     private $scheme;
     private $host;
@@ -35,30 +34,13 @@ class Request
     /**
      * Creates a new request object from global values
      *
-     * @param array $validLanguages You can define a list of valid languages, so if an accept language is in the list, returns that language. If doesn't exists, returns the first accept language.
-     *
      * @return Request The object with the global data
      */
-    public static function createFromGlobals(array $validLanguages = null)
+    public static function createFromGlobals()
     {
         $request = new static(Globals::getUrl(), Globals::getHeaders(), Globals::getGet(), Globals::getPost(), Globals::getFiles(), Globals::getCookies());
         $request->setMethod(Globals::getMethod());
         $request->setIps(Globals::getIps());
-
-        $request->setAuthentication(Globals::getDigestAuthentication() ?: Globals::getBasicAuthentication());
-
-        //Detect client language
-        $userLanguages = array_keys($request->headers->getParsed('Accept-Language'));
-
-        if ($validLanguages === null) {
-            $request->setLanguage(isset($userLanguages[0]) ? Headers::getLanguage($userLanguages[0]) : null);
-        } elseif (!$userLanguages) {
-            $request->setLanguage(isset($validLanguages[0]) ? Headers::getLanguage($validLanguages[0]) : null);
-        } else {
-            $commonLanguages = array_values(array_intersect($userLanguages, $validLanguages));
-
-            $request->setLanguage(Headers::getLanguage(isset($commonLanguages[0]) ? $commonLanguages[0] : $validLanguages[0]));
-        }
 
         //Detect request payload
         if ($data = Globals::getPayload()) {
@@ -165,8 +147,8 @@ class Request
     {
         $this->query = new Input($query);
         $this->data = new Input($data);
-        $this->files = new Files($files);
-        $this->cookies = new Input($cookies);
+        $this->files = new InputFiles($files);
+        $this->cookies = new InputCookies($cookies);
         $this->headers = new Headers($headers);
 
         foreach (array_keys($this->headers->getParsed('Accept')) as $mimetype) {
@@ -253,6 +235,7 @@ class Request
         $request = static::create($url, $method, $vars);
 
         $request->setIp($this->getIp());
+        $request->setAuthentication($this->getAuthentication());
         $request->setLanguage($this->getLanguage());
         $request->setParent($this);
 
@@ -268,6 +251,7 @@ class Request
         $text = $this->getMethod().' '.$this->getUrl();
         $text .= "\nIps: ".implode(',', $this->ips);
         $text .= "\nFormat: ".$this->getFormat();
+        $text .= "\nLanguage: ".$this->getLanguage();
         $text .= "\nQuery:\n".$this->query;
         $text .= "\nData:\n".$this->data;
         $text .= "\nFiles:\n".$this->files;
@@ -395,12 +379,55 @@ class Request
 
 
     /**
+     * Gets the preferred language
+     * 
+     * @param array $locales Ordered available languages
+     *
+     * @param string|null
+     */
+    public function getPreferredLanguage(array $locales)
+    {
+        $languages = array_keys($this->headers->getParsed('Accept-Language'));
+
+        if ($locales === null) {
+            return isset($languages[0]) ? Headers::getLanguage($languages[0]) : null;
+        }
+        
+        if (!$languages) {
+            return isset($locales[0]) ? Headers::getLanguage($locales[0]) : null;
+        }
+
+        $common = array_values(array_intersect($languages, $locales));
+
+        return Headers::getLanguage(isset($common[0]) ? $common[0] : $locales[0]);
+    }
+
+
+    /**
      * Returns all user IPs
      *
      * @return array The client IPs
      */
     public function getIps()
     {
+        if (!isset($this->ips)) {
+            $this->ips = [];
+
+            $ip = $this->headers->get('Client-Ip');
+
+            if ($ip && $ip !== 'unknown') {
+                $this->ips[] = $ip;
+            }
+
+            if (($ip = $this->headers->get('X-Forwarded-For'))) {
+                foreach (explode(',', $ip) as $i) {
+                    if (!empty($i) && $i !== 'unknown') {
+                        $this->ips[] = $i;
+                    }
+                }
+            }
+        }
+
         return $this->ips;
     }
 
@@ -413,18 +440,19 @@ class Request
     public function setIps(array $ips)
     {
         $this->ips = $ips;
-        $this->ip = isset($ips[0]) ? $ips[0] : null;
     }
 
 
     /**
      * Returns the real client IP
      *
-     * @return string The client IP
+     * @return string|null The client IP
      */
     public function getIp()
     {
-        return $this->ip;
+        $ips = $this->getIps();
+
+        return isset($ips[0]) ? $ips[0] : null;
     }
 
 
@@ -435,13 +463,15 @@ class Request
      */
     public function setIp($ip)
     {
-        $this->ip = $ip;
+        $ips = $this->getIps();
 
-        if (($key = array_search($ip, $this->ips)) !== false) {
-            array_splice($this->ips, $key, 1);
+        if (($key = array_search($ip, $ips)) !== false) {
+            array_splice($ips, $key, 1);
         }
 
-        array_unshift($this->ips, $ip);
+        array_unshift($ips, $ip);
+
+        $this->setIps($ips);
     }
 
 
@@ -558,10 +588,40 @@ class Request
     /**
      * Gets the authentication data
      *
-     * @return array|null
+     * @return array|false
      */
     public function getAuthentication()
     {
+        if (!isset($this->authentication)) {
+            $this->authentication = false;
+
+            if (($authorization = $this->headers->get('Authorization'))) {
+                if (strpos($authorization, 'Basic') === 0) {
+                    $authorization = explode(':', base64_decode(substr($authorization, 6)), 2);
+
+                    $this->authentication = [
+                        'type' => 'Basic',
+                        'username' => $authorization[0],
+                        'password' => isset($authorization[1]) ? $authorization[1] : null
+                    ];
+                } else if (strpos($authorization, 'Digest') === 0) {
+                    $needed_parts = ['nonce' => 1, 'nc' => 1, 'cnonce' => 1, 'qop' => 1, 'username' => 1, 'uri' => 1, 'response' => 1];
+                    $data = ['type' => 'Digest'];
+
+                    preg_match_all('@('.implode('|', array_keys($needed_parts)).')=(?:([\'"])([^\2]+?)\2|([^\s,]+))@', substr($authorization, 7), $matches, PREG_SET_ORDER);
+
+                    foreach ($matches as $m) {
+                        $data[$m[1]] = $m[3] ? $m[3] : $m[4];
+                        unset($needed_parts[$m[1]]);
+                    }
+
+                    if (!$needed_parts) {
+                        $this->authentication = $data;
+                    }
+                }
+            }
+        }
+
         return $this->authentication;
     }
 
@@ -573,7 +633,9 @@ class Request
      */
     public function getUser()
     {
-        return isset($this->authentication['username']) ? $this->authentication['username'] : null;
+        $authentication = $this->getAuthentication();
+
+        return isset($authentication['username']) ? $authentication['username'] : null;
     }
 
 
@@ -584,7 +646,9 @@ class Request
      */
     public function getPassword()
     {
-        return isset($this->authentication['password']) ? $this->authentication['password'] : null;
+        $authentication = $this->getAuthentication();
+
+        return isset($authentication['password']) ? $authentication['password'] : null;
     }
 
 
@@ -598,19 +662,21 @@ class Request
      */
     public function checkPassword($password, $realm)
     {
-        if (empty($this->authentication['type']) || $this->authentication['type'] !== 'digest') {
+        $authentication = $this->getAuthentication();
+
+        if (empty($authentication['type']) || $authentication['type'] !== 'Digest') {
             return false;
         }
 
         $method = $this->getMethod();
 
 
-        $A1 = md5("{$this->authentication['username']}:{$realm}:{$password}");
-        $A2 = md5("{$method}:{$this->authentication['uri']}");
+        $A1 = md5("{$authentication['username']}:{$realm}:{$password}");
+        $A2 = md5("{$method}:{$authentication['uri']}");
 
-        $validResponse = md5("{$A1}:{$this->authentication['nonce']}:{$this->authentication['nc']}:{$this->authentication['cnonce']}:{$this->authentication['qop']}:{$A2}");
+        $validResponse = md5("{$A1}:{$authentication['nonce']}:{$authentication['nc']}:{$authentication['cnonce']}:{$authentication['qop']}:{$A2}");
 
-        return ($this->authentication['response'] === $validResponse);
+        return ($authentication['response'] === $validResponse);
     }
 
 

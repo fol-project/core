@@ -325,17 +325,28 @@ class Headers implements \ArrayAccess
             return false;
         }
 
-        foreach ($this->items as $name => $value) {
-            if (is_array($value)) {
-                foreach ($value as $value) {
-                    header($name.': '.$value, false);
-                }
-            } else {
-                header($name.': '.$value, false);
-            }
+        foreach ($this->getAsString() as $header) {
+            header($header, false);
         }
 
         return true;
+    }
+
+
+    /**
+     * Converts all headers to a string
+     */
+    public function __toString()
+    {
+        $text = '';
+
+        foreach (array_keys($this->items) as $name) {
+            foreach ($this->getAsString($name, false) as $header) {
+                $text .= "$header\n";
+            }
+        }
+
+        return $text;
     }
 
 
@@ -361,9 +372,9 @@ class Headers implements \ArrayAccess
         $name = self::normalize($name);
 
         if ($replace || !isset($this->items[$name])) {
-            $this->items[$name] = $value;
+            $this->items[$name] = [$value];
         } else {
-            $this->items[$name] = array_merge((array) $this->items[$name], (array) $value);
+            $this->items[$name][] = $value;
         }
     }
 
@@ -371,12 +382,13 @@ class Headers implements \ArrayAccess
     /**
      * Gets one or all parameters
      *
-     * @param string  $name  The header name
-     * @param boolean $first Set true to return just the value of the first header with this name. False to return an array with all values.
+     * @param string  $name    The header name
+     * @param boolean $first   Set true to return just the value of the first header with this name. False to return an array with all values.
+     * @param mixed   $default The default value if the header was not found
      *
      * @return string The header value or an array with all values
      */
-    public function get($name = null, $first = true)
+    public function get($name = null, $first = true, $default = null)
     {
         if (func_num_args() === 0) {
             return $this->items;
@@ -384,15 +396,11 @@ class Headers implements \ArrayAccess
 
         $name = self::normalize($name);
 
-        if (!isset($this->items[$name])) {
-            return null;
+        if (empty($this->items[$name])) {
+            return $default;
         }
 
-        if (is_array($this->items[$name]) && $first) {
-            return $this->items[$name][0];
-        }
-
-        return $this->items[$name];
+        return $first ? $this->items[$name][0] : $this->items[$name];
     }
 
 
@@ -504,6 +512,68 @@ class Headers implements \ArrayAccess
     public function has($name)
     {
         return array_key_exists(self::normalize($name), $this->items);
+    }
+
+
+    /**
+     * Returns a header as string
+     *
+     * @param string  $name The header name
+     * @param boolean $first Set true to return just the value of the first header with this name. False to return an array with all values.
+     * 
+     * @return string|null
+     */
+    public function getAsString($name = null, $first = true)
+    {
+        if ($name === null) {
+            $headers = [];
+
+            foreach (array_keys($this->items) as $name) {
+                foreach ($this->getAsString($name, false) as $header) {
+                    $headers[] = $header;
+                }
+            }
+
+            return $headers;
+        }
+
+        if (!($value = $this->get($name, $first))) {
+            return null;
+        }
+
+        if ($first) {
+            return "{$name}: {$value}";
+        }
+
+        $headers = [];
+
+        foreach ($value as $value) {
+            $headers[] = "{$name}: {$value}";
+        }
+
+        return $headers;
+    }
+
+
+    /**
+     * Adds a new header from a header string
+     *
+     * @param string  $string
+     * @param boolean $replace
+     * 
+     * @return boolean
+     */
+    public function setFromString($string, $replace = true)
+    {
+        if (strpos($string, ':') === false) {
+            return false;
+        }
+
+        $header = array_map('trim', explode(':', $string, 2));
+
+        $this->set($header[0], $header[1], $replace);
+
+        return true;
     }
 
 
