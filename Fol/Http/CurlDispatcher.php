@@ -16,7 +16,7 @@ class CurlDispatcher
      * 
      * @return resource The cURL handle
      */
-	protected function prepare(Request $request, Response $response)
+	protected function prepare(Request $request, Response $response, &$stream = null)
 	{
 		$connection = curl_init();
 
@@ -53,6 +53,12 @@ class CurlDispatcher
         	return strlen($string);
         });
 
+        if ($stream) {
+            curl_setopt($connection, CURLOPT_WRITEFUNCTION, function ($connection, $string) use ($stream) {
+                return fwrite($stream, $string, strlen($string));
+            });
+        }
+
         $data = $request->data->get();
 
 		foreach ($request->files->get() as $name => $file) {
@@ -74,12 +80,23 @@ class CurlDispatcher
      * 
      * @return Response
      */
-	public function getResponse(Request $request)
+	public function getResponse(Request $request, Response $response = null, &$stream = null)
 	{
-		$response = new Response;
-		$connection = $this->prepare($request, $response);
+        if (!$response) {
+            $response = new Response;
+        }
 
-        $response->setContent(curl_exec($connection));
+        if ($stream && (!is_resource($stream) || (get_resource_type($stream) !== 'stream'))) {
+            throw new \Exception('Not valid stream resource provided');
+        }
+
+		$connection = $this->prepare($request, $response, $stream);
+
+        $return = curl_exec($connection);
+
+        if (!$stream) {
+            $response->setContent($return);
+        }
 
         $info = curl_getinfo($connection);
 		curl_close($connection);

@@ -12,9 +12,9 @@ class Response
     public $cookies;
 
     protected $content;
+    protected $sendContentCallback;
     protected $status;
-    protected $content_type;
-    protected $headers_sent = false;
+    protected $headersSent = false;
 
 
     public static function __set_state($array)
@@ -160,7 +160,7 @@ class Response
     /**
      * Sets the content of the response body
      *
-     * @param string $content The text content
+     * @param mixed $content The text content
      */
     public function setContent($content)
     {
@@ -240,47 +240,18 @@ class Response
 
 
     /**
-     * Defines a Not Modified status
-     */
-    public function setNotModified()
-    {
-        $this->setStatus(304);
-        $this->setContent('');
-
-        foreach (array('Allow', 'Content-Encoding', 'Content-Language', 'Content-Length', 'Content-MD5', 'Content-Type', 'Last-Modified') as $name) {
-            $this->headers->delete($name);
-        }
-    }
-
-
-    /**
      * Sends the headers and the content
      */
     public function send()
     {
-        if (!$this->headers_sent) {
+        if (!$this->headersSent) {
             $this->sendHeaders();
-            $this->headers_sent = true;
+            $this->headersSent = true;
         }
 
         $this->sendContent();
-    }
 
-
-    /**
-     * Send the output buffer and empty the response content
-     */
-    public function flush()
-    {
-        $this->send();
-
-        flush();
-
-        if (ob_get_level() > 0) {
-            ob_flush();
-        }
-
-        $this->content = '';
+        static::flush();
     }
 
 
@@ -305,6 +276,37 @@ class Response
      */
     public function sendContent()
     {
-        echo $this->content;
+        static::flush();
+
+        if ($this->sendContentCallback) {
+            call_user_func($this->sendContentCallback, $this->getContent());
+        } else {
+            echo $this->getContent();
+        }
+    }
+
+
+    /**
+     * Set the content callback
+     */
+    public function setSendContentCallback(callable $callback)
+    {
+        $this->sendContentCallback = $callback;
+    }
+
+
+    /**
+     * Send the output buffer and empty the response content
+     */
+    public static function flush()
+    {
+        $level = ob_get_level();
+
+        while ($level > 0) {
+            ob_end_flush();
+            $level--;
+        }
+
+        flush();
     }
 }
