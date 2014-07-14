@@ -8,27 +8,22 @@ namespace Fol\Http;
 
 use Fol\Http\Globals;
 
-class Request
+class Request extends Message
 {
-    private $ips;
-    private $method = 'GET';
-    private $scheme;
-    private $host;
-    private $port;
-    private $path;
-    private $session;
-    private $format = 'html';
-    private $language;
-    private $authentication;
-
-    private $parentRequest;
+    protected $method = 'GET';
+    protected $scheme;
+    protected $host;
+    protected $port;
+    protected $path;
+    protected $session;
+    protected $format = 'html';
+    protected $language;
 
     public $query;
     public $data;
     public $files;
     public $cookies;
     public $route;
-    public $headers;
 
 
     /**
@@ -40,11 +35,9 @@ class Request
     {
         $request = new static(Globals::getUrl(), Globals::getHeaders(), Globals::getGet(), Globals::getPost(), Globals::getFiles(), Globals::getCookies());
         $request->setMethod(Globals::getMethod());
-        $request->setIps(Globals::getIps());
 
-        //Detect request payload
-        if ($data = Globals::getPayload()) {
-            $request->data->set($data);
+        if (!$request->data->length()) {
+            $request->setBody('php://input', true);
         }
 
         return $request;
@@ -69,7 +62,6 @@ class Request
 
         $request = new static($url, $headers);
 
-        $request->setIp('127.0.0.1');
         $request->setMethod($method);
 
         if (!$request->getPort()) {
@@ -178,50 +170,6 @@ class Request
 
 
     /**
-     * Sets the parent request
-     *
-     * @param Request $request The parent request
-     */
-    public function setParent(Request $request)
-    {
-        $this->parentRequest = $request;
-    }
-
-
-    /**
-     * Gets the parent request
-     *
-     * @return Request The parent request or null
-     */
-    public function getParent()
-    {
-        return $this->parentRequest;
-    }
-
-
-    /**
-     * Gets the main request
-     *
-     * @return Request The parent request or itself
-     */
-    public function getMain()
-    {
-        return $this->parentRequest ? $this->parentRequest->getMain() : $this;
-    }
-
-
-    /**
-     * Check whether the request is main or not
-     *
-     * @return boolean
-     */
-    public function isMain()
-    {
-        return empty($this->parentRequest);
-    }
-
-
-    /**
      * Creates a subrequest based in this request
      *
      * @param string $url        The request url or path
@@ -234,8 +182,6 @@ class Request
     {
         $request = static::create($url, $method, $vars);
 
-        $request->setIp($this->getIp());
-        $request->setAuthentication($this->getAuthentication());
         $request->setLanguage($this->getLanguage());
         $request->setParent($this);
 
@@ -249,7 +195,6 @@ class Request
     public function __toString()
     {
         $text = $this->getMethod().' '.$this->getUrl();
-        $text .= "\nIps: ".implode(',', $this->ips);
         $text .= "\nFormat: ".$this->getFormat();
         $text .= "\nLanguage: ".$this->getLanguage();
         $text .= "\nQuery:\n".$this->query;
@@ -262,6 +207,8 @@ class Request
         if (isset($this->route)) {
             $text .= "\nRoute:\n".$this->route;
         }
+
+        $text .= "\n\n".$this->getBody(true);
 
         return $text;
     }
@@ -404,47 +351,40 @@ class Request
 
 
     /**
-     * Returns all user IPs
+     * Returns all client IPs
      *
      * @return array The client IPs
      */
     public function getIps()
     {
-        if (!isset($this->ips)) {
-            $this->ips = [];
+        static $forwarded = [
+            'Client-Ip',
+            'X-Forwarded-For',
+            'X-Forwarded',
+            'X-Cluster-Client-Ip',
+            'Forwarded-For',
+            'Forwarded'
+        ];
 
-            $ip = $this->headers->get('Client-Ip');
+        $flags = \FILTER_FLAG_NO_PRIV_RANGE | \FILTER_FLAG_NO_RES_RANGE;
+        $ips = [];
 
-            if ($ip && $ip !== 'unknown') {
-                $this->ips[] = $ip;
-            }
-
-            if (($ip = $this->headers->get('X-Forwarded-For'))) {
-                foreach (explode(',', $ip) as $i) {
-                    if (!empty($i) && $i !== 'unknown') {
-                        $this->ips[] = $i;
+        foreach ($forwarded as $key) {
+            if ($this->headers->has($key)) {
+                foreach (array_map('trim', explode(',', $this->headers->get($key))) as $ip) {
+                    if (filter_var($ip, FILTER_VALIDATE_IP, $flags)) {
+                        $ips[] = $ip;
                     }
                 }
             }
         }
 
-        return $this->ips;
+        return $ips;
     }
 
 
     /**
-     * Set the client IPs
-     *
-     * @param array $ip The client IP
-     */
-    public function setIps(array $ips)
-    {
-        $this->ips = $ips;
-    }
-
-
-    /**
-     * Returns the real client IP
+     * Returns the client IP
      *
      * @return string|null The client IP
      */
@@ -453,25 +393,6 @@ class Request
         $ips = $this->getIps();
 
         return isset($ips[0]) ? $ips[0] : null;
-    }
-
-
-    /**
-     * Set the client IP
-     *
-     * @param string $ip The client IP
-     */
-    public function setIp($ip)
-    {
-        $ips = $this->getIps();
-
-        if (($key = array_search($ip, $ips)) !== false) {
-            array_splice($ips, $key, 1);
-        }
-
-        array_unshift($ips, $ip);
-
-        $this->setIps($ips);
     }
 
 
@@ -575,54 +496,41 @@ class Request
 
 
     /**
-     * Sets the authentication data
-     *
-     * @param data
-     */
-    public function setAuthentication(array $authentication = null)
-    {
-        $this->authentication = $authentication;
-    }
-
-
-    /**
      * Gets the authentication data
      *
      * @return array|false
      */
     public function getAuthentication()
     {
-        if (!isset($this->authentication)) {
-            $this->authentication = false;
+        if (!($authorization = $this->headers->get('Authorization'))) {
+            return false;
+        }
 
-            if (($authorization = $this->headers->get('Authorization'))) {
-                if (strpos($authorization, 'Basic') === 0) {
-                    $authorization = explode(':', base64_decode(substr($authorization, 6)), 2);
+        if (strpos($authorization, 'Basic') === 0) {
+            $authorization = explode(':', base64_decode(substr($authorization, 6)), 2);
 
-                    $this->authentication = [
-                        'type' => 'Basic',
-                        'username' => $authorization[0],
-                        'password' => isset($authorization[1]) ? $authorization[1] : null
-                    ];
-                } else if (strpos($authorization, 'Digest') === 0) {
-                    $needed_parts = ['nonce' => 1, 'nc' => 1, 'cnonce' => 1, 'qop' => 1, 'username' => 1, 'uri' => 1, 'response' => 1];
-                    $data = ['type' => 'Digest'];
+            return [
+                'type' => 'Basic',
+                'username' => $authorization[0],
+                'password' => isset($authorization[1]) ? $authorization[1] : null
+            ];
+        } else if (strpos($authorization, 'Digest') === 0) {
+            $needed_parts = ['nonce' => 1, 'nc' => 1, 'cnonce' => 1, 'qop' => 1, 'username' => 1, 'uri' => 1, 'response' => 1];
+            $data = ['type' => 'Digest'];
 
-                    preg_match_all('@('.implode('|', array_keys($needed_parts)).')=(?:([\'"])([^\2]+?)\2|([^\s,]+))@', substr($authorization, 7), $matches, PREG_SET_ORDER);
+            preg_match_all('@('.implode('|', array_keys($needed_parts)).')=(?:([\'"])([^\2]+?)\2|([^\s,]+))@', substr($authorization, 7), $matches, PREG_SET_ORDER);
 
-                    foreach ($matches as $m) {
-                        $data[$m[1]] = $m[3] ? $m[3] : $m[4];
-                        unset($needed_parts[$m[1]]);
-                    }
+            foreach ($matches as $m) {
+                $data[$m[1]] = $m[3] ? $m[3] : $m[4];
+                unset($needed_parts[$m[1]]);
+            }
 
-                    if (!$needed_parts) {
-                        $this->authentication = $data;
-                    }
-                }
+            if (!$needed_parts) {
+                return $data;
             }
         }
 
-        return $this->authentication;
+        return false;
     }
 
 

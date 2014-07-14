@@ -8,6 +8,64 @@ namespace Fol\Http;
 
 class CurlDispatcher
 {
+    protected $options = [];
+
+
+    /**
+     * Constructor
+     * 
+     * @param array $options
+     */
+    public function __construct(array $options = null)
+    {
+        if ($options) {
+            $this->setOptions($options);
+        }
+    }
+
+
+    /**
+     * Set custom curl options
+     * 
+     * @param array $options
+     */
+    public function setOptions(array $options)
+    {
+        $this->options = $options;
+    }
+
+
+    /**
+     * Executes a request and returns a response
+     * 
+     * @param Request  $request
+     * 
+     * @return Response
+     */
+    public function getResponse(Request $request, Response $response = null)
+    {
+        if (!$response) {
+            $response = new Response;
+            $response->setBody('php://temp', true);
+        }
+
+        $connection = $this->prepare($request, $response);
+        $return = curl_exec($connection);
+
+        if (!$response->isStream()) {
+            $response->setBody($return);
+        }
+
+        $info = curl_getinfo($connection);
+        curl_close($connection);
+
+        $response->setStatus($info['http_code']);
+
+        return $response;
+    }
+
+
+
     /**
      * Prepares the curl connection before execute
      * 
@@ -16,11 +74,11 @@ class CurlDispatcher
      * 
      * @return resource The cURL handle
      */
-	protected function prepare(Request $request, Response $response, &$stream = null)
+	protected function prepare(Request $request, Response $response)
 	{
 		$connection = curl_init();
 
-		curl_setopt_array($connection, array(
+		curl_setopt_array($connection, [
             CURLOPT_URL => $request->getUrl(),
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_CONNECTTIMEOUT => 10,
@@ -29,7 +87,7 @@ class CurlDispatcher
             CURLOPT_SSL_VERIFYHOST => false,
             CURLOPT_COOKIE => $request->cookies->getAsString(null, ''),
             CURLOPT_SAFE_UPLOAD => true
-        ));
+        ]);
 
         curl_setopt($connection, CURLOPT_HTTPHEADER, $request->headers->getAsString());
 
@@ -53,9 +111,9 @@ class CurlDispatcher
         	return strlen($string);
         });
 
-        if ($stream) {
-            curl_setopt($connection, CURLOPT_WRITEFUNCTION, function ($connection, $string) use ($stream) {
-                return fwrite($stream, $string, strlen($string));
+        if ($response->isStream()) {
+            curl_setopt($connection, CURLOPT_WRITEFUNCTION, function ($connection, $string) use ($response) {
+                return $response->write($string, strlen($string));
             });
         }
 
@@ -67,42 +125,23 @@ class CurlDispatcher
 
     	if ($data) {
     		curl_setopt($connection, CURLOPT_POSTFIELDS, $data);
-    	}
+    	} else if (($body = $request->getBody())) {
+            if (is_string($body)) {
+                curl_setopt($connection, CURLOPT_POSTFIELDS, $body);
+            } else {
+                curl_setopt($connection, CURLOPT_INFILE, $body);
+                curl_setopt($connection, CURLOPT_INFILESIZE, 1024);
+
+                curl_setopt($connection, CURLOPT_READFUNCTION, function ($connection, $stream, $length) {
+                    return fread($stream, $length);
+                });
+            }
+        }
+
+        if ($this->options) {
+            curl_setopt_array($connection, $this->options);
+        }
 
     	return $connection;
-	}
-
-
-    /**
-     * Executes a request and returns a response
-     * 
-     * @param Request  $request
-     * 
-     * @return Response
-     */
-	public function getResponse(Request $request, Response $response = null, &$stream = null)
-	{
-        if (!$response) {
-            $response = new Response;
-        }
-
-        if ($stream && (!is_resource($stream) || (get_resource_type($stream) !== 'stream'))) {
-            throw new \Exception('Not valid stream resource provided');
-        }
-
-		$connection = $this->prepare($request, $response, $stream);
-
-        $return = curl_exec($connection);
-
-        if (!$stream) {
-            $response->setContent($return);
-        }
-
-        $info = curl_getinfo($connection);
-		curl_close($connection);
-
-        $response->setStatus($info['http_code']);
-
-		return $response;
 	}
 }

@@ -56,14 +56,14 @@ class ErrorRoute implements \ArrayAccess
         }
 
         if ($return instanceof Response) {
-            $return->appendContent(ob_get_clean());
+            $return->write(ob_get_clean());
 
             $return->prepare($request);
 
             return $return;
         }
 
-        $response->appendContent(ob_get_clean().$return);
+        $response->write(ob_get_clean().$return);
 
         $response->prepare($request);
 

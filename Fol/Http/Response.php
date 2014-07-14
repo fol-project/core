@@ -6,26 +6,13 @@
  */
 namespace Fol\Http;
 
-class Response
+class Response extends Message
 {
-    public $headers;
     public $cookies;
 
-    protected $content;
-    protected $sendContentCallback;
-    protected $status;
-    protected $headersSent = false;
-
-
-    public static function __set_state($array)
-    {
-        $Response = new static($array['content'], $array['status'][0]);
-
-        $Response->headers = $array['headers'];
-        $Response->cookies = $array['cookies'];
-
-        return $Response;
-    }
+    private $sendCallback;
+    private $status;
+    private $headersSent = false;
 
 
     /**
@@ -37,11 +24,11 @@ class Response
      */
     public function __construct ($content = '', $status = 200, array $headers = array())
     {
-        $this->setContent($content);
+        $this->setBody($content);
         $this->setStatus($status);
 
         $this->headers = new Headers($headers);
-        $this->cookies = new Cookies();
+        $this->cookies = new OutputCookies();
         $this->cookies->setDefaults([], BASE_URL);
     }
 
@@ -64,7 +51,7 @@ class Response
         $text = sprintf('HTTP/1.1 %s', $this->status[0], $this->status[1]);
         $text .= "\nCookies:\n".$this->cookies;
         $text .= "\nHeaders:\n".$this->headers;
-        $text .= "\n\n".$this->content;
+        $text .= "\n\n".$this->getBody(true);
 
         return $text;
     }
@@ -158,50 +145,6 @@ class Response
 
 
     /**
-     * Sets the content of the response body
-     *
-     * @param mixed $content The text content
-     */
-    public function setContent($content)
-    {
-        $this->content = (string) $content;
-    }
-
-
-    /**
-     * Appends more content to the response body
-     *
-     * @param string $content The text content to append
-     */
-    public function appendContent($content)
-    {
-        $this->content .= (string) $content;
-    }
-
-
-    /**
-     * Prepends content to the response body
-     *
-     * @param string $content The text content to prepend
-     */
-    public function prependContent($content)
-    {
-        $this->content = (string) $content.$this->content;
-    }
-
-
-    /**
-     * Gets the body content
-     *
-     * @return string The body of the response
-     */
-    public function getContent()
-    {
-        return $this->content;
-    }
-
-
-    /**
      * Sets the status code
      *
      * @param integer $code The status code (for example 404)
@@ -244,12 +187,12 @@ class Response
      */
     public function send()
     {
-        if (!$this->headersSent) {
+        if ($this->sendCallback) {
+            call_user_func($this->sendCallback, $this);
+        } else {
             $this->sendHeaders();
-            $this->headersSent = true;
+            $this->sendContent();
         }
-
-        $this->sendContent();
 
         static::flush();
     }
@@ -262,10 +205,13 @@ class Response
      */
     public function sendHeaders()
     {
-        header(sprintf('HTTP/1.1 %s', $this->status[0], $this->status[1]));
+        if (!$this->headersSent) {
+            header(sprintf('HTTP/1.1 %s', $this->status[0], $this->status[1]));
 
-        $this->headers->send();
-        $this->cookies->send();
+            $this->headers->send();
+            $this->cookies->send();
+            $this->headersSent = true;
+        }
 
         return true;
     }
@@ -278,10 +224,19 @@ class Response
     {
         static::flush();
 
-        if ($this->sendContentCallback) {
-            call_user_func($this->sendContentCallback, $this->getContent());
+        if ($this->isStream()) {
+            $body = $this->getBody();
+
+            rewind($body);
+
+            while (!feof($body)) {
+                echo fread($body, 1024);
+                flush();
+            }
+
+            fclose($body);
         } else {
-            echo $this->getContent();
+            echo $this->body;
         }
     }
 
@@ -289,9 +244,9 @@ class Response
     /**
      * Set the content callback
      */
-    public function setSendContentCallback(callable $callback)
+    public function setSendCallback(callable $callback = null)
     {
-        $this->sendContentCallback = $callback;
+        $this->sendCallback = $callback;
     }
 
 

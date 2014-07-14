@@ -8,7 +8,7 @@ namespace Fol\Http;
 
 use Fol\ContainerTrait;
 
-class Cookies implements \ArrayAccess
+class OutputCookies implements \ArrayAccess
 {
     use ContainerTrait;
 

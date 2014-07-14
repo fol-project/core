@@ -85,31 +85,6 @@ class Globals
 
 
     /**
-     * Gets the all global request ips
-     * 
-     * @return string|null
-     */
-    public static function getIps()
-    {
-        $ips = [];
-
-        foreach (['HTTP_CLIENT_IP', 'HTTP_X_FORWARDED_FOR', 'REMOTE_ADDR'] as $key) {
-            if (!self::has($key)) {
-                continue;
-            }
-
-            foreach (explode(',', self::get($key)) as $ip) {
-                if (!empty($ip) && $ip !== 'unknown') {
-                    $ips[] = $ip;
-                }
-            }
-        }
-
-        return $ips;
-    }
-
-
-    /**
      * Gets the global headers
      * 
      * @return array
@@ -167,7 +142,24 @@ class Globals
      */
     public static function getPost()
     {
-        return (array) filter_input_array(INPUT_POST);
+        if (($data = (array) filter_input_array(INPUT_POST))) {
+            return $data;
+        }
+
+        if (in_array(self::getMethod(), ['POST', 'PUT', 'DELETE'])) {
+            $contentType = self::get('CONTENT_TYPE');
+
+            if (strpos($contentType, 'application/x-www-form-urlencoded') === 0) {
+                parse_str(file_get_contents('php://input'), $data);
+                return $data ?: [];
+            }
+
+            if (strpos($contentType, 'application/json') === 0) {
+                return json_decode(file_get_contents('php://input'), true) ?: [];
+            }
+        }
+
+        return [];
     }
 
 
@@ -253,31 +245,5 @@ class Globals
         }
 
         return $results;
-    }
-
-
-    /**
-     * Gets the global request payload
-     * 
-     * @return null|array
-     */
-    public static function getPayload()
-    {
-        if (!in_array(self::getMethod(), ['POST', 'PUT', 'DELETE'])) {
-            return null;
-        }
-
-        $contentType = self::get('CONTENT_TYPE');
-
-        if (strpos($contentType, 'application/x-www-form-urlencoded') === 0) {
-            parse_str(file_get_contents('php://input'), $data);
-            return $data;
-        }
-
-        if (strpos($contentType, 'application/json') === 0) {
-            return json_decode(file_get_contents('php://input'), true);
-        }
-
-        return null;
     }
 }
