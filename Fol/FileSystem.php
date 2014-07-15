@@ -11,14 +11,32 @@ class FileSystem
     private $path;
 
     /**
-     * static function to resolve '//' or '/./' or '/foo/../' in a path
+     * static function to fix paths '//' or '/./' or '/foo/../' in a path
      *
-     * @param string $path Path to resolve
+     * @param string $path1, $path2, ... Path to resolve
      *
      * @return string
      */
-    public static function fixPath($path)
+    public static function fixPath()
     {
+        $path = [];
+
+        foreach (func_get_args() as $piece) {
+            if (empty($piece)) {
+                continue;
+            }
+
+            $piece = str_replace('\\', '/', $piece);
+
+            if ($piece[0] === '/' || preg_match('|^\w:/|', $piece)) { // it's absolute?
+                $path = [$piece];
+            } else {
+                $path[] = $piece;
+            }
+        }
+
+        $path = implode('/', $path);
+
         $replace = ['#(/\.?/)#', '#/(?!\.\.)[^/]+/\.\./#'];
 
         do {
@@ -27,6 +45,7 @@ class FileSystem
 
         return $path;
     }
+
 
     /**
      * Constructor
@@ -39,6 +58,7 @@ class FileSystem
             $this->cd($path);
         }
     }
+
 
     /**
      * Returns the current path or a relative path
@@ -53,9 +73,8 @@ class FileSystem
             return $this->path;
         }
 
-        return self::fixPath($this->path.'/'.$path);
+        return self::fixPath($this->path, $path);
     }
-
 
     /**
      * Open a file and returns a splFileObject instance.
@@ -72,7 +91,6 @@ class FileSystem
         return new \SplFileObject($this->getPath($path), $openMode);
     }
 
-
     /**
      * Returns a SplFileInfo instance to access to the file info
      *
@@ -86,7 +104,6 @@ class FileSystem
     {
         return new \SplFileInfo($this->getPath($path));
     }
-
 
     /**
      * Change the current directory
@@ -107,6 +124,7 @@ class FileSystem
         return $this;
     }
 
+
     /**
      * Returns a recursive iterator to explore all directories and subdirectories
      *
@@ -118,6 +136,7 @@ class FileSystem
     {
         return new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($this->getPath($path), \FilesystemIterator::SKIP_DOTS), \RecursiveIteratorIterator::CHILD_FIRST);
     }
+
 
     /**
      * Returns an iterator to explore the current path
@@ -140,6 +159,7 @@ class FileSystem
         return new \FilesystemIterator($path, $flags);
     }
 
+
     /**
      * Returns a glob iterator to explore the current path
      *
@@ -160,6 +180,7 @@ class FileSystem
 
         return new \GlobIterator($path, $flags);
     }
+
 
     /**
      * Remove all files and subdirectories of the current path
@@ -185,6 +206,7 @@ class FileSystem
         return $this;
     }
 
+
     /**
      * Remove the current path and all its content
      *
@@ -204,6 +226,7 @@ class FileSystem
 
         return $this;
     }
+
 
     /**
      * Creates a new directory
@@ -225,14 +248,15 @@ class FileSystem
         return $this;
     }
 
-
     /**
      * Copy a file
      *
      * @param mixed       $original The original file. It can be an array (from $_FILES), an url, a base64 file or a path
      * @param null|string $name     The name of the created file. If it's not specified, use the same name of the original file. For base64 files, this parameter is required.
      *
-     * @return string The created filename or false if there was an error
+     * @throws \Exception On error
+     *
+     * @return \SplFileInfo The created filename
      */
     public function copy($original, $name = null)
     {
@@ -254,8 +278,9 @@ class FileSystem
             throw new \Exception("Unable to copy '$original' to '$destination'");
         }
 
-        return $name;
+        return new \SplFileInfo($destination);
     }
+
 
     /**
      * Private function to save a file from upload ($_FILES)
@@ -263,12 +288,14 @@ class FileSystem
      * @param array       $original Original file data
      * @param null|string $name     Name used for the new file
      *
-     * @return string The created file path or false if there was an error
+     * @throws \Exception On error
+     *
+     * @return \SplFileInfo The created filename
      */
     private function saveFromUpload(array $original, $name = null)
     {
         if (empty($original['tmp_name']) || !empty($original['error'])) {
-            return false;
+            throw new \Exception("Unable to copy the uploaded file because has an error");
         }
 
         $destination = $this->getDestination($original['name'], $name);
@@ -277,8 +304,9 @@ class FileSystem
             throw new \Exception("Unable to copy '$original' to '$destination'");
         }
 
-        return $destination;
+        return new \SplFileInfo($destination);
     }
+
 
     /**
      * Private function to save a file from base64 string
@@ -286,7 +314,9 @@ class FileSystem
      * @param array  $original Original data
      * @param string $name     Name used for the new file
      *
-     * @return string The created filename or false if there was an error
+     * @throws \Exception On error
+     *
+     * @return \SplFileInfo The created filename
      */
     private function saveFromBase64($original, $name = null)
     {
@@ -306,8 +336,9 @@ class FileSystem
             throw new \Exception("Unable to copy base64 to '$destination'");
         }
 
-        return $destination;
+        return new \SplFileInfo($destination);
     }
+
 
     /**
      * Private function to save a file from an url
@@ -315,7 +346,9 @@ class FileSystem
      * @param string      $original Original file url
      * @param null|string $name     Name used for the new file
      *
-     * @return string The created filename or false if there was an error
+     * @throws \Exception On error
+     *
+     * @return \SplFileInfo The created filename
      */
     private function saveFromUrl($original, $name = null)
     {
@@ -325,8 +358,9 @@ class FileSystem
             throw new \Exception("Unable to copy '$original' to '$destination'");
         }
 
-        return $destination;
+        return new \SplFileInfo($destination);
     }
+
 
     /**
      * Gets the destination filename before save it
@@ -349,7 +383,7 @@ class FileSystem
         $destination = $this->getPath($newFilename);
 
         if (is_dir($destination)) {
-            return self::fixPath($destination.'/'.$oldFilename);
+            return self::fixPath($destination, $oldFilename);
         }
 
         if (!pathinfo($destination, PATHINFO_EXTENSION) && ($path = parse_url($oldFilename, PHP_URL_PATH)) && ($extension = pathinfo($path, PATHINFO_EXTENSION))) {
