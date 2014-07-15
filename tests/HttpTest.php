@@ -78,15 +78,15 @@ class HttpTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals($response->getStatus(), 200);
 		$this->assertEquals($response->getStatus(true), 'OK');
 		$this->assertEquals($response->headers->get('Content-Type'), 'text/json; charset=UTF-8');
-		$this->assertEquals($response->getContent(), '');
+		$this->assertEquals($response->getBody(), '');
 
 		//Modify some response properties
 		$response->setStatus(202);
-		$response->setContent('Hello world');
+		$response->setBody('Hello world');
 
 		$this->assertEquals($response->getStatus(), 202);
 		$this->assertEquals($response->getStatus(true), 'Accepted');
-		$this->assertEquals($response->getContent(), 'Hello world');
+		$this->assertEquals($response->getBody(), 'Hello world');
 
 		//Redirection
 		$response->redirect('http://site.com');
