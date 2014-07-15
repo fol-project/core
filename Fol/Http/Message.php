@@ -122,7 +122,7 @@ abstract class Message
             return fwrite($this->getBody(), $content, $length);
         }
 
-        $this->body += (string) $content;
+        $this->body .= (string) $content;
     }
 
     /**
