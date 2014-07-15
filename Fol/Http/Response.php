@@ -135,7 +135,7 @@ class Response extends Message
         }
 
         if ($request->getMethod() === 'HEAD') {
-            $this->setContent('');
+            $this->setBody('');
         }
 
         if (($session = $request->getSession())) {

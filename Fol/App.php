@@ -161,7 +161,7 @@ abstract class App
      */
     public function get($name)
     {
-        if (isset($this->services[$name])) {
+        if (!empty($this->services[$name])) {
             if (func_num_args() === 1) {
                 return $this->services[$name]();
             }

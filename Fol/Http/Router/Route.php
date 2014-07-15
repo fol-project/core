@@ -166,33 +166,6 @@ class Route implements \ArrayAccess
 
 
     /**
-     * Reverse the route, returning a Request object
-     *
-     * @param array $parameters Optional array of parameters to use in URL
-     *
-     * @return Request The request instance
-     */
-    public function generateRequest(array $parameters = array())
-    {
-        $request = new Request($this->generate($parameters));
-
-        if ($this->method) {
-            $request->setMethod(is_array($this->method) ? $this->method[0] : $this->method);
-        }
-
-        if ($this->ip) {
-            $request->setIp(is_array($this->ip) ? $this->ip[0] : $this->ip);
-        }
-
-        if ($this->language) {
-            $request->setLanguage(is_array($this->language) ? $this->language[0] : $this->language);
-        }
-
-        return $request;
-    }
-
-
-    /**
      * Execute the route and returns the response object
      *
      * @param Request $request   The request to send to controller
