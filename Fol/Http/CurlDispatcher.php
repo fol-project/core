@@ -8,48 +8,29 @@ namespace Fol\Http;
 
 class CurlDispatcher
 {
-    protected $options = [];
-
-
-    /**
-     * Constructor
-     * 
-     * @param array $options
-     */
-    public function __construct(array $options = null)
-    {
-        if ($options) {
-            $this->setOptions($options);
-        }
-    }
-
-
-    /**
-     * Set custom curl options
-     * 
-     * @param array $options
-     */
-    public function setOptions(array $options)
-    {
-        $this->options = $options;
-    }
-
 
     /**
      * Executes a request and returns a response
-     * 
+     *
      * @param Request  $request
-     * 
+     * @param Response $response
+     * @param array    $options  Extra options passed to curl
+     *
      * @return Response
      */
-    public function getResponse(Request $request, Response $response = null)
+    public static function execute(Request $request, Response $response = null, array $options = null)
     {
         if (!$response) {
             $response = new Response;
             $response->setBody('php://temp', true);
         }
 
-        $connection = $this->prepare($request, $response);
+        $connection = static::prepare($request, $response);
+
+        if ($options) {
+            curl_setopt_array($connection, $options);
+        }
+
         $return = curl_exec($connection);
 
         if (!$response->isStream()) {
@@ -64,23 +45,22 @@ class CurlDispatcher
         return $response;
     }
 
-
-
     /**
      * Prepares the curl connection before execute
-     * 
+     *
      * @param Request  $request
      * @param Response $response
-     * 
+     *
      * @return resource The cURL handle
      */
-	protected function prepare(Request $request, Response $response)
-	{
-		$connection = curl_init();
+    protected static function prepare(Request $request, Response $response)
+    {
+        $connection = curl_init();
 
-		curl_setopt_array($connection, [
+        curl_setopt_array($connection, [
             CURLOPT_URL => $request->getUrl(),
-            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_RETURNTRANSFER => ($response->isStream() === false),
+            CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_CONNECTTIMEOUT => 10,
             CURLOPT_TIMEOUT => 10,
             CURLOPT_SSL_VERIFYPEER => false,
@@ -92,23 +72,23 @@ class CurlDispatcher
         curl_setopt($connection, CURLOPT_HTTPHEADER, $request->headers->getAsString());
 
         if ($request->getMethod() === 'POST') {
-        	curl_setopt($connection, CURLOPT_POST, true);
-        } else if ($request->getMethod() === 'PUT') {
-        	curl_setopt($connection, CURLOPT_PUT, true);
-        } else if ($request->getMethod() !== 'GET') {
-        	curl_setopt($connection, CURLOPT_CUSTOMREQUEST, $request->getMethod());
+            curl_setopt($connection, CURLOPT_POST, true);
+        } elseif ($request->getMethod() === 'PUT') {
+            curl_setopt($connection, CURLOPT_PUT, true);
+        } elseif ($request->getMethod() !== 'GET') {
+            curl_setopt($connection, CURLOPT_CUSTOMREQUEST, $request->getMethod());
         }
 
         curl_setopt($connection, CURLOPT_HEADERFUNCTION, function ($connection, $string) use ($response) {
-        	if (strpos($string, ':')) {
+            if (strpos($string, ':')) {
                 $response->headers->setFromString($string, false);
 
-        		if (strpos($string, 'Set-Cookie') === 0) {
+                if (strpos($string, 'Set-Cookie') === 0) {
                     $response->cookies->setFromString($string);
                 }
-        	}
+            }
 
-        	return strlen($string);
+            return strlen($string);
         });
 
         if ($response->isStream()) {
@@ -119,13 +99,13 @@ class CurlDispatcher
 
         $data = $request->data->get();
 
-		foreach ($request->files->get() as $name => $file) {
-			$data[$name] = new CURLFile($file, '', $name);
-		}
+        foreach ($request->files->get() as $name => $file) {
+            $data[$name] = new CURLFile($file, '', $name);
+        }
 
-    	if ($data) {
-    		curl_setopt($connection, CURLOPT_POSTFIELDS, $data);
-    	} else if (($body = $request->getBody())) {
+        if ($data) {
+            curl_setopt($connection, CURLOPT_POSTFIELDS, $data);
+        } elseif (($body = $request->getBody())) {
             if (is_string($body)) {
                 curl_setopt($connection, CURLOPT_POSTFIELDS, $body);
             } else {
@@ -138,10 +118,6 @@ class CurlDispatcher
             }
         }
 
-        if ($this->options) {
-            curl_setopt_array($connection, $this->options);
-        }
-
-    	return $connection;
-	}
+        return $connection;
+    }
 }

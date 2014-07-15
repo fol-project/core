@@ -6,14 +6,11 @@
  */
 namespace Fol;
 
-use Psr\Log\LoggerInterface;
-
 class Errors
 {
     protected static $handlers = array();
     protected static $isRegistered = false;
     protected static $displayErrors = false;
-
 
     /**
      * Enable or disable the error displaying
@@ -25,7 +22,6 @@ class Errors
         static::$displayErrors = $display;
     }
 
-
     /**
      * Register the php error log file.
      */
@@ -33,7 +29,6 @@ class Errors
     {
         ini_set('error_log', $file);
     }
-
 
     /**
      * Pushes a handler to the end of the stack.
@@ -49,7 +44,6 @@ class Errors
         static::$handlers[] = $handler;
     }
 
-
     /**
      * Removes the last handler and returns it
      *
@@ -59,7 +53,6 @@ class Errors
     {
         return array_pop(static::$handlers);
     }
-
 
     /**
      * Register the error handler.
@@ -78,7 +71,6 @@ class Errors
         }
     }
 
-
     /**
      * Unregister the error handler. Restore the error handler to previous status.
      */
@@ -95,7 +87,6 @@ class Errors
         }
     }
 
-
     /**
      * Converts a php error to an exception and handle it
      *
@@ -111,7 +102,6 @@ class Errors
         }
     }
 
-
     /**
      * Converts a php shutdown error to an exception and handle it
      */
@@ -121,7 +111,6 @@ class Errors
             static::handleError($error['type'], $error['message'], $error['file'], $error['line']);
         }
     }
-
 
     /**
      * Execute all registered callbacks
@@ -138,7 +127,6 @@ class Errors
             echo (ACCESS_INTERFACE === 'cli') ? self::getTextException($exception) : self::getHtmlException($exception);
         }
     }
-
 
     /**
      * Returns an exception info as HTML
@@ -167,7 +155,6 @@ class Errors
 EOT;
     }
 
-
     /**
      * Returns an exception info as plain text
      *
@@ -188,7 +175,6 @@ EOT;
             .$previous
             .(($deep === 0) ? "\n=======================\n" : "\n");
     }
-
 
     /**
      * Returns an exception info as array
@@ -222,7 +208,6 @@ EOT;
             'previous' => $previous
         ];
     }
-
 
     /**
      * Returns an exception info as json

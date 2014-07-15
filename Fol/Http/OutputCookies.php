@@ -14,13 +14,12 @@ class OutputCookies implements \ArrayAccess
 
     protected $defaults = [];
 
-
     /**
      * Returns the default values for the cookies
-     * 
+     *
      * @param string $baseUrl  Url base to calculate the defaults
      * @param array  $defaults User custom defaults
-     * 
+     *
      * @return array
      */
     public static function calculateDefaults($baseUrl, array $defaults = array())
@@ -40,7 +39,6 @@ class OutputCookies implements \ArrayAccess
         ];
     }
 
-
     /**
      * Sets the cookies default values
      *
@@ -56,17 +54,15 @@ class OutputCookies implements \ArrayAccess
         $this->defaults = $defaults;
     }
 
-
     /**
      * Gets the cookies default values
-     * 
+     *
      * @return array
      */
     public function getDefaults()
     {
         return $this->defaults;
     }
-
 
     /**
      * Magic function to converts all cookies to a string
@@ -81,7 +77,6 @@ class OutputCookies implements \ArrayAccess
 
         return $text;
     }
-
 
     /**
      * Sends the cookies to the browser
@@ -102,7 +97,6 @@ class OutputCookies implements \ArrayAccess
 
         return true;
     }
-
 
     /**
      * Sets a new cookie
@@ -137,7 +131,6 @@ class OutputCookies implements \ArrayAccess
         $this->items[$name] = $data + $this->defaults;
     }
 
-
     /**
      * Deletes a cookie
      *
@@ -152,12 +145,11 @@ class OutputCookies implements \ArrayAccess
         $this->set($name, '', 1, $path, $domain, $secure, $httponly);
     }
 
-
     /**
      * Returns a cookie as string
      *
-     * @param string  $name     The cookie name
-     * 
+     * @param string $name The cookie name
+     *
      * @return string|null
      */
     public function getAsString($name = null)
@@ -203,12 +195,11 @@ class OutputCookies implements \ArrayAccess
         return $string;
     }
 
-
     /**
      * Adds a new cookie from a Set-Cookie header string
-     * 
+     *
      * @param string $cookie
-     * 
+     *
      * @return boolean
      */
     public function setFromString($string)

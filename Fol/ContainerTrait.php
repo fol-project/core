@@ -24,7 +24,6 @@ trait ContainerTrait
         return $instance;
     }
 
-
     /**
      * Constructor class. You can define the items directly
      *
@@ -36,7 +35,6 @@ trait ContainerTrait
             $this->set($items);
         }
     }
-
 
     /**
      * ArrayAcces interface methods
@@ -61,7 +59,6 @@ trait ContainerTrait
         $this->delete($offset);
     }
 
-
     /**
      * Converts all items to a string
      */
@@ -80,7 +77,6 @@ trait ContainerTrait
         return $text;
     }
 
-
     /**
      * Counts all stored parameteres
      *
@@ -90,7 +86,6 @@ trait ContainerTrait
     {
         return count($this->items);
     }
-
 
     /**
      * Gets one or all parameters.
@@ -116,7 +111,6 @@ trait ContainerTrait
         return $default;
     }
 
-
     /**
      * Sets one parameter or various new parameters
      *
@@ -137,7 +131,6 @@ trait ContainerTrait
 
         return $this;
     }
-
 
     /**
      * Deletes one or all parameters
@@ -160,7 +153,6 @@ trait ContainerTrait
         return $this;
     }
 
-
     /**
      * Checks if a parameter exists
      *
@@ -172,7 +164,6 @@ trait ContainerTrait
     {
         return array_key_exists($name, $this->items);
     }
-
 
     /**
      * Function executed only to restore a previous saved state

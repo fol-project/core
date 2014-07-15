@@ -6,8 +6,6 @@
  */
 namespace Fol\Http;
 
-use Fol\Http\Globals;
-
 class Request extends Message
 {
     protected $method = 'GET';
@@ -24,7 +22,6 @@ class Request extends Message
     public $files;
     public $cookies;
     public $route;
-
 
     /**
      * Creates a new request object from global values
@@ -43,14 +40,13 @@ class Request extends Message
         return $request;
     }
 
-
     /**
      * Creates a new custom request object
      *
-     * @param string $url        The request url or path
-     * @param string $method     The method of the request (GET, POST, PUT, DELETE)
-     * @param array  $vars       The parameters of the request (GET, POST, etc)
-     * @param array  $headers    The headers of the request
+     * @param string $url     The request url or path
+     * @param string $method  The method of the request (GET, POST, PUT, DELETE)
+     * @param array  $vars    The parameters of the request (GET, POST, etc)
+     * @param array  $headers The headers of the request
      *
      * @return Request The object with the specified data
      */
@@ -80,17 +76,16 @@ class Request extends Message
         return $request;
     }
 
-
     /**
      * Generates an url
-     * 
+     *
      * @param string  $scheme
      * @param string  $host
      * @param integer $port
      * @param string  $path
      * @param string  $format
      * @param array   $query
-     * 
+     *
      * @return string
      */
     public static function buildUrl($scheme, $host, $port, $path, $format, array $query = null)
@@ -124,16 +119,15 @@ class Request extends Message
         return $url;
     }
 
-
     /**
      * Constructor
      *
-     * @param string $url        The request url
-     * @param array  $headers    The request headers
-     * @param array  $query      The url parameters
-     * @param array  $data       The request payload data
-     * @param array  $files      The FILES parameters
-     * @param array  $cookies    The request cookies
+     * @param string $url     The request url
+     * @param array  $headers The request headers
+     * @param array  $query   The url parameters
+     * @param array  $data    The request payload data
+     * @param array  $files   The FILES parameters
+     * @param array  $cookies The request cookies
      */
     public function __construct($url = null, array $headers = array(), array $query = array(), array $data = array(), array $files = array(), array $cookies = array())
     {
@@ -155,7 +149,6 @@ class Request extends Message
         }
     }
 
-
     /**
      * Magic function to clone the internal objects
      */
@@ -168,13 +161,12 @@ class Request extends Message
         $this->headers = clone $this->headers;
     }
 
-
     /**
      * Creates a subrequest based in this request
      *
-     * @param string $url        The request url or path
-     * @param string $method     The method of the request (GET, POST, PUT, DELETE)
-     * @param array  $vars       The parameters of the request (GET, POST, etc)
+     * @param string $url    The request url or path
+     * @param string $method The method of the request (GET, POST, PUT, DELETE)
+     * @param array  $vars   The parameters of the request (GET, POST, etc)
      *
      * @return Request The object with the specified data
      */
@@ -187,7 +179,6 @@ class Request extends Message
 
         return $request;
     }
-
 
     /**
      * Magic function to convert the request to a string
@@ -213,7 +204,6 @@ class Request extends Message
         return $text;
     }
 
-
     /**
      * Set a new url to the request
      *
@@ -238,7 +228,6 @@ class Request extends Message
         }
     }
 
-    
     /**
      * Returns the full url
      *
@@ -251,7 +240,6 @@ class Request extends Message
         return self::buildUrl($this->getScheme(), $this->getHost(), $this->getPort(), $this->getPath(), $this->getFormat(), ($query === true) ? $this->query->get() : null);
     }
 
-
     /**
      * Gets the current path
      *
@@ -261,7 +249,6 @@ class Request extends Message
     {
         return $this->path;
     }
-
 
     /**
      * Sets a new current path
@@ -280,7 +267,6 @@ class Request extends Message
         $this->path = preg_replace('|^/?([^/].*)?/?$|U', '/$1', $path);
     }
 
-
     /**
      * Gets the requested format.
      *
@@ -290,7 +276,6 @@ class Request extends Message
     {
         return $this->format;
     }
-
 
     /**
      * Sets the a new format
@@ -302,7 +287,6 @@ class Request extends Message
         $this->format = strtolower($format);
     }
 
-
     /**
      * Returns the client language
      *
@@ -312,7 +296,6 @@ class Request extends Message
     {
         return $this->language;
     }
-
 
     /**
      * Set the client language
@@ -324,10 +307,9 @@ class Request extends Message
         $this->language = strtolower($language);
     }
 
-
     /**
      * Gets the preferred language
-     * 
+     *
      * @param array $locales Ordered available languages
      *
      * @param string|null
@@ -339,7 +321,7 @@ class Request extends Message
         if ($locales === null) {
             return isset($languages[0]) ? Headers::getLanguage($languages[0]) : null;
         }
-        
+
         if (!$languages) {
             return isset($locales[0]) ? Headers::getLanguage($locales[0]) : null;
         }
@@ -348,7 +330,6 @@ class Request extends Message
 
         return Headers::getLanguage(isset($common[0]) ? $common[0] : $locales[0]);
     }
-
 
     /**
      * Returns all client IPs
@@ -382,7 +363,6 @@ class Request extends Message
         return $ips;
     }
 
-
     /**
      * Returns the client IP
      *
@@ -395,7 +375,6 @@ class Request extends Message
         return isset($ips[0]) ? $ips[0] : null;
     }
 
-
     /**
      * Detects if the request has been made by ajax or not
      *
@@ -405,7 +384,6 @@ class Request extends Message
     {
         return (strtolower($this->headers->get('X-Requested-With')) === 'xmlhttprequest') ? true : false;
     }
-
 
     /**
      * Gets the request scheme
@@ -417,7 +395,6 @@ class Request extends Message
         return $this->scheme;
     }
 
-
     /**
      * Sets the request scheme
      *
@@ -427,7 +404,6 @@ class Request extends Message
     {
         $this->scheme = strtolower($scheme);
     }
-
 
     /**
      * Gets the request host
@@ -439,7 +415,6 @@ class Request extends Message
         return $this->host;
     }
 
-
     /**
      * Sets the request host
      *
@@ -449,7 +424,6 @@ class Request extends Message
     {
         $this->host = strtolower($host);
     }
-
 
     /**
      * Gets the port on which the request is made
@@ -461,7 +435,6 @@ class Request extends Message
         return $this->port;
     }
 
-
     /**
      * Sets the port of the request
      *
@@ -471,7 +444,6 @@ class Request extends Message
     {
         $this->port = intval($port);
     }
-
 
     /**
      * Gets the request method
@@ -483,7 +455,6 @@ class Request extends Message
         return $this->method;
     }
 
-
     /**
      * Set the request method
      *
@@ -493,7 +464,6 @@ class Request extends Message
     {
         $this->method = strtoupper($method);
     }
-
 
     /**
      * Gets the authentication data
@@ -514,7 +484,7 @@ class Request extends Message
                 'username' => $authorization[0],
                 'password' => isset($authorization[1]) ? $authorization[1] : null
             ];
-        } else if (strpos($authorization, 'Digest') === 0) {
+        } elseif (strpos($authorization, 'Digest') === 0) {
             $needed_parts = ['nonce' => 1, 'nc' => 1, 'cnonce' => 1, 'qop' => 1, 'username' => 1, 'uri' => 1, 'response' => 1];
             $data = ['type' => 'Digest'];
 
@@ -533,7 +503,6 @@ class Request extends Message
         return false;
     }
 
-
     /**
      * Gets the request username
      *
@@ -545,7 +514,6 @@ class Request extends Message
 
         return isset($authentication['username']) ? $authentication['username'] : null;
     }
-
 
     /**
      * Gets the request password
@@ -559,10 +527,9 @@ class Request extends Message
         return isset($authentication['password']) ? $authentication['password'] : null;
     }
 
-
     /**
      * Validate the user password in a digest authentication
-     * 
+     *
      * @param string $password
      * @param string $realm
      *
@@ -578,7 +545,6 @@ class Request extends Message
 
         $method = $this->getMethod();
 
-
         $A1 = md5("{$authentication['username']}:{$realm}:{$password}");
         $A2 = md5("{$method}:{$authentication['uri']}");
 
@@ -586,7 +552,6 @@ class Request extends Message
 
         return ($authentication['response'] === $validResponse);
     }
-
 
     /**
      * Set the request session
@@ -604,7 +569,6 @@ class Request extends Message
         }
     }
 
-
     /**
      * Returns the session
      *
@@ -617,5 +581,19 @@ class Request extends Message
         }
 
         return $this->getMain()->getSession();
+    }
+
+    /**
+     * Sends the request and returns the response
+     *
+     * @return Response
+     */
+    public function send()
+    {
+        if ($this->sendCallback) {
+            return call_user_func($this->sendCallback, $this);
+        }
+
+        return CurlDispatcher::execute($this);
     }
 }

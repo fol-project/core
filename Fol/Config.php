@@ -14,7 +14,6 @@ class Config implements \ArrayAccess
     protected $configPaths = [];
     protected $environment;
 
-
     /**
      * Constructor method. You must define the base folder where the config files are stored
      *
@@ -29,7 +28,6 @@ class Config implements \ArrayAccess
         }
     }
 
-
     /**
      * Changes the environment name
      *
@@ -43,7 +41,6 @@ class Config implements \ArrayAccess
 
         return $this;
     }
-
 
     /**
      * Adds new base folders where search for the config files
@@ -91,7 +88,6 @@ class Config implements \ArrayAccess
         }
     }
 
-
     /**
      * Gets the data. Loads automatically the data if it has not been loaded.
      * If no name is defined, returns all loaded data
@@ -112,7 +108,6 @@ class Config implements \ArrayAccess
 
         return $this->items[$name];
     }
-
 
     /**
      * Save the configuration data into a file

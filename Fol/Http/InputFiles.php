@@ -16,7 +16,6 @@ class InputFiles extends Input
         6 => 'Missing a temporary folder'
     ];
 
-
     /**
      * Check if an uploaded file has any error
      *
@@ -34,7 +33,6 @@ class InputFiles extends Input
 
         return false;
     }
-
 
     /**
      * Returns the error code

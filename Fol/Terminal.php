@@ -10,12 +10,12 @@ class Terminal
 {
     /**
      * Executes a method from cli
-     * 
+     *
      * @param array $options The arguments passed
-     * 
+     *
      * @return mixed The value returned by the method
      */
-    public static function executeFromCli (array $options)
+    public static function executeFromCli(array $options)
     {
         //Removes file argument
         array_shift($options);
@@ -50,11 +50,10 @@ class Terminal
         echo call_user_func_array($callable, $parameters);
     }
 
-
     /**
      * Parses an array of arguments ($argv) and returns the validated arguments
      *
-     * @param array $options  The array of options to parse
+     * @param array $options The array of options to parse
      *
      * @return array An array with two subarrays: the numeric options and named options
      */
@@ -101,7 +100,6 @@ class Terminal
         return $vars;
     }
 
-
     /**
      * Launch a question to the user and returns the answer
      *
@@ -130,7 +128,6 @@ class Terminal
         }
     }
 
-
     /**
      * Executes a command.
      *
@@ -155,10 +152,10 @@ class Terminal
         }
 
         if ($callback === null) {
-            $callback = function ($stdout, $stderr, $status) {
+            $callback = function ($stdout, $stderr) {
                 if (!empty($stdout)) {
                     echo $stdout;
-                } else if (!empty($stderr)) {
+                } elseif (!empty($stderr)) {
                     echo "ERR: $stderr";
                 }
             };
@@ -166,7 +163,6 @@ class Terminal
 
         return self::executeProcess($process, $pipes, $callback);
     }
-
 
     /**
      * Executes a process.
@@ -179,9 +175,7 @@ class Terminal
      */
     public static function executeProcess($process, array &$pipes, callable $callback)
     {
-        if (function_exists('cli_set_process_title')) {
-            cli_set_process_title("FOL process");
-        }
+        cli_set_process_title('FOL process');
 
         $status = $errbuf = null;
 

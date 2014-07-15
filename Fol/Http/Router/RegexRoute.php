@@ -12,7 +12,6 @@ class RegexRoute extends Route
 {
     protected $regex;
 
-
     /**
      * {@inheritDoc}
      */
@@ -22,20 +21,19 @@ class RegexRoute extends Route
 
         if (empty($config['regex'])) {
             $this->regex = self::setRegex($this->path, isset($config['filters']) ? $config['filters'] : []);
-        }  else {
+        } else {
             $this->regex = $config['regex'];
         }
 
         $this->regex = "#^{$this->regex}$#";
     }
 
-
     /**
      * Generates the regex
-     * 
+     *
      * @param string $path
      * @param array  $filters
-     * 
+     *
      * @return string
      */
     private static function setRegex($path, array $filters)
@@ -47,7 +45,6 @@ class RegexRoute extends Route
             return "(?P<{$name}>{$filter})";
         }, $path);
     }
-
 
     /**
      * Check the regex of the request
@@ -73,7 +70,6 @@ class RegexRoute extends Route
         return false;
     }
 
-
     /**
      * Check if the route match with the request
      *
@@ -95,7 +91,6 @@ class RegexRoute extends Route
 
         return true;
     }
-
 
     /**
      * Reverse the route

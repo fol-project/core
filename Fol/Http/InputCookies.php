@@ -12,13 +12,12 @@ class InputCookies implements \ArrayAccess
 {
     use ContainerTrait;
 
-
     /**
      * Returns the cookies as a header as string
      *
-     * @param string  $name       The cookie name
-     * @param string  $headerName The cookie header name
-     * 
+     * @param string $name       The cookie name
+     * @param string $headerName The cookie header name
+     *
      * @return string|null
      */
     public function getAsString($name = null, $headerName = 'Cookie: ')
@@ -33,7 +32,7 @@ class InputCookies implements \ArrayAccess
             foreach ($this->items as $name => $value) {
                 $header .= urlencode($name).'='.urlencode($value).';';
             }
-            
+
             return $header;
         }
 
@@ -44,12 +43,11 @@ class InputCookies implements \ArrayAccess
         return $headerName.urlencode($name).'='.urlencode($value).';';
     }
 
-
     /**
      * Adds new cookies from a header string
      *
-     * @param string  $name The cookie name
-     * 
+     * @param string $name The cookie name
+     *
      * @return boolean
      */
     public function setFromString($string, $headerName = 'Cookie:')

@@ -18,7 +18,6 @@ abstract class App
     private $namespace;
     private $currentRequest;
 
-
     /**
      * Magic function to get registered services.
      *
@@ -33,25 +32,23 @@ abstract class App
         }
     }
 
-
     /**
      * User custom request execution
-     * 
+     *
      * @param Http\Request $request
-     * 
+     *
      * @return Http\Response
      */
     abstract protected function handleRequest(Http\Request $request);
 
-
     /**
      * Magic function to execute a request in this app
-     * 
+     *
      * @param Http\Request $request
-     * 
+     *
      * @return Http\Response
      */
-    public function __invoke (Request $request)
+    public function __invoke(Request $request)
     {
         $previousRequest = $this->currentRequest;
         $this->currentRequest = $request;
@@ -63,17 +60,15 @@ abstract class App
         return $response;
     }
 
-
     /**
      * Returns the current request
-     * 
+     *
      * @return null|Http\Request
      */
     public function getCurrentRequest()
     {
         return $this->currentRequest;
     }
-
 
     /**
      * Define new services
@@ -94,7 +89,6 @@ abstract class App
         $this->services[$name] = $resolver;
     }
 
-
     /**
      * Returns the namespace of the app
      *
@@ -112,7 +106,6 @@ abstract class App
 
         return $this->namespace.(($namespace[0] === '\\') ? '' : '\\').$namespace;
     }
-
 
     /**
      * Returns the absolute path of the app
@@ -132,7 +125,6 @@ abstract class App
         return FileSystem::fixPath($this->path.'/'.implode('/', func_get_args()));
     }
 
-
     /**
      * Returns the absolute url of the public directory of the path
      *
@@ -150,7 +142,6 @@ abstract class App
 
         return $this->publicUrl.FileSystem::fixPath('/'.implode('/', func_get_args()));
     }
-
 
     /**
      * Returns a registered service or a class instance

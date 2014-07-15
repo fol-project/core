@@ -12,9 +12,8 @@ abstract class Message
 
     protected $body;
     protected $bodyStream = false;
+    protected $sendCallback;
     protected $parent;
-
-
 
     /**
      * Sets the parent message
@@ -26,7 +25,6 @@ abstract class Message
         $this->parent = $message;
     }
 
-
     /**
      * Gets the parent message
      *
@@ -36,7 +34,6 @@ abstract class Message
     {
         return $this->parent;
     }
-
 
     /**
      * Gets the first parent message
@@ -48,7 +45,6 @@ abstract class Message
         return $this->parent ? $this->parent->getMain() : $this;
     }
 
-
     /**
      * Check whether the message is main or not
      *
@@ -58,7 +54,6 @@ abstract class Message
     {
         return empty($this->parent);
     }
-
 
     /**
      * Sets the message body
@@ -72,12 +67,11 @@ abstract class Message
         $this->body = $isStream ? $body : (string) $body;
     }
 
-
     /**
      * Gets the message body
      *
      * @param boolean $forceString Returns the body as string even if it's a stream resource
-     * 
+     *
      * @return string|resource The body string or streaming resource
      */
     public function getBody($forceString = false)
@@ -114,8 +108,8 @@ abstract class Message
      * Write content in the body
      *
      * @param string $content
-     * @param int    $length   Only used on streams
-     * 
+     * @param int    $length  Only used on streams
+     *
      * @return int|null
      */
     public function write($content, $length = null)
@@ -129,5 +123,13 @@ abstract class Message
         }
 
         $this->body += (string) $content;
+    }
+
+    /**
+     * Set the content callback
+     */
+    public function setSendCallback(callable $callback = null)
+    {
+        $this->sendCallback = $callback;
     }
 }

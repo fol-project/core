@@ -14,10 +14,9 @@ class Native extends Session
 {
     protected $cookie;
 
-
     /**
      * {@inheritDoc}
-     * 
+     *
      * @throws \Exception if the session is disabled
      */
     public function setRequest(Request $request)
@@ -33,10 +32,9 @@ class Native extends Session
         $this->start();
     }
 
-
     /**
      * Starts the session
-     * 
+     *
      * @throws \RuntimeException if session cannot be started
      */
     protected function start()
@@ -66,7 +64,6 @@ class Native extends Session
         $this->items =& $_SESSION;
     }
 
-
     /**
      * {@inheritDoc}
      */
@@ -80,7 +77,6 @@ class Native extends Session
             $response->cookies->setDelete($this->name, $this->cookie['path'], $this->cookie['domain'], $this->cookie['secure'], $this->cookie['httponly']);
         }
     }
-
 
     /**
      * Regenerate the id for the current session
@@ -97,7 +93,6 @@ class Native extends Session
         return $return;
     }
 
-
     /**
      * Close the session and save the data.
      */
@@ -105,7 +100,6 @@ class Native extends Session
     {
         session_write_close();
     }
-
 
     /**
      * Destroy the current session deleting the data

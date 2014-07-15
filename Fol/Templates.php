@@ -27,7 +27,6 @@ class Templates
         $this->addFolders($paths);
     }
 
-
     /**
      * Adds new base folders where search for the templates files
      *
@@ -277,7 +276,6 @@ class Templates
 
         return $this->renderTemplateFile($file, $data);
     }
-
 
     /**
      * Simple method to detect if a value must be iterabled or not

@@ -20,7 +20,6 @@ class Session implements \ArrayAccess, SessionInterface
     protected $userResolver;
     protected $user;
 
-
     /**
      * Construct and loads the session data
      *
@@ -33,10 +32,9 @@ class Session implements \ArrayAccess, SessionInterface
         $this->name = $name;
     }
 
-
     /**
      * Defines how the user will be called
-     * 
+     *
      * @param callable $resolver
      */
     public function defineUser(\Closure $resolver)
@@ -44,10 +42,9 @@ class Session implements \ArrayAccess, SessionInterface
         $this->userResolver = $resolver;
     }
 
-
     /**
      * Resolves the user resolver and returns thee result
-     * 
+     *
      * @return mixed
      */
     public function getUser()
@@ -64,7 +61,6 @@ class Session implements \ArrayAccess, SessionInterface
         return $this->user;
     }
 
-
     /**
      * {@inheritDoc}
      */
@@ -73,18 +69,15 @@ class Session implements \ArrayAccess, SessionInterface
         $this->request = $request;
     }
 
-
     /**
      * {@inheritDoc}
      */
     public function prepare(Response $response) {}
 
-
     /**
      * Close the session and save the data.
      */
     public function save() {}
-
 
     /**
      * Destroy the current session deleting the data
@@ -93,7 +86,6 @@ class Session implements \ArrayAccess, SessionInterface
     {
         $this->delete();
     }
-
 
     /**
      * Get the current session id
@@ -105,7 +97,6 @@ class Session implements \ArrayAccess, SessionInterface
         return $this->id;
     }
 
-
     /**
      * Get the session name
      *
@@ -116,15 +107,13 @@ class Session implements \ArrayAccess, SessionInterface
         return $this->name;
     }
 
-
     /**
      * Regenerate the id for the current session
-     * 
+     *
      * @param boolean $destroy  Set true to destroy the current data
      * @param integer $lifetime The new session duration
      */
     public function regenerate($destroy = false, $lifetime = null) {}
-
 
     /**
      * Get a flash value (read only once)
@@ -149,7 +138,6 @@ class Session implements \ArrayAccess, SessionInterface
         return $default;
     }
 
-
     /**
      * Set a new flash value
      *
@@ -168,7 +156,6 @@ class Session implements \ArrayAccess, SessionInterface
             $this->items['_flash'][$name] = $value;
         }
     }
-
 
     /**
      * Check if a flash variable is defined or not (but does not remove it)

@@ -27,7 +27,6 @@ class Route implements \ArrayAccess
     public $format;
     public $language;
 
-
     /**
      * Constructor
      *
@@ -40,7 +39,6 @@ class Route implements \ArrayAccess
         $this->name = $name;
         $this->target = $target;
 
-
         foreach (['ip', 'method', 'scheme', 'host', 'port', 'path', 'format', 'language'] as $key) {
             if (isset($config[$key])) {
                 $this->$key = $config[$key];
@@ -48,12 +46,11 @@ class Route implements \ArrayAccess
         }
     }
 
-
     /**
      * Check the request
      *
      * @param Request $request The request to check
-     * @param array   $params The params to check
+     * @param array   $params  The params to check
      *
      * @return bool
      */
@@ -70,14 +67,13 @@ class Route implements \ArrayAccess
                 if (!in_array($request->$method(), $value, true)) {
                     return false;
                 }
-            } else if ($request->$method() !== $value) {
+            } elseif ($request->$method() !== $value) {
                 return false;
             }
         }
 
         return true;
     }
-
 
     /**
      * Check if the route match with the request
@@ -91,15 +87,14 @@ class Route implements \ArrayAccess
         return $this->checkRequest($request, ['ip', 'method', 'scheme', 'host', 'port', 'path', 'format', 'language']);
     }
 
-
     /**
      * Get the route properties
-     * 
+     *
      * @param array $properties The properties to return
-     * 
+     *
      * @return array
      */
-    protected function getProperties (array $properties)
+    protected function getProperties(array $properties)
     {
         $values = [];
 
@@ -110,12 +105,11 @@ class Route implements \ArrayAccess
         return $values;
     }
 
-
     /**
      * Generate an url using the properties values
-     * 
+     *
      * @param array $properties The url properties
-     * 
+     *
      * @return string
      */
     protected static function buildUrl(array $properties)
@@ -149,7 +143,6 @@ class Route implements \ArrayAccess
         return $url;
     }
 
-
     /**
      * Reverse the route
      *
@@ -163,7 +156,6 @@ class Route implements \ArrayAccess
 
         return Request::buildUrl($values['scheme'], $values['host'], $values['port'], $values['path'], $values['format'], $parameters);
     }
-
 
     /**
      * Execute the route and returns the response object

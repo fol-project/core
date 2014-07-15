@@ -10,4 +10,3 @@ echo '<footer>Bye</footer>';
 $this->end();
 
 echo '<p>Hello world</p>';
-?>

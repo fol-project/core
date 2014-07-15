@@ -11,7 +11,6 @@ class RouteFactory
     private $namespace;
     private $baseUrl;
 
-
     /**
      * Constructor
      *
@@ -34,7 +33,6 @@ class RouteFactory
             'path' => isset($components['path']) ? $components['path'] : ''
         ];
     }
-
 
     /**
      * Generates the target of the route
@@ -65,16 +63,15 @@ class RouteFactory
         return [$class, $method];
     }
 
-
     /**
      * Creates a new route instance
      *
-     * @param string $name     Route name
-     * @param array  $config   Route configuration (path, target, etc)
+     * @param string $name   Route name
+     * @param array  $config Route configuration (path, target, etc)
      *
      * @return Route
      */
-    public function createRoute ($name, array $config)
+    public function createRoute($name, array $config)
     {
         $target = $this->getTarget($config['target']);
 
@@ -106,7 +103,6 @@ class RouteFactory
 
         return new Route($name, $config, $target);
     }
-
 
     /**
      * Creates a new error route instance

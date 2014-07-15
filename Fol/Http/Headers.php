@@ -32,7 +32,6 @@ class Headers implements \ArrayAccess
         'zip' => ['application/zip', 'application/x-zip', 'application/x-zip-compressed']
     ];
 
-
     /**
      * List of standard http status codes
      */
@@ -79,7 +78,6 @@ class Headers implements \ArrayAccess
         504 => 'Gateway Timeout',
         505 => 'HTTP Version Not Supported',
     ];
-
 
     /**
      * List of standards http languages
@@ -223,8 +221,6 @@ class Headers implements \ArrayAccess
         'zu' => 'Zulu'
     ];
 
-
-
     /**
      * Gets the status text related with a status code.
      *
@@ -238,8 +234,6 @@ class Headers implements \ArrayAccess
     {
         return isset(self::$status[$code]) ? self::$status[$code] : false;
     }
-
-
 
     /**
      * Gets the format related with a mimetype. Search in self::$formats array.
@@ -261,7 +255,6 @@ class Headers implements \ArrayAccess
         return false;
     }
 
-
     /**
      * Gets the mimetype related with a format. This is the opposite of getFormat()
      *
@@ -276,13 +269,12 @@ class Headers implements \ArrayAccess
         return isset(self::$formats[$format][0]) ? self::$formats[$format][0] : false;
     }
 
-
     /**
      * Gets the language
      *
      * Headers::getLanguageCode('gl-es') Returns "gl"
      *
-     * @param string $language The raw language code
+     * @param string  $language   The raw language code
      * @param boolean $returnName Set true to return "Galician" instead "gl" (for example)
      *
      * @return string The simplified language code or false
@@ -298,8 +290,6 @@ class Headers implements \ArrayAccess
         return $returnName ? self::$languages[$language] : $language;
     }
 
-
-
     /**
      * Normalize the name of the parameters.
      * self::normalize('CONTENT type') Returns "Content-Type"
@@ -312,7 +302,6 @@ class Headers implements \ArrayAccess
     {
         return str_replace(' ', '-', ucwords(strtolower(str_replace('-', ' ', $string))));
     }
-
 
     /**
      * Sends the headers if don't have been send before
@@ -437,7 +426,6 @@ class Headers implements \ArrayAccess
         $this->set($name, self::toString($value));
     }
 
-
     /**
      * Gets one parameter as a getDateTime object
      * Useful for datetime values (Expires, Last-Modification, etc)
@@ -460,7 +448,6 @@ class Headers implements \ArrayAccess
         return new \Datetime($default, new \DateTimeZone('UTC'));
     }
 
-
     /**
      * Define a header using a Datetime object and returns it
      *
@@ -481,7 +468,6 @@ class Headers implements \ArrayAccess
         return $datetime;
     }
 
-
     /**
      * Deletes one or all headers
      *
@@ -501,7 +487,6 @@ class Headers implements \ArrayAccess
         }
     }
 
-
     /**
      * Checks if a header exists
      *
@@ -514,13 +499,12 @@ class Headers implements \ArrayAccess
         return array_key_exists(self::normalize($name), $this->items);
     }
 
-
     /**
      * Returns a header as string
      *
-     * @param string  $name The header name
+     * @param string  $name  The header name
      * @param boolean $first Set true to return just the value of the first header with this name. False to return an array with all values.
-     * 
+     *
      * @return array|string|null
      */
     public function getAsString($name = null, $first = true)
@@ -554,13 +538,12 @@ class Headers implements \ArrayAccess
         return $headers;
     }
 
-
     /**
      * Adds a new header from a header string
      *
      * @param string  $string
      * @param boolean $replace
-     * 
+     *
      * @return boolean
      */
     public function setFromString($string, $replace = true)
@@ -575,7 +558,6 @@ class Headers implements \ArrayAccess
 
         return true;
     }
-
 
     /**
      * Private function to parse and return http values
@@ -616,7 +598,6 @@ class Headers implements \ArrayAccess
 
         return $results;
     }
-
 
     /**
      * Private function to convert a parsed http value to string

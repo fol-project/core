@@ -28,7 +28,6 @@ class FileSystem
         return $path;
     }
 
-
     /**
      * Constructor
      *
@@ -40,7 +39,6 @@ class FileSystem
             $this->cd($path);
         }
     }
-
 
     /**
      * Returns the current path or a relative path
@@ -109,10 +107,9 @@ class FileSystem
         return $this;
     }
 
-
     /**
      * Returns a recursive iterator to explore all directories and subdirectories
-     * 
+     *
      * @param null|string $path Relative path with the new position
      *
      * @return \RecursiveIteratorIterator
@@ -122,15 +119,14 @@ class FileSystem
         return new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($this->getPath($path), \FilesystemIterator::SKIP_DOTS), \RecursiveIteratorIterator::CHILD_FIRST);
     }
 
-
     /**
      * Returns an iterator to explore the current path
-     * 
-     * @param null|string $path Relative path with the new position
+     *
+     * @param null|string  $path  Relative path with the new position
      * @param null|integer $flags Flags constants passed to the FilesystemIterator
      *
      * @see FilesystemIterator
-     * 
+     *
      * @return \FilesystemIterator
      */
     public function getIterator($path = null, $flags = null)
@@ -144,13 +140,12 @@ class FileSystem
         return new \FilesystemIterator($path, $flags);
     }
 
-
     /**
      * Returns a glob iterator to explore the current path
-     * 
+     *
      * @param null|string  $path  Relative path with the new position
      * @param null|integer $flags Flags constants passed to the GlobIterator
-     * 
+     *
      * @see GlobIterator
      *
      * @return \GlobIterator
@@ -166,12 +161,11 @@ class FileSystem
         return new \GlobIterator($path, $flags);
     }
 
-
     /**
      * Remove all files and subdirectories of the current path
      *
      * @param null|string $path Relative path with the new position
-     * 
+     *
      * @return $this
      */
     public function clear($path = null)
@@ -191,10 +185,9 @@ class FileSystem
         return $this;
     }
 
-
     /**
      * Remove the current path and all its content
-     * 
+     *
      * @param null|string $path Relative path with the new position
      *
      * @return $this
@@ -212,13 +205,12 @@ class FileSystem
         return $this;
     }
 
-
     /**
      * Creates a new directory
      *
-     * @param null|string  $name      Directory name. If it's not specified, use the current defined path
-     * @param integer      $mode      Permissions assigned to the directory
-     * @param boolean      $recursive Creates the directory in recursive mode or not. True by default
+     * @param null|string $name      Directory name. If it's not specified, use the current defined path
+     * @param integer     $mode      Permissions assigned to the directory
+     * @param boolean     $recursive Creates the directory in recursive mode or not. True by default
      *
      * @return $this
      */
@@ -265,7 +257,6 @@ class FileSystem
         return $name;
     }
 
-
     /**
      * Private function to save a file from upload ($_FILES)
      *
@@ -288,7 +279,6 @@ class FileSystem
 
         return $destination;
     }
-
 
     /**
      * Private function to save a file from base64 string
@@ -319,7 +309,6 @@ class FileSystem
         return $destination;
     }
 
-
     /**
      * Private function to save a file from an url
      *
@@ -339,16 +328,15 @@ class FileSystem
         return $destination;
     }
 
-
     /**
      * Gets the destination filename before save it
-     * 
+     *
      * @param string $oldFilename The original filename
      * @param string $newFilename The destination filename
-     * 
+     *
      * @return string
      */
-    private function getDestination ($oldFilename, $newFilename)
+    private function getDestination($oldFilename, $newFilename)
     {
         if ($newFilename === null) {
             if ($oldFilename === null) {
@@ -359,7 +347,7 @@ class FileSystem
         }
 
         $destination = $this->getPath($newFilename);
-        
+
         if (is_dir($destination)) {
             return self::fixPath($destination.'/'.$oldFilename);
         }

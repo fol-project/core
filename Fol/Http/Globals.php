@@ -12,7 +12,7 @@ class Globals
      * Gets a value from $_SERVER variable
      *
      * @param string $name The parameter name
-     * 
+     *
      * @return mixed The parameter value or null
      */
     public static function get($name)
@@ -20,12 +20,11 @@ class Globals
         return isset($_SERVER[$name]) ? $_SERVER[$name] : null;
     }
 
-
     /**
      * Checks a value from $_SERVER
      *
      * @param string $name The parameter name
-     * 
+     *
      * @return boolean
      */
     public static function has($name)
@@ -33,10 +32,9 @@ class Globals
         return !empty($_SERVER[$name]);
     }
 
-
     /**
      * Gets the global request scheme
-     * 
+     *
      * @return string
      */
     public static function getScheme()
@@ -44,10 +42,9 @@ class Globals
         return self::get('HTTPS') === 'on' ? 'https' : 'http';
     }
 
-
     /**
      * Gets the global request port
-     * 
+     *
      * @return integer
      */
     public static function getPort()
@@ -55,10 +52,9 @@ class Globals
         return self::get('X_FORWARDED_PORT') ?: self::get('SERVER_PORT') ?: 80;
     }
 
-
     /**
      * Gets the global request url
-     * 
+     *
      * @return string
      */
     public static function getUrl()
@@ -66,10 +62,9 @@ class Globals
         return self::getScheme().'://'.self::get('SERVER_NAME').':'.self::getPort().self::get('REQUEST_URI');
     }
 
-
     /**
      * Gets the global request method
-     * 
+     *
      * @return string
      */
     public static function getMethod()
@@ -83,10 +78,9 @@ class Globals
         return $method ?: 'GET';
     }
 
-
     /**
      * Gets the global headers
-     * 
+     *
      * @return array
      */
     public static function getHeaders()
@@ -108,9 +102,9 @@ class Globals
         if (!isset($headers['AUTHORIZATION'])) {
             if (self::has('REDIRECT_HTTP_AUTHORIZATION')) {
                 $headers['AUTHORIZATION'] = self::get('REDIRECT_HTTP_AUTHORIZATION');
-            } else if (self::has('PHP_AUTH_USER')) {
+            } elseif (self::has('PHP_AUTH_USER')) {
                 $headers['AUTHORIZATION'] = 'Basic '.base64_encode(self::get('PHP_AUTH_USER').':'.self::has('PHP_AUTH_PW'));
-            } else if (self::has('PHP_AUTH_DIGEST')) {
+            } elseif (self::has('PHP_AUTH_DIGEST')) {
                 $headers['AUTHORIZATION'] = self::get('PHP_AUTH_DIGEST');
             }
         }
@@ -123,10 +117,9 @@ class Globals
         return $headers;
     }
 
-
     /**
      * Gets the global $_GET values
-     * 
+     *
      * @return array
      */
     public static function getGet()
@@ -134,10 +127,9 @@ class Globals
         return (array) filter_input_array(INPUT_GET);
     }
 
-
     /**
      * Gets the global $_POST values
-     * 
+     *
      * @return array
      */
     public static function getPost()
@@ -151,6 +143,7 @@ class Globals
 
             if (strpos($contentType, 'application/x-www-form-urlencoded') === 0) {
                 parse_str(file_get_contents('php://input'), $data);
+
                 return $data ?: [];
             }
 
@@ -162,10 +155,9 @@ class Globals
         return [];
     }
 
-
     /**
      * Gets the global $_COOKIES values
-     * 
+     *
      * @return array
      */
     public static function getCookies()
@@ -173,10 +165,9 @@ class Globals
         return (array) filter_input_array(INPUT_COOKIE);
     }
 
-
     /**
      * Gets the global $_FILES values (and normalizes its structure)
-     * 
+     *
      * @return array
      */
     public static function getFiles()
@@ -187,7 +178,6 @@ class Globals
 
         return self::fixArray($_FILES);
     }
-
 
     /**
      * Fix the $files order by converting from default wierd schema
@@ -211,7 +201,6 @@ class Globals
 
         return $files;
     }
-
 
     /**
      * Private function used by fixArray

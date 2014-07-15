@@ -12,7 +12,6 @@ class Input implements \ArrayAccess
 {
     use ContainerTrait { get as private parentGet; }
 
-
     /**
      * Gets one or all parameters. You can gets the subvalues using brackets:
      *
@@ -41,7 +40,6 @@ class Input implements \ArrayAccess
 
         return $this->parentGet($name, $default);
     }
-
 
     /**
      * Returns a value filtered using the filter_var php function

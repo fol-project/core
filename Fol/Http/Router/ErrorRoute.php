@@ -39,7 +39,7 @@ class ErrorRoute implements \ArrayAccess
         ob_start();
 
         $response = new Response('', $exception->getCode() ?: 500);
-        
+
         array_unshift($arguments, $request, $response);
         $this->set('exception', $exception);
         $request->route = $this;

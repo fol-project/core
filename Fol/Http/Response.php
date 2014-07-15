@@ -10,10 +10,8 @@ class Response extends Message
 {
     public $cookies;
 
-    private $sendCallback;
     private $status;
     private $headersSent = false;
-
 
     /**
      * Constructor
@@ -32,7 +30,6 @@ class Response extends Message
         $this->cookies->setDefaults([], BASE_URL);
     }
 
-
     /**
      * Magic function to clone the internal objects
      */
@@ -41,7 +38,6 @@ class Response extends Message
         $this->headers = clone $this->headers;
         $this->cookies = clone $this->cookies;
     }
-
 
     /**
      * Magic function to converts the current response to a string
@@ -56,7 +52,6 @@ class Response extends Message
         return $text;
     }
 
-
     /**
      * Sets the request format
      *
@@ -69,7 +64,6 @@ class Response extends Message
         }
     }
 
-
     /**
      * Sets the request language
      *
@@ -79,7 +73,6 @@ class Response extends Message
     {
         $this->headers->set('Content-Language', $language);
     }
-
 
     /**
      * Set basic authentication
@@ -91,7 +84,6 @@ class Response extends Message
         $this->setStatus(401);
         $this->headers->set('WWW-Authenticate', 'Basic realm="'.$realm.'"');
     }
-
 
     /**
      * Set digest authentication
@@ -109,7 +101,6 @@ class Response extends Message
 
         $this->headers->set('WWW-Authenticate', 'Digest realm="'.$realm.'",qop="auth",nonce="'.$nonce.'",opaque="'.md5($realm).'"');
     }
-
 
     /**
      * Prepare the Response according a request
@@ -142,7 +133,6 @@ class Response extends Message
             $session->prepare($this);
         }
     }
-
 
     /**
      * Sets the status code
@@ -183,7 +173,7 @@ class Response extends Message
 
 
     /**
-     * Sends the headers and the content
+     * Sends the response to the client
      */
     public function send()
     {
@@ -216,7 +206,6 @@ class Response extends Message
         return true;
     }
 
-
     /**
      * Sends the content
      */
@@ -239,16 +228,6 @@ class Response extends Message
             echo $this->body;
         }
     }
-
-
-    /**
-     * Set the content callback
-     */
-    public function setSendCallback(callable $callback = null)
-    {
-        $this->sendCallback = $callback;
-    }
-
 
     /**
      * Send the output buffer and empty the response content

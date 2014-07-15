@@ -18,7 +18,6 @@ class Router
     private $errorController;
     private $routeFactory;
 
-
     /**
      * Constructor function. Defines the base url
      *
@@ -28,7 +27,6 @@ class Router
     {
         $this->routeFactory = $routeFactory;
     }
-
 
     /**
      * Route factory method
@@ -50,7 +48,6 @@ class Router
         $this->set($name, $this->routeFactory->createRoute($name, $config));
     }
 
-
     /**
      * Define the router used on errors
      *
@@ -60,7 +57,6 @@ class Router
     {
         $this->errorController = $this->routeFactory->createErrorRoute($target);
     }
-
 
     /**
      * Match given request url and request method and see if a route has been defined for it
@@ -80,7 +76,6 @@ class Router
         return false;
     }
 
-
     /**
      * Reverse route a named route
      *
@@ -97,7 +92,6 @@ class Router
 
         return $this->items[$name]->generate($params);
     }
-
 
     /**
      * Handle a request
