@@ -10,32 +10,32 @@ class FileSystem
 {
     private $path;
 
+
+    /**
+     * static function to check whether a path is absolute or not
+     *
+     * @param string $path Path to check
+     *
+     * @return boolean
+     */
+    public static function isAbsolute($path)
+    {
+        return ($path[0] === '/' || preg_match('|^\w:/|', $path));
+    }
+
+
     /**
      * static function to fix paths '//' or '/./' or '/foo/../' in a path
      *
-     * @param string $path1, $path2, ... Path to resolve
+     * @param string $path Path to resolve
      *
      * @return string
      */
-    public static function fixPath()
+    public static function fixPath($path)
     {
-        $path = [];
-
-        foreach (func_get_args() as $piece) {
-            if (empty($piece)) {
-                continue;
-            }
-
-            $piece = str_replace('\\', '/', $piece);
-
-            if ($piece[0] === '/' || preg_match('|^\w:/|', $piece)) { // it's absolute?
-                $path = [$piece];
-            } else {
-                $path[] = $piece;
-            }
+        if (func_num_args() > 1) {
+            return static::fixPath(implode('/', func_get_args()));
         }
-
-        $path = implode('/', $path);
 
         $replace = ['#(/\.?/)#', '#/(?!\.\.)[^/]+/\.\./#'];
 
@@ -73,7 +73,11 @@ class FileSystem
             return $this->path;
         }
 
-        return self::fixPath($this->path, $path);
+        if (static::isAbsolute($path)) {
+            return static::fixPath($path);
+        }
+
+        return static::fixPath($this->path, $path);
     }
 
     /**
