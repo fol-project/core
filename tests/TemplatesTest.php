@@ -25,17 +25,17 @@ class TemplatesTest extends PHPUnit_Framework_TestCase
 
         //Render a file with data
         $render = $templates->render('first', ['name' => 'Manolo']);
-        $this->assertEquals('<h1>Manolo</h1>', $render);
+        $this->assertEquals("<h1>Manolo</h1>\n", $render);
 
         //Save a render with a name
         $templates->saveRender('manolo', $render);
 
-        $this->assertEquals('<h1>Manolo</h1>', $render);
+        $this->assertEquals("<h1>Manolo</h1>\n", $render);
 
         //Register a file with a name adding data
         $templates->register('manola', 'first', ['name' => 'Manola']);
 
-        $this->assertEquals('<h1>Manola</h1>', $templates->render('manola'));
+        $this->assertEquals("<h1>Manola</h1>\n", $templates->render('manola'));
 
         //Add a plugin and check its functions
         $templates->loadExtension(new TemplatesPlugin);
@@ -48,11 +48,11 @@ class TemplatesTest extends PHPUnit_Framework_TestCase
             ['name' => 'Manola']
         ]);
 
-        $this->assertEquals('<h1>Manolo</h1><h1>Manola</h1>', $render);
+        $this->assertEquals("<h1>Manolo</h1>\n<h1>Manola</h1>\n", $render);
 
         // start/end/wrapper methods
         $render = $templates->render('template2.php');
 
-        $this->assertEquals('<h1>Hello world</h1><p>Hello world</p><footer>Bye</footer>', $render);
+        $this->assertEquals("<h1>Hello world</h1><p>Hello world</p><footer>Bye</footer>", $render);
     }
 }
