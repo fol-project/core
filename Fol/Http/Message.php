@@ -15,6 +15,44 @@ abstract class Message
     protected $sendCallback;
     protected $parent;
 
+
+    /**
+     * Define new custom constructors
+     *
+     * @param string|array $name     The constructor name
+     * @param \Closure     $resolver A function that returns a Message instance
+     */
+    public static function define($name, \Closure $resolver = null)
+    {
+        if (is_array($name)) {
+            foreach ($name as $name => $resolver) {
+                static::define($name, $resolver);
+            }
+
+            return;
+        }
+
+        static::$constructors[$name] = $resolver;
+    }
+
+
+    /**
+     * Execute custom constructors
+     * 
+     * @throws \Exception if the constructor doesn't exist
+     *
+     * @return Message
+     */
+    public static function __callStatic($name, $arguments)
+    {
+        if (!empty(static::$constructors)) {
+            return call_user_func_array(static::$constructors[$name], array_slice(func_get_args(), 1));
+        }
+
+        throw new \Exception("'$name' constructor is not defined");
+    }
+
+
     /**
      * Sets the parent message
      *
@@ -63,8 +101,8 @@ abstract class Message
      */
     public function setBody($body, $isStream = false)
     {
-        $this->bodyStream = $isStream;
-        $this->body = $isStream ? $body : (string) $body;
+        $this->bodyStream = is_resource($body) ?: $isStream;
+        $this->body = $this->bodyStream ? $body : (string) $body;
     }
 
     /**
@@ -74,16 +112,9 @@ abstract class Message
      *
      * @return string|resource The body string or streaming resource
      */
-    public function getBody($forceString = false)
+    public function getBody()
     {
         if ($this->isStream()) {
-            if ($forceString) {
-                $body = $this->getBody();
-                rewind($body);
-
-                return stream_get_contents($body);
-            }
-
             if (is_string($this->body)) {
                 return $this->body = fopen($this->body, 'r+');
             }
@@ -91,7 +122,6 @@ abstract class Message
 
         return $this->body;
     }
-
 
     /**
      * Gets the body type
@@ -102,7 +132,6 @@ abstract class Message
     {
         return $this->bodyStream;
     }
-
 
     /**
      * Write content in the body
@@ -123,6 +152,23 @@ abstract class Message
         }
 
         $this->body .= (string) $content;
+    }
+
+    /**
+     * Reads content from the body
+     *
+     * @return string
+     */
+    public function read()
+    {
+        $body = $this->getBody();
+
+        if (is_string($body)) {
+            return $body;
+        }
+
+        rewind($body);
+        return stream_get_contents($body);
     }
 
     /**

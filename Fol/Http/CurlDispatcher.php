@@ -111,10 +111,6 @@ class CurlDispatcher
             } else {
                 curl_setopt($connection, CURLOPT_INFILE, $body);
                 curl_setopt($connection, CURLOPT_INFILESIZE, 1024);
-
-                curl_setopt($connection, CURLOPT_READFUNCTION, function ($connection, $stream, $length) {
-                    return fread($stream, $length);
-                });
             }
         }
 

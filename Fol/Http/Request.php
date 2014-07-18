@@ -8,6 +8,8 @@ namespace Fol\Http;
 
 class Request extends Message
 {
+    protected static $constructors = [];
+
     protected $method = 'GET';
     protected $scheme;
     protected $host;

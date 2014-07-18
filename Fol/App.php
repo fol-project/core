@@ -73,8 +73,8 @@ abstract class App
     /**
      * Define new services
      *
-     * @param string|int|array $name     The service name
-     * @param \Closure         $resolver A function that returns a service instance
+     * @param string|array $name     The service name
+     * @param \Closure     $resolver A function that returns a service instance
      */
     public function define($name, \Closure $resolver = null)
     {
@@ -153,17 +153,13 @@ abstract class App
     public function get($name)
     {
         if (!empty($this->services[$name])) {
-            if (func_num_args() === 1) {
-                return $this->services[$name]();
-            }
-
             return call_user_func_array($this->services[$name], array_slice(func_get_args(), 1));
         }
 
         $className = $this->getNamespace($name);
 
         if (!class_exists($className)) {
-            throw new \Exception("'$name' does not exist and it not registered");
+            throw new \Exception("'$name' service is not defined and '$className' does not exists");
         }
 
         if (func_num_args() === 1) {

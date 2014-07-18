@@ -8,6 +8,8 @@ namespace Fol\Http;
 
 class Response extends Message
 {
+    protected static $constructors = [];
+
     public $cookies;
 
     private $status;
