@@ -53,13 +53,33 @@ class Globals
     }
 
     /**
+     * Gets the global request path (with no query)
+     *
+     * @return string
+     */
+    public static function getPath()
+    {
+        return explode('?', self::get('REQUEST_URI'), 2)[0];
+    }
+
+    /**
+     * Gets the global request host
+     *
+     * @return string
+     */
+    public static function getHost()
+    {
+        return self::get('SERVER_NAME');
+    }
+
+    /**
      * Gets the global request url
      *
      * @return string
      */
     public static function getUrl()
     {
-        return self::getScheme().'://'.self::get('SERVER_NAME').':'.self::getPort().self::get('REQUEST_URI');
+        return self::getScheme().'://'.self::getHost().':'.self::getPort().self::getPath();
     }
 
     /**

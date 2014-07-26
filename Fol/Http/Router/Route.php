@@ -7,6 +7,7 @@
 namespace Fol\Http\Router;
 
 use Fol\ContainerTrait;
+use Fol\Http\Url;
 use Fol\Http\Request;
 use Fol\Http\Response;
 use Fol\Http\HttpException;
@@ -24,7 +25,6 @@ class Route implements \ArrayAccess
     public $host;
     public $port;
     public $path;
-    public $format;
     public $language;
 
     /**
@@ -39,7 +39,7 @@ class Route implements \ArrayAccess
         $this->name = $name;
         $this->target = $target;
 
-        foreach (['ip', 'method', 'scheme', 'host', 'port', 'path', 'format', 'language'] as $key) {
+        foreach (['ip', 'method', 'scheme', 'host', 'port', 'path', 'language'] as $key) {
             if (isset($config[$key])) {
                 $this->$key = $config[$key];
             }
@@ -47,32 +47,24 @@ class Route implements \ArrayAccess
     }
 
     /**
-     * Check the request
+     * Check two values
      *
-     * @param Request $request The request to check
-     * @param array   $params  The params to check
+     * @param string $name
+     * @param mixed  $value
      *
      * @return bool
      */
-    public function checkRequest(Request $request, array $params)
+    public function check($name, $value)
     {
-        foreach ($params as $param) {
-            if (($value = $this->$param) === null) {
-                continue;
-            }
-
-            $method = "get{$param}";
-
-            if (is_array($value)) {
-                if (!in_array($request->$method(), $value, true)) {
-                    return false;
-                }
-            } elseif ($request->$method() !== $value) {
-                return false;
-            }
+        if (($routeValue = $this->$name) === null) {
+            return true;
         }
 
-        return true;
+        if (is_array($routeValue)) {
+            return in_array($value, $routeValue, true);
+        }
+
+        return ($value === $routeValue);
     }
 
     /**
@@ -84,7 +76,15 @@ class Route implements \ArrayAccess
      */
     public function match(Request $request)
     {
-        return $this->checkRequest($request, ['ip', 'method', 'scheme', 'host', 'port', 'path', 'format', 'language']);
+        return (
+               $this->check('ip', $request->getIp())
+            && $this->check('method', $request->getMethod())
+            && $this->check('language', $request->getLanguage())
+            && $this->check('scheme', $request->url->getScheme())
+            && $this->check('host', $request->url->getHost())
+            && $this->check('port', $request->url->getPort())
+            && $this->check('path', $request->url->getPath())
+        );
     }
 
     /**
@@ -105,43 +105,6 @@ class Route implements \ArrayAccess
         return $values;
     }
 
-    /**
-     * Generate an url using the properties values
-     *
-     * @param array $properties The url properties
-     *
-     * @return string
-     */
-    protected static function buildUrl(array $properties)
-    {
-        $url = '';
-
-        if ($properties['scheme']) {
-            $url .= $properties['scheme'].':';
-        }
-
-        if ($properties['host']) {
-            $url .= '//'.$properties['host'];
-        }
-
-        if ($properties['port'] && $properties['port'] != 80) {
-            $url .= ':'.$properties['port'];
-        }
-
-        if ($properties['path']) {
-            $url .= $properties['path'];
-
-            if ($properties['format']) {
-                $url .= '.'.$properties['format'];
-            }
-        }
-
-        if ($properties['query']) {
-            $url .= '?'.http_build_query($properties['query']);
-        }
-
-        return $url;
-    }
 
     /**
      * Reverse the route
@@ -152,9 +115,9 @@ class Route implements \ArrayAccess
      */
     public function generate(array $parameters = array())
     {
-        $values = $this->getProperties(['scheme', 'host', 'port', 'path', 'format']);
+        $values = $this->getProperties(['scheme', 'host', 'port', 'path']);
 
-        return Request::buildUrl($values['scheme'], $values['host'], $values['port'], $values['path'], $values['format'], $parameters);
+        return Url::build($values['scheme'], $values['host'], $values['port'], null, null, $values['path'], $parameters);
     }
 
     /**

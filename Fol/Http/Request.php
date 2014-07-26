@@ -11,14 +11,11 @@ class Request extends Message
     protected static $constructors = [];
 
     protected $method = 'GET';
-    protected $scheme;
-    protected $host;
-    protected $port;
-    protected $path;
     protected $session;
     protected $format = 'html';
     protected $language;
 
+    public $url;
     public $query;
     public $data;
     public $files;
@@ -78,48 +75,6 @@ class Request extends Message
         return $request;
     }
 
-    /**
-     * Generates an url
-     *
-     * @param string  $scheme
-     * @param string  $host
-     * @param integer $port
-     * @param string  $path
-     * @param string  $format
-     * @param array   $query
-     *
-     * @return string
-     */
-    public static function buildUrl($scheme, $host, $port, $path, $format, array $query = null)
-    {
-        $url = '';
-
-        if ($scheme) {
-            $url .= "{$scheme}:";
-        }
-
-        if ($host) {
-            $url .= "//{$host}";
-        }
-
-        if ($port && (($scheme === 'http' && $port !== 80) || ($scheme === 'https' && $port !== 433))) {
-            $url .= ":{$port}";
-        }
-
-        if ($path) {
-            $url .= $path;
-
-            if ($format && $format !== 'html') {
-                $url .= ".{$format}";
-            }
-        }
-
-        if ($query) {
-            $url .= '?'.http_build_query($query);
-        }
-
-        return $url;
-    }
 
     /**
      * Constructor
@@ -133,21 +88,24 @@ class Request extends Message
      */
     public function __construct($url = null, array $headers = array(), array $query = array(), array $data = array(), array $files = array(), array $cookies = array())
     {
-        $this->query = new Input($query);
+        $this->url = new Url($url);
+        $this->query = $this->url->query;
+        $this->query->set($query);
+
         $this->data = new Input($data);
         $this->files = new InputFiles($files);
         $this->cookies = new InputCookies($cookies);
         $this->headers = new Headers($headers);
 
-        foreach (array_keys($this->headers->getParsed('Accept')) as $mimetype) {
-            if ($format = Headers::getFormat($mimetype)) {
-                $this->format = $format;
-                break;
+        if (($format = $this->url->getExtension()) && ($format = Headers::getFormat($format))) {
+            $this->format = $format;
+        } else {
+            foreach (array_keys($this->headers->getParsed('Accept')) as $mimetype) {
+                if ($format = Headers::getFormat($mimetype)) {
+                    $this->format = $format;
+                    break;
+                }
             }
-        }
-
-        if ($url) {
-            $this->setUrl($url);
         }
     }
 
@@ -156,7 +114,8 @@ class Request extends Message
      */
     public function __clone()
     {
-        $this->query = clone $this->query;
+        $this->url = clone $this->url;
+        $this->query = $this->url->query;
         $this->data = clone $this->data;
         $this->files = clone $this->files;
         $this->cookies = clone $this->cookies;
@@ -213,21 +172,7 @@ class Request extends Message
      */
     public function setUrl($url)
     {
-        $url = parse_url($url);
-
-        $this->setScheme($url['scheme']);
-        $this->setHost($url['host']);
-        $this->setPath(isset($url['path']) ? $url['path'] : '');
-
-        if (isset($url['port'])) {
-            $this->setPort($url['port']);
-        }
-
-        if (isset($url['query'])) {
-            parse_str(html_entity_decode($url['query']), $query);
-
-            $this->query->set($query);
-        }
+        $this->url->setUrl($url);
     }
 
     /**
@@ -239,34 +184,7 @@ class Request extends Message
      */
     public function getUrl($query = false)
     {
-        return self::buildUrl($this->getScheme(), $this->getHost(), $this->getPort(), $this->getPath(), $this->getFormat(), ($query === true) ? $this->query->get() : null);
-    }
-
-    /**
-     * Gets the current path
-     *
-     * @return string The path
-     */
-    public function getPath()
-    {
-        return $this->path;
-    }
-
-    /**
-     * Sets a new current path
-     *
-     * @param string $path The new path
-     */
-    public function setPath($path)
-    {
-        $path = urldecode($path);
-
-        if (preg_match('/\.([\w]+)$/', $path, $match)) {
-            $this->setFormat($match[1]);
-            $path = preg_replace('/'.$match[0].'$/', '', $path);
-        }
-
-        $this->path = preg_replace('|^/?([^/].*)?/?$|U', '/$1', $path);
+        $this->url->getUrl($query);
     }
 
     /**
@@ -388,66 +306,6 @@ class Request extends Message
     }
 
     /**
-     * Gets the request scheme
-     *
-     * @return string The request scheme (http or https)
-     */
-    public function getScheme()
-    {
-        return $this->scheme;
-    }
-
-    /**
-     * Sets the request scheme
-     *
-     * @param string $scheme The request scheme (http, https, etc)
-     */
-    public function setScheme($scheme)
-    {
-        $this->scheme = strtolower($scheme);
-    }
-
-    /**
-     * Gets the request host
-     *
-     * @return string The request host
-     */
-    public function getHost()
-    {
-        return $this->host;
-    }
-
-    /**
-     * Sets the request host
-     *
-     * @param string $host The request host
-     */
-    public function setHost($host)
-    {
-        $this->host = strtolower($host);
-    }
-
-    /**
-     * Gets the port on which the request is made
-     *
-     * @return int The port number
-     */
-    public function getPort()
-    {
-        return $this->port;
-    }
-
-    /**
-     * Sets the port of the request
-     *
-     * @param int $port The port number
-     */
-    public function setPort($port)
-    {
-        $this->port = intval($port);
-    }
-
-    /**
      * Gets the request method
      *
      * @return string The request method (in uppercase: GET, POST, etc)
@@ -514,7 +372,7 @@ class Request extends Message
     {
         $authentication = $this->getAuthentication();
 
-        return isset($authentication['username']) ? $authentication['username'] : null;
+        return isset($authentication['username']) ? $authentication['username'] : $this->url->getUser();
     }
 
     /**
@@ -526,7 +384,7 @@ class Request extends Message
     {
         $authentication = $this->getAuthentication();
 
-        return isset($authentication['password']) ? $authentication['password'] : null;
+        return isset($authentication['password']) ? $authentication['password'] : $this->url->getPassword();
     }
 
     /**
