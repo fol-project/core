@@ -96,7 +96,7 @@ trait ContainerTrait
      * @param string $name    The parameter name
      * @param mixed  $default The default value if the parameter is not set
      *
-     * @return mixed The parameter value or the default
+     * @return string The parameter value or the default
      */
     public function get($name = null, $default = null)
     {

@@ -13,7 +13,6 @@ abstract class Message
     protected $body;
     protected $bodyStream = false;
     protected $sendCallback;
-    protected $parent;
 
 
     /**
@@ -46,52 +45,12 @@ abstract class Message
     public static function __callStatic($name, $arguments)
     {
         if (!empty(static::$constructors)) {
-            return call_user_func_array(static::$constructors[$name], array_slice(func_get_args(), 1));
+            return call_user_func_array(static::$constructors[$name], $arguments);
         }
 
         throw new \Exception("'$name' constructor is not defined");
     }
 
-
-    /**
-     * Sets the parent message
-     *
-     * @param Message $message
-     */
-    public function setParent(Message $message)
-    {
-        $this->parent = $message;
-    }
-
-    /**
-     * Gets the parent message
-     *
-     * @return Message The parent message
-     */
-    public function getParent()
-    {
-        return $this->parent;
-    }
-
-    /**
-     * Gets the first parent message
-     *
-     * @return Message The parent message or itself
-     */
-    public function getMain()
-    {
-        return $this->parent ? $this->parent->getMain() : $this;
-    }
-
-    /**
-     * Check whether the message is main or not
-     *
-     * @return boolean
-     */
-    public function isMain()
-    {
-        return empty($this->parent);
-    }
 
     /**
      * Sets the message body
@@ -108,8 +67,6 @@ abstract class Message
     /**
      * Gets the message body
      *
-     * @param boolean $forceString Returns the body as string even if it's a stream resource
-     *
      * @return string|resource The body string or streaming resource
      */
     public function getBody()
@@ -124,9 +81,9 @@ abstract class Message
     }
 
     /**
-     * Gets the body type
+     * Gets whether the body is stream or not
      *
-     * @return int
+     * @return boolean
      */
     public function isStream()
     {

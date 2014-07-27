@@ -6,25 +6,24 @@ class HttpTest extends PHPUnit_Framework_TestCase
 {
     public function testRequest()
     {
-        $request = Request::create('/index', 'GET', [], []);
+        $request = new Request('http://localhost/index', 'GET');
 
-        $this->assertEquals($request->getPath(), '/index');
+        $this->assertEquals($request->url->getPath(), '/index');
         $this->assertEquals($request->getMethod(), 'GET');
         $this->assertEquals($request->getFormat(), 'html');
         $this->assertFalse($request->isAjax());
-        $this->assertEquals($request->getScheme(), 'http');
-        $this->assertEquals($request->getHost(), 'localhost');
+        $this->assertEquals($request->url->getScheme(), 'http');
+        $this->assertEquals($request->url->getHost(), 'localhost');
 
         //Change paths and formats
-        $request->setPath('index2.XML');
-        $this->assertEquals($request->getPath(), '/index2');
+        $request->url->setPath('index2.XML');
+
+        $this->assertEquals($request->url->getPath(), '/index2.xml');
+        $this->assertEquals($request->url->getExtension(), 'xml');
         $this->assertEquals($request->getFormat(), 'xml');
 
-        $request->setFormat('JSON');
-        $this->assertEquals($request->getFormat(), 'json');
-
         //Get full url
-        $request->setPath('/index2.json');
+        $request->url->setPath('/index2.json');
         $this->assertEquals($request->getUrl(), 'http://localhost/index2.json');
 
         //GET params
@@ -40,7 +39,7 @@ class HttpTest extends PHPUnit_Framework_TestCase
         ]);
 
         //Get full url with get params
-        $this->assertEquals($request->getUrl(true, true, true), 'http://localhost/index2.json?param1=1&param2=2');
+        $this->assertEquals($request->getUrl(true), 'http://localhost/index2.json?param1=1&param2=2');
 
         //Headers
         $request->headers->set('X-Requested-With', 'xmlhttprequest');
@@ -53,20 +52,20 @@ class HttpTest extends PHPUnit_Framework_TestCase
     {
         $request = new Request();
 
-        $request->setPath('ola/quetal/');
-        $this->assertEquals('/ola/quetal', $request->getPath());
+        $request->url->setPath('ola/quetal/');
+        $this->assertEquals('/ola/quetal', $request->url->getPath());
 
-        $request->setPath('');
-        $this->assertEquals('/', $request->getPath());
+        $request->url->setPath('');
+        $this->assertEquals('/', $request->url->getPath());
 
-        $request->setPath('ola');
-        $this->assertEquals('/ola', $request->getPath());
+        $request->url->setPath('ola');
+        $this->assertEquals('/ola', $request->url->getPath());
         $this->assertEquals('html', $request->getFormat());
 
-        $request->setPath('ola.JSON');
+        $request->url->setPath('ola.JSON');
         $this->assertEquals('json', $request->getFormat());
 
-        $request->setPath('ola/.JSON');
+        $request->url->setPath('ola/.JSON');
         $this->assertEquals('json', $request->getFormat());
     }
 

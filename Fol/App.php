@@ -16,7 +16,6 @@ abstract class App
     private $publicUrl;
     private $path;
     private $namespace;
-    private $currentRequest;
 
     /**
      * Magic function to get registered services.
@@ -32,14 +31,6 @@ abstract class App
         }
     }
 
-    /**
-     * User custom request execution
-     *
-     * @param Http\Request $request
-     *
-     * @return Http\Response
-     */
-    abstract protected function handleRequest(Http\Request $request);
 
     /**
      * Magic function to execute a request in this app
@@ -48,27 +39,8 @@ abstract class App
      *
      * @return Http\Response
      */
-    public function __invoke(Request $request)
-    {
-        $previousRequest = $this->currentRequest;
-        $this->currentRequest = $request;
+    abstract public function __invoke(Request $request);
 
-        $response = $this->handleRequest($request);
-
-        $this->currentRequest = $previousRequest;
-
-        return $response;
-    }
-
-    /**
-     * Returns the current request
-     *
-     * @return null|Http\Request
-     */
-    public function getCurrentRequest()
-    {
-        return $this->currentRequest;
-    }
 
     /**
      * Define new services

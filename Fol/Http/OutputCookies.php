@@ -198,7 +198,7 @@ class OutputCookies implements \ArrayAccess
     /**
      * Adds a new cookie from a Set-Cookie header string
      *
-     * @param string $cookie
+     * @param string $string
      *
      * @return boolean
      */

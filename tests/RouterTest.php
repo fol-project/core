@@ -10,7 +10,7 @@ class RouterTest extends PHPUnit_Framework_TestCase
             'path' => '/people/{id},{name}'
         ], 'ola');
 
-        $request = Request::create('/people/34,Manolo');
+        $request = new Request('/people/34,Manolo');
 
         $this->assertTrue($route->match($request));
 

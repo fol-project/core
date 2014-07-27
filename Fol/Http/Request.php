@@ -10,10 +10,10 @@ class Request extends Message
 {
     protected static $constructors = [];
 
-    protected $method = 'GET';
+    protected $method;
     protected $session;
-    protected $format = 'html';
     protected $language;
+    protected $parent;
 
     public $url;
     public $query;
@@ -29,8 +29,7 @@ class Request extends Message
      */
     public static function createFromGlobals()
     {
-        $request = new static(Globals::getUrl(), Globals::getHeaders(), Globals::getGet(), Globals::getPost(), Globals::getFiles(), Globals::getCookies());
-        $request->setMethod(Globals::getMethod());
+        $request = new static(Globals::getUrl(), Globals::getMethod(), Globals::getHeaders(), Globals::getGet(), Globals::getPost(), Globals::getFiles(), Globals::getCookies());
 
         if (!$request->data->length()) {
             $request->setBody('php://input', true);
@@ -40,73 +39,77 @@ class Request extends Message
     }
 
     /**
-     * Creates a new custom request object
+     * Creates a subrequest based in this request
      *
-     * @param string $url     The request url or path
-     * @param string $method  The method of the request (GET, POST, PUT, DELETE)
-     * @param array  $vars    The parameters of the request (GET, POST, etc)
-     * @param array  $headers The headers of the request
+     * @param Request     $request The request instance
+     * @param string|null $url     The request url
+     * @param string|null $method  The request method
+     * @param array|null  $headers The request headers
+     * @param array|null  $query   The url parameters
+     * @param array|null  $data    The request payload data
+     * @param array|null  $files   The FILES parameters
+     * @param array|null  $cookies The request cookies
      *
      * @return Request The object with the specified data
      */
-    public static function create ($url = '', $method = 'GET', array $vars = array(), array $headers = array())
+    public function createFromRequest(Request $request, $url = null, $method = null, array $headers = null, array $query = null, array $data = null, array $files = null, array $cookies = null)
     {
-        if (strpos($url, '://') === false) {
-            $url = BASE_URL.$url;
+        $request = clone $request;
+
+        if ($url !== null) {
+            $request->setUrl($url);
         }
 
-        $request = new static($url, $headers);
-
-        $request->setMethod($method);
-
-        if (!$request->getPort()) {
-            $request->setPort(($request->getScheme() === 'https') ? 433 : 80);
+        if ($method !== null) {
+            $request->setMethod($method);
         }
 
-        if ($vars) {
-            if (in_array(strtoupper($method), array('POST', 'PUT', 'DELETE'))) {
-                $request->data->set($vars);
-                $request->headers->set('Content-Type', 'application/x-www-form-urlencoded');
-            } else {
-                $request->query->set($vars);
-            }
+        if ($headers !== null) {
+            $request->headers->set($headers);
+        }
+
+        if ($query !== null) {
+            $request->query->set($query);
+        }
+
+        if ($data !== null) {
+            $request->data->set($data);
+        }
+
+        if ($files !== null) {
+            $request->files->set($files);
+        }
+
+        if ($cookies !== null) {
+            $request->cookies->set($cookies);
         }
 
         return $request;
     }
 
-
     /**
      * Constructor
      *
      * @param string $url     The request url
+     * @param string $method  The request method
      * @param array  $headers The request headers
      * @param array  $query   The url parameters
      * @param array  $data    The request payload data
      * @param array  $files   The FILES parameters
      * @param array  $cookies The request cookies
      */
-    public function __construct($url = null, array $headers = array(), array $query = array(), array $data = array(), array $files = array(), array $cookies = array())
+    public function __construct($url = '', $method = 'GET', array $headers = array(), array $query = array(), array $data = array(), array $files = array(), array $cookies = array())
     {
         $this->url = new Url($url);
         $this->query = $this->url->query;
+
+        $this->setMethod($method);
         $this->query->set($query);
 
         $this->data = new Input($data);
         $this->files = new InputFiles($files);
         $this->cookies = new InputCookies($cookies);
         $this->headers = new Headers($headers);
-
-        if (($format = $this->url->getExtension()) && ($format = Headers::getFormat($format))) {
-            $this->format = $format;
-        } else {
-            foreach (array_keys($this->headers->getParsed('Accept')) as $mimetype) {
-                if ($format = Headers::getFormat($mimetype)) {
-                    $this->format = $format;
-                    break;
-                }
-            }
-        }
     }
 
     /**
@@ -122,23 +125,45 @@ class Request extends Message
         $this->headers = clone $this->headers;
     }
 
+
     /**
-     * Creates a subrequest based in this request
+     * Sets the parent request
      *
-     * @param string $url    The request url or path
-     * @param string $method The method of the request (GET, POST, PUT, DELETE)
-     * @param array  $vars   The parameters of the request (GET, POST, etc)
-     *
-     * @return Request The object with the specified data
+     * @param Request $request
      */
-    public function createSubRequest($url = '', $method = 'GET', array $vars = array())
+    public function setParent(Request $request)
     {
-        $request = static::create($url, $method, $vars);
+        $this->parent = $request;
+    }
 
-        $request->setLanguage($this->getLanguage());
-        $request->setParent($this);
+    /**
+     * Gets the parent request
+     *
+     * @return Request The parent request
+     */
+    public function getParent()
+    {
+        return $this->parent;
+    }
 
-        return $request;
+    /**
+     * Gets the main parent request
+     *
+     * @return Request The main request or itself
+     */
+    public function getMain()
+    {
+        return $this->parent ? $this->parent->getMain() : $this;
+    }
+
+    /**
+     * Check whether the request is main or not
+     *
+     * @return boolean
+     */
+    public function isMain()
+    {
+        return empty($this->parent);
     }
 
     /**
@@ -160,7 +185,7 @@ class Request extends Message
             $text .= "\nRoute:\n".$this->route;
         }
 
-        $text .= "\n\n".$this->getBody(true);
+        $text .= "\n\n".$this->read();
 
         return $text;
     }
@@ -184,7 +209,7 @@ class Request extends Message
      */
     public function getUrl($query = false)
     {
-        $this->url->getUrl($query);
+        return $this->url->getUrl($query);
     }
 
     /**
@@ -194,17 +219,17 @@ class Request extends Message
      */
     public function getFormat()
     {
-        return $this->format;
-    }
+        if (($extension = $this->url->getExtension()) && isset(Headers::$formats[$extension])) {
+            return $extension;
+        }
 
-    /**
-     * Sets the a new format
-     *
-     * @param string $format The new format value
-     */
-    public function setFormat($format)
-    {
-        $this->format = strtolower($format);
+        foreach (array_keys($this->headers->getParsed('Accept')) as $mimetype) {
+            if ($format = Headers::getFormat($mimetype)) {
+                return $format;
+            }
+        }
+
+        return 'html';
     }
 
     /**

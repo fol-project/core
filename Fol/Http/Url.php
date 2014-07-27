@@ -46,10 +46,10 @@ class Url
             $port = null;
         }
 
-        return sprintf('%s://%s%s%s%s%s%s',
-            $scheme,
+        return sprintf('%s%s%s%s%s%s%s',
+            $scheme ? sprintf('%s:', $scheme) : '',
             $user ? sprintf('%s%s@', $user, $password ? sprintf(':%s', $password) : '') : '',
-            $host,
+            $host ? sprintf('//%s', $host) : '',
             $port ? sprintf(':%d', $port) : '',
             $path,
             $query ? '?'.http_build_query($query) : '',
@@ -77,15 +77,23 @@ class Url
      */
     public function setUrl($url)
     {
-        $url = parse_url($url);
+        $url = parse_url($url) + [
+            'scheme' => null,
+            'host' => null,
+            'port' => null,
+            'user' => null,
+            'pass' => null,
+            'path' => '',
+            'fragment' => ''
+        ];
 
         $this->setScheme($url['scheme']);
         $this->setHost($url['host']);
-        $this->setPort(isset($url['port']) ? $url['port'] : null);
-        $this->setUser(isset($url['user']) ? $url['user'] : null);
-        $this->setPassword(isset($url['pass']) ? $url['pass'] : null);
-        $this->setPath(isset($url['path']) ? $url['path'] : '');
-        $this->setFragment(isset($url['fragment']) ? $url['fragment'] : '');
+        $this->setPort($url['port']);
+        $this->setUser($url['user']);
+        $this->setPassword($url['pass']);
+        $this->setPath($url['path']);
+        $this->setFragment($url['fragment']);
 
         if (isset($url['query'])) {
             parse_str(html_entity_decode($url['query']), $query);
@@ -125,19 +133,24 @@ class Url
      */
     public function setPath($path)
     {
-        $parts = pathinfo(urldecode($path)) + ['dirname' => '/', 'filename' => null, 'extension' => null];
+        $parts = pathinfo(urldecode($path)) + ['dirname' => '/', 'basename' => ''];
 
-        $this->path = $parts['dirname'];
-        $this->filename = $parts['filename'];
-        $this->extension = $parts['extension'];
+        $path = $parts['dirname'];
 
-        if ($this->path[0] !== '/') {
-            $this->path = "/{$this->path}";
+        if ($path === '.') {
+            $path = '/';
+        } else {
+            if ($path[0] !== '/') {
+                $path = "/{$path}";
+            }
+
+            if (substr($path, -1) !== '/') {
+                $path = "{$path}/";
+            }
         }
 
-        if (substr($this->path, -1) !== '/') {
-            $this->path = "{$this->path}/";
-        }
+        $this->path = $path;
+        $this->setFilename($parts['basename']);
     }
 
 
@@ -288,7 +301,7 @@ class Url
      */
     public function setExtension($extension)
     {
-        $this->extension = $extension;
+        $this->extension = strtolower($extension);
     }
 
 
@@ -310,9 +323,8 @@ class Url
      */
     public function setFilename($file)
     {
-        $parts = pathinfo($file) + ['filename' => null, 'extension' => null];
-
+        $parts = pathinfo($file) + ['filename' => '', 'extension' => ''];
         $this->filename = $parts['filename'];
-        $this->extension = $parts['extension'];
+        $this->setExtension($parts['extension']);
     }
 }

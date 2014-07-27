@@ -49,7 +49,7 @@ class Response extends Message
         $text = sprintf('HTTP/1.1 %s', $this->status[0], $this->status[1]);
         $text .= "\nCookies:\n".$this->cookies;
         $text .= "\nHeaders:\n".$this->headers;
-        $text .= "\n\n".$this->getBody(true);
+        $text .= "\n\n".$this->read();
 
         return $text;
     }

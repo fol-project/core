@@ -46,7 +46,8 @@ class InputCookies implements \ArrayAccess
     /**
      * Adds new cookies from a header string
      *
-     * @param string $name The cookie name
+     * @param string $name       The cookie header value
+     * @param string $headerName The cookie header name
      *
      * @return boolean
      */
@@ -65,5 +66,7 @@ class InputCookies implements \ArrayAccess
 
             $this->set(trim($cookie[0]), isset($cookie[1]) ? trim($cookie[1], " \n\r\t\0\x0B\"") : true);
         }
+
+        return true;
     }
 }

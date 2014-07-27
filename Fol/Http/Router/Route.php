@@ -70,7 +70,7 @@ class Route implements \ArrayAccess
     /**
      * Check if the route match with the request
      *
-     * @param Request The request to check
+     * @param Request $request The request to check
      *
      * @return bool
      */

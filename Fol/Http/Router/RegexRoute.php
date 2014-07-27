@@ -7,6 +7,7 @@
 namespace Fol\Http\Router;
 
 use Fol\Http\Request;
+use Fol\Http\Url;
 
 class RegexRoute extends Route
 {
@@ -79,11 +80,16 @@ class RegexRoute extends Route
      */
     public function match(Request $request)
     {
-        if (!$this->checkRequest($request, ['ip', 'method', 'scheme', 'host', 'port', 'format'])) {
-            return false;
-        }
+        $match = (
+               $this->check('ip', $request->getIp())
+            && $this->check('method', $request->getMethod())
+            && $this->check('language', $request->getLanguage())
+            && $this->check('scheme', $request->url->getScheme())
+            && $this->check('host', $request->url->getHost())
+            && $this->check('port', $request->url->getPort())
+        );
 
-        if (($matches = $this->checkRegex($request->getPath())) === false) {
+        if (($matches = $this->checkRegex($request->url->getPath())) === false) {
             return false;
         }
 
@@ -110,8 +116,8 @@ class RegexRoute extends Route
             }
         }
 
-        $values = $this->getProperties(['scheme', 'host', 'port', 'format']);
+        $values = $this->getProperties(['scheme', 'host', 'port']);
 
-        return Request::buildUrl($values['scheme'], $values['host'], $values['port'], $path, $values['format'], $parameters);
+        return Url::build($values['scheme'], $values['host'], $values['port'], null, null, $path, $parameters);
     }
 }
