@@ -52,7 +52,7 @@ class Request extends Message
      *
      * @return Request The object with the specified data
      */
-    public function createFromRequest(Request $request, $url = null, $method = null, array $headers = null, array $query = null, array $data = null, array $files = null, array $cookies = null)
+    public static function createFromRequest(Request $request, $url = null, $method = null, array $headers = null, array $query = null, array $data = null, array $files = null, array $cookies = null)
     {
         $request = clone $request;
 

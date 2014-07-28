@@ -204,7 +204,7 @@ class Url
      */
     public function getPort()
     {
-        return $this->port;
+        return $this->port ?: (isset(self::$defaultPorts[$this->scheme]) ? self::$defaultPorts[$this->scheme] : null);
     }
 
     /**

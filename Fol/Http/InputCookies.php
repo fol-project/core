@@ -46,7 +46,7 @@ class InputCookies implements \ArrayAccess
     /**
      * Adds new cookies from a header string
      *
-     * @param string $name       The cookie header value
+     * @param string $string     The cookie header value
      * @param string $headerName The cookie header name
      *
      * @return boolean
