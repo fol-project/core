@@ -7,9 +7,6 @@
 
 namespace Fol;
 
-use Fol\Http\Request;
-use Fol\Http\Response;
-
 abstract class App
 {
     private $services;
@@ -30,16 +27,6 @@ abstract class App
             return $this->$name = $service;
         }
     }
-
-
-    /**
-     * Magic function to execute a request in this app
-     *
-     * @param Http\Request $request
-     *
-     * @return Http\Response
-     */
-    abstract public function __invoke(Request $request);
 
 
     /**

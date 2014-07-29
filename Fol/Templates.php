@@ -90,8 +90,24 @@ class Templates
         $class->templates = $this;
 
         foreach (get_class_methods($class) as $name) {
-            $this->functions[$name] = [$class, $name];
+            $this->define($name, [$class, $name]);
         }
+    }
+
+
+    /**
+     * Define a function to use it in the templates
+     * 
+     * @param string   $name
+     * @param callable $callable
+     */
+    public function define($name, $callable)
+    {
+        if (!is_callable($callable)) {
+            throw new \InvalidArgumentException("The function '{$name}' is not callable");
+        }
+
+        $this->functions[$name] = $callable;
     }
 
 
