@@ -124,7 +124,7 @@ class Errors
         }
 
         if (static::$displayErrors) {
-            echo (ACCESS_INTERFACE === 'cli') ? self::getTextException($exception) : self::getHtmlException($exception);
+            echo (php_sapi_name() === 'cli') ? self::getTextException($exception) : self::getHtmlException($exception);
         }
     }
 
