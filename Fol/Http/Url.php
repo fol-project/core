@@ -65,7 +65,7 @@ class Url
      */
     public function __construct($url)
     {
-        $this->query = new Input();
+        $this->query = new RequestParameters();
         $this->setUrl($url);
     }
 

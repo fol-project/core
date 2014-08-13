@@ -2,7 +2,7 @@
 /**
  * Fol\Http\Container
  *
- * Simple class used to store variables (GET, POST, FILES, etc)
+ * Simple class used to store variables
  */
 namespace Fol;
 

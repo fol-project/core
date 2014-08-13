@@ -2,13 +2,13 @@
 /**
  * Fol\Http\Cookies
  *
- * Class to manage cookies
+ * Class to manage cookies response cookies
  */
 namespace Fol\Http;
 
 use Fol\ContainerTrait;
 
-class OutputCookies implements \ArrayAccess
+class ResponseCookies implements \ArrayAccess
 {
     use ContainerTrait;
 

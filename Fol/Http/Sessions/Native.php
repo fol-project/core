@@ -8,7 +8,7 @@ namespace Fol\Http\Sessions;
 
 use Fol\Http\Request;
 use Fol\Http\Response;
-use Fol\Http\OutputCookies;
+use Fol\Http\ResponseCookies;
 
 class Native extends Session
 {
@@ -55,7 +55,7 @@ class Native extends Session
 
         ini_set('session.use_only_cookies', 1);
 
-        $this->cookie = OutputCookies::calculateDefaults(BASE_URL, ['httponly' => true]);
+        $this->cookie = ResponseCookies::calculateDefaults(BASE_URL, ['httponly' => true]);
 
         session_set_cookie_params($this->cookie['expires'], $this->cookie['path'], $this->cookie['domain'], $this->cookie['secure'], $this->cookie['httponly']);
         session_start();

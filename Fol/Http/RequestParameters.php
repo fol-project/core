@@ -1,14 +1,14 @@
 <?php
 /**
- * Fol\Http\Input
+ * Fol\Http\RequestParameters
  *
- * Class to store all input variables ($_GET, $_POST)
+ * Class to store request variables
  */
 namespace Fol\Http;
 
 use Fol\ContainerTrait;
 
-class Input implements \ArrayAccess
+class RequestParameters implements \ArrayAccess
 {
     use ContainerTrait { get as private parentGet; }
 

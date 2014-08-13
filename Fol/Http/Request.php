@@ -6,8 +6,12 @@
  */
 namespace Fol\Http;
 
+use Fol\ServiceContainerTrait;
+
 class Request extends Message
 {
+    use ServiceContainerTrait;
+
     protected static $constructors = [];
 
     protected $method;
@@ -106,10 +110,11 @@ class Request extends Message
         $this->setMethod($method);
         $this->query->set($query);
 
-        $this->data = new Input($data);
-        $this->files = new InputFiles($files);
-        $this->cookies = new InputCookies($cookies);
-        $this->headers = new Headers($headers);
+        $this->data = new RequestParameters($data);
+        $this->files = new RequestFiles($files);
+
+        $this->headers = new RequestHeaders($headers);
+        $this->cookies = $this->headers->cookies;
     }
 
     /**

@@ -21,7 +21,7 @@ abstract class Message
      * @param string|array $name     The constructor name
      * @param \Closure     $resolver A function that returns a Message instance
      */
-    public static function define($name, \Closure $resolver = null)
+    public static function defineConstructor($name, \Closure $resolver = null)
     {
         if (is_array($name)) {
             foreach ($name as $name => $resolver) {

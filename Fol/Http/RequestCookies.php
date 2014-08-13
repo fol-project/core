@@ -1,14 +1,14 @@
 <?php
 /**
- * Fol\Http\InputCookies
+ * Fol\Http\RequestCookies
  *
- * Class to store incoming cookies ($_GET, $_POST)
+ * Class to store incoming cookies
  */
 namespace Fol\Http;
 
 use Fol\ContainerTrait;
 
-class InputCookies implements \ArrayAccess
+class RequestCookies implements \ArrayAccess
 {
     use ContainerTrait;
 
