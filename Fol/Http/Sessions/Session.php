@@ -10,38 +10,25 @@ use Fol\ContainerTrait;
 use Fol\Http\Request;
 use Fol\Http\Response;
 
-class Session implements \ArrayAccess, SessionInterface
+class Session implements \ArrayAccess
 {
     use ContainerTrait;
 
     protected $id;
     protected $name;
-    protected $request;
 
     /**
      * Construct and loads the session data
      *
-     * @param string $id
-     * @param string $name
+     * @param Request $request
+     * @param string  $id
+     * @param string  $name
      */
-    public function __construct($id = null, $name = null)
+    public function __construct(Request $request, $id = null, $name = null)
     {
         $this->id = $id;
         $this->name = $name;
     }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function setRequest(Request $request)
-    {
-        $this->request = $request;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function prepare(Response $response) {}
 
     /**
      * Close the session and save the data.
@@ -82,7 +69,13 @@ class Session implements \ArrayAccess, SessionInterface
      * @param boolean $destroy  Set true to destroy the current data
      * @param integer $lifetime The new session duration
      */
-    public function regenerate($destroy = false, $lifetime = null) {}
+    public function regenerate($destroy = false, $lifetime = null) {
+        if ($destroy) {
+            $this->delete();
+        }
+
+        $this->id = uniqid();
+    }
 
     /**
      * Get a flash value (read only once)

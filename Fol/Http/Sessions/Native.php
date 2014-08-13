@@ -15,19 +15,27 @@ class Native extends Session
     protected $cookie;
 
     /**
-     * {@inheritDoc}
+     * Construct and loads the session data
      *
-     * @throws \Exception if the session is disabled
+     * @param Request     $request
+     * @param string|null $id
+     * @param string|null $name
      */
-    public function setRequest(Request $request)
+    public function __construct(Request $request, $id = null, $name = null)
     {
-        if ($this->name === null) {
-            $this->name = session_name();
+        if (!$name) {
+            $name = session_name();
         }
 
-        if (!$this->id && $request->cookies->get($this->name)) {
-            $this->id = $request->cookies->get($this->name);
+        if (!$id && $request->cookies->get($name)) {
+            $id = $request->cookies->get($name);
         }
+
+        parent::__construct($request, $id, $name);
+
+        $request->addPrepareCallback(function ($request, $response) {
+            $this->prepare($request, $response);
+        });
 
         $this->start();
     }
@@ -65,9 +73,9 @@ class Native extends Session
     }
 
     /**
-     * {@inheritDoc}
+     * Magic method to close the session
      */
-    public function prepare(Response $response)
+    protected function prepare(Request $request, Response $response)
     {
         if ((session_status() === PHP_SESSION_ACTIVE) && (session_name() === $this->name) && (session_id() === $this->id)) {
             session_write_close();

@@ -15,7 +15,6 @@ class Request extends Message
     protected static $constructors = [];
 
     protected $method;
-    protected $session;
     protected $language;
     protected $parent;
 
@@ -115,6 +114,7 @@ class Request extends Message
 
         $this->headers = new RequestHeaders($headers);
         $this->cookies = $this->headers->cookies;
+        $this->cookies->set($cookies);
     }
 
     /**
@@ -356,51 +356,13 @@ class Request extends Message
     }
 
     /**
-     * Gets the authentication data
-     *
-     * @return array|false
-     */
-    public function getAuthentication()
-    {
-        if (!($authorization = $this->headers->get('Authorization'))) {
-            return false;
-        }
-
-        if (strpos($authorization, 'Basic') === 0) {
-            $authorization = explode(':', base64_decode(substr($authorization, 6)), 2);
-
-            return [
-                'type' => 'Basic',
-                'username' => $authorization[0],
-                'password' => isset($authorization[1]) ? $authorization[1] : null
-            ];
-        } elseif (strpos($authorization, 'Digest') === 0) {
-            $needed_parts = ['nonce' => 1, 'nc' => 1, 'cnonce' => 1, 'qop' => 1, 'username' => 1, 'uri' => 1, 'response' => 1];
-            $data = ['type' => 'Digest'];
-
-            preg_match_all('@('.implode('|', array_keys($needed_parts)).')=(?:([\'"])([^\2]+?)\2|([^\s,]+))@', substr($authorization, 7), $matches, PREG_SET_ORDER);
-
-            foreach ($matches as $m) {
-                $data[$m[1]] = $m[3] ? $m[3] : $m[4];
-                unset($needed_parts[$m[1]]);
-            }
-
-            if (!$needed_parts) {
-                return $data;
-            }
-        }
-
-        return false;
-    }
-
-    /**
      * Gets the request username
      *
      * @return string|null
      */
     public function getUser()
     {
-        $authentication = $this->getAuthentication();
+        $authentication = $this->headers->getAuthentication();
 
         return isset($authentication['username']) ? $authentication['username'] : $this->url->getUser();
     }
@@ -412,7 +374,7 @@ class Request extends Message
      */
     public function getPassword()
     {
-        $authentication = $this->getAuthentication();
+        $authentication = $this->headers->getAuthentication();
 
         return isset($authentication['password']) ? $authentication['password'] : $this->url->getPassword();
     }
@@ -427,7 +389,7 @@ class Request extends Message
      */
     public function checkPassword($password, $realm)
     {
-        $authentication = $this->getAuthentication();
+        $authentication = $this->headers->getAuthentication();
 
         if (empty($authentication['type']) || $authentication['type'] !== 'Digest') {
             return false;
@@ -441,36 +403,6 @@ class Request extends Message
         $validResponse = md5("{$A1}:{$authentication['nonce']}:{$authentication['nc']}:{$authentication['cnonce']}:{$authentication['qop']}:{$A2}");
 
         return ($authentication['response'] === $validResponse);
-    }
-
-    /**
-     * Set the request session
-     *
-     * @param Sessions\Session A session instance
-     */
-    public function setSession(Sessions\Session $session)
-    {
-        if ($this->isMain()) {
-            $session->setRequest($this);
-
-            $this->session = $session;
-        } else {
-            $this->getMain()->setSession($session);
-        }
-    }
-
-    /**
-     * Returns the session
-     *
-     * @return Sessions\Session The session instance or null
-     */
-    public function getSession()
-    {
-        if ($this->isMain()) {
-            return $this->session;
-        }
-
-        return $this->getMain()->getSession();
     }
 
     /**

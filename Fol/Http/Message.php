@@ -13,6 +13,7 @@ abstract class Message
     protected $body;
     protected $bodyStream = false;
     protected $sendCallback;
+    protected $prepareCallbacks = [];
 
 
     /**
@@ -134,5 +135,23 @@ abstract class Message
     public function setSendCallback(callable $callback = null)
     {
         $this->sendCallback = $callback;
+    }
+
+    /**
+     * Add a prepare callback
+     */
+    public function addPrepareCallback(callable $callback = null)
+    {
+        $this->prepareCallbacks[] = $callback;
+    }
+
+    /**
+     * Executes the prepare callbacks
+     */
+    public function executePrepare(Request $request, Response $response)
+    {
+        foreach ($this->prepareCallbacks as $callback) {
+            $callback($request, $response);
+        }
     }
 }

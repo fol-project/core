@@ -35,12 +35,8 @@ class Errors
      *
      * @param callable $handler The callback to execute
      */
-    public static function pushHandler($handler)
+    public static function pushHandler(callable $handler)
     {
-        if (!is_callable($handler)) {
-            throw new \InvalidArgumentException('The argument to '.__METHOD__.' is not callable');
-        }
-
         static::$handlers[] = $handler;
     }
 

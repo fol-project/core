@@ -131,9 +131,9 @@ class Response extends Message
             $this->setBody('');
         }
 
-        if (($session = $request->getSession())) {
-            $session->prepare($this);
-        }
+        $this->executePrepare($request, $this);
+
+        $request->executePrepare($request, $this);
     }
 
     /**
