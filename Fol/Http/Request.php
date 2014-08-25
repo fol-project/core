@@ -184,7 +184,6 @@ class Request extends Message
         $text .= "\nFiles:\n".$this->files;
         $text .= "\nCookies:\n".$this->cookies;
         $text .= "\nHeaders:\n".$this->headers;
-        $text .= "\nSession:\n".$this->session;
 
         if (isset($this->route)) {
             $text .= "\nRoute:\n".$this->route;
