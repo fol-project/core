@@ -9,7 +9,7 @@ namespace Fol;
 
 abstract class App
 {
-    use ServiceContainerTrait { get as private parentGet; }
+    use ServiceContainerTrait;
 
     private $publicUrl;
     private $path;
@@ -79,8 +79,10 @@ abstract class App
      */
     public function get($name)
     {
-        if (($return = $this->parentGet($name)) !== null) {
-            return $return;
+        $args = array_slice(func_get_args(), 1);
+
+        if (!empty($this->services[$name])) {
+            return call_user_func_array($this->services[$name], $args);
         }
 
         $className = $this->getNamespace($name);
@@ -89,10 +91,10 @@ abstract class App
             throw new \Exception("'$name' service is not defined and '$className' does not exists");
         }
 
-        if (func_num_args() === 1) {
+        if (empty($args)) {
             return new $className;
         }
 
-        return (new \ReflectionClass($className))->newInstanceArgs(array_slice(func_get_args(), 1));
+        return (new \ReflectionClass($className))->newInstanceArgs($args);
     }
 }
