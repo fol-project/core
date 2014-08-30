@@ -81,6 +81,42 @@ class FileSystem
     }
 
     /**
+     * Returns a new instance of FileSystem with a directory path
+     *
+     * @param null|string $path The relative path. If it's not defined, use the current path
+     *
+     * @return FileSystem
+     */
+    public function getDirectory($path = null)
+    {
+        $dir = $this->getPath($path);
+
+        if (!$this->getInfo($path)->isDir()) {
+            throw new \Exception("'{$dir}' is a non valid directory");
+        }
+
+        return new static($dir);
+    }
+
+    /**
+     * Returns a instance of SplFileInfo of a file
+     *
+     * @param null|string $path The relative path
+     *
+     * @return \SplFileInfo
+     */
+    public function getFile($path = null)
+    {
+        $file = $this->getInfo($path);
+
+        if (!$file->isFile()) {
+            throw new \Exception("'{$file}' is a non valid file");
+        }
+
+        return $file;
+    }
+
+    /**
      * Open a file and returns a splFileObject instance.
      *
      * @param null|string $path     The file path (relative to the current path)
