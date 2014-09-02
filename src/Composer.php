@@ -12,29 +12,21 @@ use Composer\IO\IOInterface;
 class Composer
 {
     /**
-     * Script executed by composer on post-create-project-cmd event
+     * Script executed by composer on some events
      *
      * @param Event $event The event object
      */
-    public static function postCreateProject(Event $event)
+    public static function setConstants(Event $event)
     {
-        self::setConstants($event->getIO());
-    }
+        if (!is_file('constants.local.php') || in_array('--force', $event->getArguments())) {
+            $io = $event->getIO();
+            $constants = require 'constants.php';
 
-    /**
-     * Define the constants (for example the constants ENVIRONMET and BASE_URL)
-     *
-     * @param IOInterface $io The IO class to ask the questions
-     */
-    private static function setConstants(IOInterface $io)
-    {
-        $file = 'constants.php';
-        $constants = require $file;
+            foreach ($constants as $name => &$value) {
+                $value = $io->ask("Constant > {$name} = '{$value}' > ", $value);
+            }
 
-        foreach ($constants as $name => &$value) {
-            $value = $io->ask("Constant > {$name} = '{$value}' > ", $value);
+            file_put_contents('constants.local.php', "<?php\n\nreturn ".var_export($constants, true).';');
         }
-
-        file_put_contents($file, "<?php\n\nreturn ".var_export($constants, true).';');
     }
 }
