@@ -11,6 +11,7 @@ abstract class App
 {
     use ServiceContainerTrait;
 
+    private $url;
     private $publicUrl;
     private $path;
     private $namespace;
@@ -53,14 +54,32 @@ abstract class App
     }
 
     /**
-     * Returns the absolute url of the public directory of the path
+     * Returns the absolute url of the app
+     *
+     * @return string
+     */
+    public function getUrl()
+    {
+        if ($this->url === null) {
+            $this->url = static::getDefaultUrl();
+        }
+
+        if (func_num_args() === 0) {
+            return $this->url;
+        }
+
+        return $this->url.FileSystem::fixPath('/'.implode('/', func_get_args()));
+    }
+
+    /**
+     * Returns the absolute url of the public directory of the app
      *
      * @return string
      */
     public function getPublicUrl()
     {
         if ($this->publicUrl === null) {
-            $this->publicUrl = BASE_URL.PUBLIC_DIR;
+            $this->publicUrl = static::getDefaultPublicUrl();
         }
 
         if (func_num_args() === 0) {
@@ -96,5 +115,29 @@ abstract class App
         }
 
         return (new \ReflectionClass($className))->newInstanceArgs($args);
+    }
+
+    /**
+     * Calculate the public url of the app
+     * 
+     * @return string
+     */
+    protected function getDefaultUrl()
+    {
+        return BASE_URL;
+    }
+
+    /**
+     * Calculate the public url of the public directory of the app
+     * 
+     * @return string
+     */
+    protected function getDefaultPublicUrl()
+    {
+        if (defined('PUBLIC_DIR')) {
+            return BASE_URL.PUBLIC_DIR;
+        }
+
+        return BASE_URL;
     }
 }
