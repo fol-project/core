@@ -14,16 +14,12 @@ class RouteFactory
     /**
      * Constructor
      *
-     * @param string $namespace The namespace where the controllers are
+     * @param string $namespace The namespace where the controllers are located
+     * @param string $baseUrl   The url base to prepend to the routes
      */
-    public function __construct($namespace = '', $baseUrl = null)
+    public function __construct($namespace, $baseUrl)
     {
         $this->namespace = $namespace;
-
-        if ($baseUrl === null) {
-            $baseUrl = BASE_URL;
-        }
-
         $components = parse_url($baseUrl);
 
         $this->baseUrl = [
