@@ -135,7 +135,7 @@ class Url
     {
         $parts = pathinfo(urldecode($path)) + ['dirname' => '/', 'basename' => ''];
 
-        $path = $parts['dirname'];
+        $path = str_replace('\\', '/', $parts['dirname']);
 
         if ($path === '.') {
             $path = '/';
