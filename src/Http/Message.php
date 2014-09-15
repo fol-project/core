@@ -125,7 +125,6 @@ abstract class Message
             return $body;
         }
 
-        rewind($body);
         return stream_get_contents($body);
     }
 
