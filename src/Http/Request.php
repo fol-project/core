@@ -296,13 +296,12 @@ class Request extends Message
             'Forwarded'
         ];
 
-        $flags = \FILTER_FLAG_NO_PRIV_RANGE | \FILTER_FLAG_NO_RES_RANGE;
         $ips = [];
 
         foreach ($forwarded as $key) {
             if ($this->headers->has($key)) {
                 foreach (array_map('trim', explode(',', $this->headers->get($key))) as $ip) {
-                    if (filter_var($ip, FILTER_VALIDATE_IP, $flags)) {
+                    if (filter_var($ip, FILTER_VALIDATE_IP)) {
                         $ips[] = $ip;
                     }
                 }

@@ -130,8 +130,8 @@ class Globals
         }
 
         //Ips
-        if (!isset($headers['CLIENT_IP']) && !isset($headers['X_FORWARDED_FOR'])) {
-            $headers['CLIENT_IP'] = self::get('REMOTE_ADDR');
+        if (!isset($headers['CLIENT-IP']) && !isset($headers['X-FORWARDED-FOR'])) {
+            $headers['CLIENT-IP'] = self::get('REMOTE_ADDR');
         }
 
         return $headers;
