@@ -9,8 +9,7 @@ namespace Fol;
 
 class Config implements \ArrayAccess
 {
-    use ContainerTrait;
-
+    protected $items = [];
     protected $configPaths = [];
     protected $environment;
 
@@ -110,32 +109,107 @@ class Config implements \ArrayAccess
     }
 
     /**
-     * Save the configuration data into a file
+     * ArrayAcces interface methods
+     */
+    public function offsetExists($offset)
+    {
+        return $this->has($offset);
+    }
+
+    public function offsetGet($offset)
+    {
+        return $this->get($offset);
+    }
+
+    public function offsetSet($offset, $value)
+    {
+        $this->set($offset, $value);
+    }
+
+    public function offsetUnset($offset)
+    {
+        $this->delete($offset);
+    }
+
+    /**
+     * Converts all items to a string
+     */
+    public function __toString()
+    {
+        $text = '';
+
+        foreach ($this->items as $name => $value) {
+            if (is_array($value)) {
+                $value = json_encode($value);
+            }
+
+            $text .= "$name: $value\n";
+        }
+
+        return $text;
+    }
+
+    /**
+     * Counts all stored parameteres
      *
-     * @param string $name The name of the data
+     * @return int The total number of parameters
+     */
+    public function length()
+    {
+        return count($this->items);
+    }
+
+    /**
+     * Sets one parameter or various new parameters
+     *
+     * @param string|array $name  The parameter name. You can define an array with name => value to insert various parameters
+     * @param mixed        $value The parameter value.
      *
      * @return $this
      */
-    public function saveFile($name, $configPath = null)
+    public function set($name = null, $value = null)
     {
-        if (($config = $this->get($name)) === null) {
-            throw new \Exception('Empty configuration');
+        if (is_array($name)) {
+            $this->items = array_replace($this->items, $name);
+        } elseif ($name) {
+            $this->items[$name] = $value;
+        } else {
+            $this->items[] = $value;
         }
-
-        if (empty($configPath) && !($configPath = reset($this->configPaths))) {
-            throw new \Exception('No config path defined');
-        }
-
-        if ($this->environment) {
-            $configPath = "{$configPath}/{$this->environment}";
-        }
-
-        if (!is_dir($configPath)) {
-            mkdir($configPath, 0777, true);
-        }
-
-        file_put_contents("{$configPath}/{$name}.php", "<?php\n\nreturn ".var_export($config, true).';');
 
         return $this;
+    }
+
+    /**
+     * Deletes one or all parameters
+     *
+     * $params->delete('name') Deletes one parameter
+     * $params->delete() Deletes all parameter
+     *
+     * @param string $name The parameter name
+     *
+     * @return $this
+     */
+    public function delete($name = null)
+    {
+        if ($name === null) {
+            $this->items = [];
+        } else {
+            unset($this->items[$name]);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Checks if a parameter exists
+     *
+     * @param string $name The parameter name
+     *
+     * @return boolean True if the parameter exists (even if it's null) or false if not
+     */
+    public function has($name)
+    {
+        return array_key_exists($name, $this->items);
     }
 }
