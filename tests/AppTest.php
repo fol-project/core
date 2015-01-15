@@ -24,7 +24,7 @@ class AppTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(dirname(__DIR__).'/src', $app->getPath());
         $this->assertEquals(dirname(__DIR__).'/src/subdirectory', $app->getPath('subdirectory'));
         $this->assertEquals(dirname(__DIR__).'/', $app->getPath('../'));
-        
+
         $this->assertInstanceOf('Fol\\Config', $app->config);
     }
 }

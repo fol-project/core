@@ -7,7 +7,6 @@
 namespace Fol;
 
 use Composer\Script\Event;
-use Composer\IO\IOInterface;
 
 class Composer
 {

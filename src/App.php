@@ -14,7 +14,6 @@ class App
     private $path;
     private $url;
 
-
     /**
      * Magic function to get registered services.
      *
@@ -47,7 +46,6 @@ class App
 
         $this->services[$name] = $resolver;
     }
-
 
     /**
      * Returns the namespace of the app
@@ -135,7 +133,7 @@ class App
         }
 
         if (empty($args)) {
-            return new $className;
+            return new $className();
         }
 
         return (new \ReflectionClass($className))->newInstanceArgs($args);

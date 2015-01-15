@@ -16,7 +16,7 @@ class Config implements \ArrayAccess
     /**
      * Constructor method. You must define the base folder where the config files are stored
      *
-     * @param string|array $paths The base folder paths
+     * @param string|array $paths       The base folder paths
      * @param null|string  $environment The environment
      */
     public function __construct($paths, $environment = null)
@@ -63,7 +63,6 @@ class Config implements \ArrayAccess
         return $this;
     }
 
-
     /**
      * Read data from php file (that returns the value)
      *
@@ -79,11 +78,11 @@ class Config implements \ArrayAccess
 
         foreach ($this->configPaths as $path) {
             if ($this->environment && is_file("{$path}/{$this->environment}/{$name}")) {
-                return include("{$path}/{$this->environment}/{$name}");
+                return include "{$path}/{$this->environment}/{$name}";
             }
 
             if (is_file("{$path}/{$name}")) {
-                return include("{$path}/{$name}");
+                return include "{$path}/{$name}";
             }
         }
     }
