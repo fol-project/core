@@ -2,7 +2,7 @@
 /**
  * Fol\App
  *
- * This is the abstract class that all apps must extend.
+ * Manages an app
  */
 
 namespace Fol;
@@ -31,8 +31,8 @@ class App
     /**
      * Register new services
      *
-     * @param string|array $name     The service name
-     * @param \Closure     $resolver A function that returns a service instance
+     * @param integer|string|array $name     The service name
+     * @param \Closure             $resolver A function that returns a service instance
      */
     public function register($name, \Closure $resolver = null)
     {
@@ -100,10 +100,6 @@ class App
      */
     public function getUrl()
     {
-        if ($this->url === null) {
-            $this->url = static::getDefaultUrl();
-        }
-
         if (func_num_args() === 0) {
             return $this->url;
         }
