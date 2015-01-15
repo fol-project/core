@@ -17,13 +17,14 @@ class Config implements \ArrayAccess
      * Constructor method. You must define the base folder where the config files are stored
      *
      * @param string|array $paths The base folder paths
+     * @param null|string  $environment The environment
      */
-    public function __construct($paths)
+    public function __construct($paths, $environment = null)
     {
         $this->addFolders($paths);
 
-        if (defined('ENVIRONMENT')) {
-            $this->setEnvironment(ENVIRONMENT);
+        if ($environment) {
+            $this->setEnvironment($environment);
         }
     }
 

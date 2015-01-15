@@ -7,7 +7,7 @@
 
 namespace Fol;
 
-abstract class App
+class App
 {
     private $services = [];
     private $namespace;
@@ -82,7 +82,17 @@ abstract class App
             return $this->path;
         }
 
-        return FileSystem::fixPath($this->path.'/'.implode('/', func_get_args()));
+        return self::fixPath($this->path.'/'.implode('/', func_get_args()));
+    }
+
+    /**
+     * Set the absolute url of the app
+     *
+     * @param $url string
+     */
+    public function setUrl($url)
+    {
+        $this->url = $url;
     }
 
     /**
@@ -100,7 +110,7 @@ abstract class App
             return $this->url;
         }
 
-        return $this->url.FileSystem::fixPath('/'.implode('/', func_get_args()));
+        return $this->url.self::fixPath('/'.implode('/', func_get_args()));
     }
 
     /**
@@ -132,12 +142,24 @@ abstract class App
     }
 
     /**
-     * Calculate the public url of the app
-     * 
+     * static function to fix paths '//' or '/./' or '/foo/../' in a path
+     *
+     * @param string $path Path to resolve
+     *
      * @return string
      */
-    protected function getDefaultUrl()
+    private static function fixPath($path)
     {
-        return BASE_URL;
+        if (func_num_args() > 1) {
+            return self::fixPath(implode('/', func_get_args()));
+        }
+
+        $replace = ['#(/\.?/)#', '#/(?!\.\.)[^/]+/\.\./#'];
+
+        do {
+            $path = preg_replace($replace, '/', $path, -1, $n);
+        } while ($n > 0);
+
+        return $path;
     }
 }
