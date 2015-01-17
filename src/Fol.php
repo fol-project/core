@@ -7,6 +7,8 @@
 
 namespace Fol;
 
+use Composer\Script\Event;
+
 class Fol
 {
     private static $variables = [];
@@ -20,7 +22,7 @@ class Fol
      * @param string $basePath The base path of the fol installation
      * @param string $env_file The file with the environment variables
      */
-    public static function init($basePath, $env_file = 'constants.local.php')
+    public static function init($basePath, $env_file = 'env.local.php')
     {
         self::$basePath = self::fixPath(str_replace('\\', '/', $basePath));
 
@@ -28,24 +30,24 @@ class Fol
 
         //Environment variables
         if ($env_file) {
-            $constants = require self::getPath('constants.local.php');
+            $variables = require self::getPath('env.local.php');
         } else {
-            $constants = [];
+            $variables = [];
         }
 
-        if (empty($constants['BASE_URL']) || php_sapi_name() === 'cli-server') {
-            $constants['BASE_URL'] = ($_SERVER['HTTPS'] === 'on' ? 'https' : 'http').'://'.$_SERVER['SERVER_NAME'].':';
+        if (empty($variables['BASE_URL']) || php_sapi_name() === 'cli-server') {
+            $variables['BASE_URL'] = ($_SERVER['HTTPS'] === 'on' ? 'https' : 'http').'://'.$_SERVER['SERVER_NAME'].':';
 
             if (!empty($_SERVER['X_FORWARDED_PORT'])) {
-                $constants['BASE_URL'] .= $_SERVER['X_FORWARDED_PORT'];
+                $variables['BASE_URL'] .= $_SERVER['X_FORWARDED_PORT'];
             } elseif (!empty($_SERVER['SERVER_PORT'])) {
-                $constants['BASE_URL'] .= $_SERVER['SERVER_PORT'];
+                $variables['BASE_URL'] .= $_SERVER['SERVER_PORT'];
             } else {
-                $constants['BASE_URL'] .= 80;
+                $variables['BASE_URL'] .= 80;
             }
         }
 
-        self::$variables = $constants;
+        self::$variables = $variables;
     }
 
     /**
@@ -143,5 +145,24 @@ class Fol
         } while ($n > 0);
 
         return $path;
+    }
+
+    /**
+     * Script executed by composer on install/update to generate the default environment variables
+     *
+     * @param Event $event The event object
+     */
+    public static function composerEvent(Event $event)
+    {
+        if (!is_file('env.local.php') || in_array('--force', $event->getArguments())) {
+            $io = $event->getIO();
+            $variables = require 'env.php';
+
+            foreach ($variables as $name => &$value) {
+                $value = $io->ask("Define: {$name} ({$value})", $value);
+            }
+
+            file_put_contents('env.local.php', "<?php\n\nreturn ".var_export($variables, true).';');
+        }
     }
 }
