@@ -13,6 +13,7 @@ class App
     private $namespace;
     private $path;
     private $url;
+    private $environment;
 
     /**
      * Magic function to get registered services.
@@ -80,7 +81,7 @@ class App
             return $this->path;
         }
 
-        return self::fixPath($this->path.'/'.implode('/', func_get_args()));
+        return Fol::fixPath($this->path.'/'.implode('/', func_get_args()));
     }
 
     /**
@@ -100,11 +101,39 @@ class App
      */
     public function getUrl()
     {
+        if ($this->url === null) {
+            $this->url = Fol::getEnv('BASE_URL');
+        }
+
         if (func_num_args() === 0) {
             return $this->url;
         }
 
-        return $this->url.self::fixPath('/'.implode('/', func_get_args()));
+        return $this->url.Fol::fixPath('/'.implode('/', func_get_args()));
+    }
+
+    /**
+     * Set the app environment name
+     *
+     * @param string $name
+     */
+    public function setEnvironment($name)
+    {
+        $this->environment = $name;
+    }
+
+    /**
+     * Returns the app environment name
+     *
+     * @return string
+     */
+    public function getEnvironment()
+    {
+        if ($this->environment === null) {
+            $this->environment = Fol::getEnv('ENVIRONMENT');
+        }
+
+        return $this->environment;
     }
 
     /**
@@ -133,27 +162,5 @@ class App
         }
 
         return (new \ReflectionClass($className))->newInstanceArgs($args);
-    }
-
-    /**
-     * static function to fix paths '//' or '/./' or '/foo/../' in a path
-     *
-     * @param string $path Path to resolve
-     *
-     * @return string
-     */
-    private static function fixPath($path)
-    {
-        if (func_num_args() > 1) {
-            return self::fixPath(implode('/', func_get_args()));
-        }
-
-        $replace = ['#(/\.?/)#', '#/(?!\.\.)[^/]+/\.\./#'];
-
-        do {
-            $path = preg_replace($replace, '/', $path, -1, $n);
-        } while ($n > 0);
-
-        return $path;
     }
 }
