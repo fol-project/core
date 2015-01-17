@@ -17,7 +17,7 @@ class Fol
     /**
      * Init the fol basic operations
      *
-     * @param string $name     The base path of the fol installation
+     * @param string $basePath The base path of the fol installation
      * @param string $env_file The file with the environment variables
      */
     public static function init($basePath, $env_file = 'constants.local.php')
@@ -120,7 +120,7 @@ class Fol
     /**
      * Set the base path of the fol installation
      *
-     * @param string $path
+     * @return string
      */
     public static function getPath()
     {
