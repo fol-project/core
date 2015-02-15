@@ -7,46 +7,12 @@
 
 namespace Fol;
 
-class App
+class App extends Container\Container
 {
-    private $services = [];
     private $namespace;
     private $path;
     private $url;
     private $environment;
-
-    /**
-     * Magic function to get registered services.
-     *
-     * @param string $name The name of the service
-     *
-     * @return null|mixed
-     */
-    public function __get($name)
-    {
-        if (($service = $this->get($name)) !== null) {
-            return $this->$name = $service;
-        }
-    }
-
-    /**
-     * Register new services
-     *
-     * @param integer|string|array $name     The service name
-     * @param \Closure             $resolver A function that returns a service instance
-     */
-    public function register($name, \Closure $resolver = null)
-    {
-        if (is_array($name)) {
-            foreach ($name as $name => $resolver) {
-                $this->register($name, $resolver);
-            }
-
-            return;
-        }
-
-        $this->services[$name] = $resolver;
-    }
 
     /**
      * Returns the namespace of the app
@@ -137,30 +103,24 @@ class App
     }
 
     /**
-     * Returns a registered service or a class instance
-     *
-     * @param string $name The service name
-     *
-     * @return mixed The result of the executed closure
+     * {@inheritdoc}
      */
-    public function get($name)
+    public function get($id)
     {
-        $args = array_slice(func_get_args(), 1);
-
-        if (!empty($this->services[$name])) {
-            return call_user_func_array($this->services[$name], $args);
+        if ($this->has($id)) {
+            return parent::get($id);
         }
 
-        $className = $this->getNamespace($name);
+        $className = $this->getNamespace($id);
 
         if (!class_exists($className)) {
-            throw new \Exception("'$name' service is not defined and '$className' does not exists");
+            throw new Container\NotFoundException("{$id} has not found and '$className' does not exists");
         }
 
-        if (empty($args)) {
+        if (func_num_args() === 1) {
             return new $className();
         }
 
-        return (new \ReflectionClass($className))->newInstanceArgs($args);
+        return (new \ReflectionClass($className))->newInstanceArgs(array_slice(func_get_args(), 1));
     }
 }

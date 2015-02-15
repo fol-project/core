@@ -1,6 +1,4 @@
 <?php
-require_once dirname(__DIR__).'/src/autoload.php';
-
 use Fol\Config;
 
 class ConfigTest extends PHPUnit_Framework_TestCase
