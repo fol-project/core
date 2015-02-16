@@ -36,7 +36,7 @@ class Fol
         }
 
         if (empty($variables['BASE_URL']) || php_sapi_name() === 'cli-server') {
-            $variables['BASE_URL'] = ($_SERVER['HTTPS'] === 'on' ? 'https' : 'http').'://'.$_SERVER['SERVER_NAME'].':';
+            $variables['BASE_URL'] = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http').'://'.$_SERVER['SERVER_NAME'].':';
 
             if (!empty($_SERVER['X_FORWARDED_PORT'])) {
                 $variables['BASE_URL'] .= $_SERVER['X_FORWARDED_PORT'];
