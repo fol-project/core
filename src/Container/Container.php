@@ -95,6 +95,16 @@ class Container implements ContainerInterface
      */
     public function set($id, $service)
     {
-        $this->services[$id] = $services;
+        $this->services[$id] = $service;
+    }
+
+    /**
+     * Deletes a service
+     *
+     * @param integer|string $id
+     */
+    public function delete($id)
+    {
+        unset($this->services[$id]);
     }
 }
