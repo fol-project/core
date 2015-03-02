@@ -6,3 +6,5 @@ Clases básicas que conforman o núcleo de FOL:
 * `Fol\Fol` Xestiona variables e servizos globais
 * `Fol\App` Xestiona a aplicación web.
 * `Fol\Config` Xestiona os datos de configuración da app
+* `Fol\Container` Contenedor de dependencias moi básico, que soporta a interface [container-interop](https://github.com/container-interop/container-interop)
+* `Fol\ServiceProvider` Para gargar servicios por demanda
