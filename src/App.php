@@ -1,6 +1,6 @@
 <?php
 /**
- * Fol\App
+ * Fol\App.
  *
  * Manages an app
  */
@@ -16,7 +16,7 @@ class App extends Container\Container
     private $environment;
 
     /**
-     * Register the providers
+     * Register the providers.
      *
      * @param array $providers
      */
@@ -38,7 +38,7 @@ class App extends Container\Container
     }
 
     /**
-     * Returns the namespace of the app
+     * Returns the namespace of the app.
      *
      * @param string $namespace Optional namespace to append
      */
@@ -56,7 +56,7 @@ class App extends Container\Container
     }
 
     /**
-     * Returns the absolute path of the app
+     * Returns the absolute path of the app.
      *
      * @return string
      */
@@ -74,7 +74,7 @@ class App extends Container\Container
     }
 
     /**
-     * Set the absolute url of the app
+     * Set the absolute url of the app.
      *
      * @param $url string
      */
@@ -84,7 +84,7 @@ class App extends Container\Container
     }
 
     /**
-     * Returns the absolute url of the app
+     * Returns the absolute url of the app.
      *
      * @return string
      */
@@ -102,7 +102,7 @@ class App extends Container\Container
     }
 
     /**
-     * Set the app environment name
+     * Set the app environment name.
      *
      * @param string $name
      */
@@ -112,7 +112,7 @@ class App extends Container\Container
     }
 
     /**
-     * Returns the app environment name
+     * Returns the app environment name.
      *
      * @return string
      */

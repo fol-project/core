@@ -1,6 +1,6 @@
 <?php
 /**
- * Fol\Fol
+ * Fol\Fol.
  *
  * Manages global data
  */
@@ -14,7 +14,7 @@ class Fol
     private static $basePath;
 
     /**
-     * Init the fol basic operations
+     * Init the fol basic operations.
      *
      * @param string $basePath The base path of the fol installation
      * @param string $env_file The file with the environment variables
@@ -50,7 +50,7 @@ class Fol
     }
 
     /**
-     * Returns the global service container
+     * Returns the global service container.
      *
      * @return Container\Container
      */
@@ -60,7 +60,7 @@ class Fol
     }
 
     /**
-     * Set an environmet variable
+     * Set an environmet variable.
      *
      * @param string $name
      * @param mixed  $value
@@ -71,7 +71,7 @@ class Fol
     }
 
     /**
-     * Get an environmet variable
+     * Get an environmet variable.
      *
      * @param string $name The name of the variable
      */
@@ -81,7 +81,7 @@ class Fol
     }
 
     /**
-     * Set the base path of the fol installation
+     * Set the base path of the fol installation.
      *
      * @return string
      */
@@ -91,7 +91,7 @@ class Fol
     }
 
     /**
-     * static function to fix paths '//' or '/./' or '/foo/../' in a path
+     * static function to fix paths '//' or '/./' or '/foo/../' in a path.
      *
      * @param string $path Path to resolve
      *

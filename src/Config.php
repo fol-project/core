@@ -1,10 +1,11 @@
 <?php
 /**
- * Fol\Config
+ * Fol\Config.
  *
  * This is a simple class to load configuration data from php files
  * You must define a base folder and the class search for the files inside automatically.
  */
+
 namespace Fol;
 
 class Config implements \ArrayAccess
@@ -14,7 +15,7 @@ class Config implements \ArrayAccess
     protected $environment;
 
     /**
-     * Constructor method. You must define the base folder where the config files are stored
+     * Constructor method. You must define the base folder where the config files are stored.
      *
      * @param string|array $paths       The base folder paths
      * @param null|string  $environment The environment
@@ -29,7 +30,7 @@ class Config implements \ArrayAccess
     }
 
     /**
-     * Changes the environment name
+     * Changes the environment name.
      *
      * @param string $environment The new environment name
      *
@@ -43,7 +44,7 @@ class Config implements \ArrayAccess
     }
 
     /**
-     * Adds new base folders where search for the config files
+     * Adds new base folders where search for the config files.
      *
      * @param string|array $paths   The base folder paths
      * @param boolean      $prepend If it's true, insert the new folder at begining of the array.
@@ -64,7 +65,7 @@ class Config implements \ArrayAccess
     }
 
     /**
-     * Read data from php file (that returns the value)
+     * Read data from php file (that returns the value).
      *
      * @param string $name The name of the data (must be the name of the files where the data are stored)
      *
@@ -89,7 +90,7 @@ class Config implements \ArrayAccess
 
     /**
      * Gets the data. Loads automatically the data if it has not been loaded.
-     * If no name is defined, returns all loaded data
+     * If no name is defined, returns all loaded data.
      *
      * @param string $name The name of the data
      *
@@ -109,7 +110,7 @@ class Config implements \ArrayAccess
     }
 
     /**
-     * ArrayAcces interface methods
+     * ArrayAcces interface methods.
      */
     public function offsetExists($offset)
     {
@@ -132,7 +133,7 @@ class Config implements \ArrayAccess
     }
 
     /**
-     * Converts all items to a string
+     * Converts all items to a string.
      */
     public function __toString()
     {
@@ -150,7 +151,7 @@ class Config implements \ArrayAccess
     }
 
     /**
-     * Counts all stored parameteres
+     * Counts all stored parameteres.
      *
      * @return int The total number of parameters
      */
@@ -160,7 +161,7 @@ class Config implements \ArrayAccess
     }
 
     /**
-     * Sets one parameter or various new parameters
+     * Sets one parameter or various new parameters.
      *
      * @param string|array $name  The parameter name. You can define an array with name => value to insert various parameters
      * @param mixed        $value The parameter value.
@@ -181,7 +182,7 @@ class Config implements \ArrayAccess
     }
 
     /**
-     * Deletes one or all parameters
+     * Deletes one or all parameters.
      *
      * $params->delete('name') Deletes one parameter
      * $params->delete() Deletes all parameter
@@ -202,7 +203,7 @@ class Config implements \ArrayAccess
     }
 
     /**
-     * Checks if a parameter exists
+     * Checks if a parameter exists.
      *
      * @param string $name The parameter name
      *

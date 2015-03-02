@@ -4,7 +4,7 @@ namespace Fol\Container;
 use Interop\Container\ContainerInterface;
 
 /**
- * Fol\Container
+ * Fol\Container.
  *
  * Universal dependency injection container
  */
@@ -14,9 +14,8 @@ class Container implements ContainerInterface
     private $registry = [];
     private $services = [];
 
-    
     /**
-     * Register new services
+     * Register new services.
      *
      * @param integer|string $id       The service id
      * @param \Closure       $resolver A function that returns a service instance
@@ -28,7 +27,7 @@ class Container implements ContainerInterface
     }
 
     /**
-     * Add new containers
+     * Add new containers.
      *
      * @param ContainerInterface $container
      */
@@ -78,8 +77,8 @@ class Container implements ContainerInterface
     }
 
     /**
-     * Set manually new services
-     * 
+     * Set manually new services.
+     *
      * @param integer|string $id
      * @param mixed          $service
      */
@@ -89,7 +88,7 @@ class Container implements ContainerInterface
     }
 
     /**
-     * Deletes a service
+     * Deletes a service.
      *
      * @param integer|string $id
      */
@@ -99,12 +98,12 @@ class Container implements ContainerInterface
     }
 
     /**
-     * Creates a new instance from registry
-     * 
+     * Creates a new instance from registry.
+     *
      * @param string $id
-     * 
+     *
      * @throws ContainerException
-     * 
+     *
      * @return mixed
      */
     protected function getFromRegistry($id)
@@ -121,7 +120,6 @@ class Container implements ContainerInterface
             }
 
             return $service;
-
         } catch (\Exception $exception) {
             throw new ContainerException("Error on retrieve {$id}");
         }

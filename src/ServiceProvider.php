@@ -2,15 +2,15 @@
 namespace Fol;
 
 /**
- * An abstract class to register services in a app
+ * An abstract class to register services in a app.
  */
 abstract class ServiceProvider
 {
     protected $app;
 
     /**
-     * Set the app
-     * 
+     * Set the app.
+     *
      * @param App $app
      */
     public function __construct(App $app)
@@ -19,17 +19,17 @@ abstract class ServiceProvider
     }
 
     /**
-     * Returns the services provided by this provider
-     * 
+     * Returns the services provided by this provider.
+     *
      * @return false|array
      */
-    public function provides ()
+    public function provides()
     {
         return false;
     }
 
     /**
-     * Register the service
+     * Register the service.
      */
     abstract public function register();
 }

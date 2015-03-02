@@ -16,7 +16,7 @@ class ConfigTest extends PHPUnit_Framework_TestCase
         //Modify configuration
         $config->set('demo', [
             'value1' => 'one',
-            'value3' => 3
+            'value3' => 3,
         ]);
 
         $c = $config->get('demo');
