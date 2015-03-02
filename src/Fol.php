@@ -19,7 +19,7 @@ class Fol
      * @param string $basePath The base path of the fol installation
      * @param string $env_file The file with the environment variables
      */
-    public static function init($basePath, $env_file = 'env.local.php')
+    public static function init($basePath, $env_file = 'env.php')
     {
         self::$basePath = self::fixPath(str_replace('\\', '/', $basePath));
 

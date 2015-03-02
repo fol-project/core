@@ -9,10 +9,33 @@ namespace Fol;
 
 class App extends Container\Container
 {
+    private $providers = [];
     private $namespace;
     private $path;
     private $url;
     private $environment;
+
+    /**
+     * Register the providers
+     *
+     * @param array $name
+     */
+    public function addProviders(array $providers)
+    {
+        foreach ($providers as $class) {
+            $provider = new $class($this);
+
+            if (!($provider instanceof ServiceProvider)) {
+                throw new \InvalidArgumentException("This provider is not valid");
+            }
+
+            if ($provider->provides() === false) {
+                $provider->register();
+            } else {
+                $this->providers[] = $provider;
+            }
+        }
+    }
 
     /**
      * Returns the namespace of the app
@@ -109,6 +132,15 @@ class App extends Container\Container
     {
         if ($this->has($id)) {
             return parent::get($id);
+        }
+
+        foreach ($this->providers as $k => $provider) {
+            if (in_array($id, $provider->provides())) {
+                $provider->register();
+                unset($this->providers[$k]);
+
+                return parent::get($id);
+            }
         }
 
         $className = $this->getNamespace($id);

@@ -10,10 +10,11 @@ use Interop\Container\ContainerInterface;
  */
 class Container implements ContainerInterface
 {
-	private $containers = [];
-    private $register = [];
+    private $containers = [];
+    private $registry = [];
     private $services = [];
 
+    
     /**
      * Register new services
      *
@@ -23,7 +24,7 @@ class Container implements ContainerInterface
      */
     public function register($id, \Closure $resolver = null, $single = true)
     {
-    	$this->register[$id] = [$resolver, $single];
+        $this->registry[$id] = [$resolver, $single];
     }
 
     /**
@@ -33,7 +34,7 @@ class Container implements ContainerInterface
      */
     public function add(ContainerInterface $container)
     {
-    	$this->containers[] = $container;
+        $this->containers[] = $container;
     }
 
     /**
@@ -41,17 +42,17 @@ class Container implements ContainerInterface
      */
     public function has($id)
     {
-    	if (isset($this->register[$id]) || isset($this->services[$id])) {
-    		return true;
-    	}
+        if (isset($this->registry[$id]) || isset($this->services[$id])) {
+            return true;
+        }
 
-    	foreach ($this->containers as $container) {
-    		if ($container->has($id)) {
-    			return true;
-    		}
-    	}
+        foreach ($this->containers as $container) {
+            if ($container->has($id)) {
+                return true;
+            }
+        }
 
-    	return false;
+        return false;
     }
 
     /**
@@ -63,19 +64,8 @@ class Container implements ContainerInterface
             return $this->services[$id];
         }
 
-        if (isset($this->register[$id])) {
-            try {
-                $service = call_user_func($this->register[$id][0]);
-
-                if ($this->register[$id][1]) {
-                    $this->services[$id] = $service;
-                }
-
-                return $service;
-
-            } catch (\Exception $exception) {
-                throw new ContainerException("Error on retrieve {$id}");
-            }
+        if (($service = $this->getFromRegistry($id)) !== false) {
+            return $service;
         }
 
         foreach ($this->containers as $container) {
@@ -106,5 +96,34 @@ class Container implements ContainerInterface
     public function delete($id)
     {
         unset($this->services[$id]);
+    }
+
+    /**
+     * Creates a new instance from registry
+     * 
+     * @param string $id
+     * 
+     * @throws ContainerException
+     * 
+     * @return mixed
+     */
+    protected function getFromRegistry($id)
+    {
+        if (!isset($this->registry[$id])) {
+            return false;
+        }
+
+        try {
+            $service = call_user_func($this->registry[$id][0]);
+
+            if ($this->registry[$id][1]) {
+                $this->services[$id] = $service;
+            }
+
+            return $service;
+
+        } catch (\Exception $exception) {
+            throw new ContainerException("Error on retrieve {$id}");
+        }
     }
 }
