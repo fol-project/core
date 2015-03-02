@@ -18,7 +18,7 @@ class App extends Container\Container
     /**
      * Register the providers
      *
-     * @param array $name
+     * @param array $providers
      */
     public function addProviders(array $providers)
     {

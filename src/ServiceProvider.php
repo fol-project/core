@@ -8,6 +8,11 @@ abstract class ServiceProvider
 {
     protected $app;
 
+    /**
+     * Set the app
+     * 
+     * @param App $app
+     */
     public function __construct(App $app)
     {
         $this->app = $app;
@@ -25,8 +30,6 @@ abstract class ServiceProvider
 
     /**
      * Register the service
-     *
-     * @param App $app
      */
     abstract public function register();
 }

@@ -23,7 +23,7 @@ class Config implements \ArrayAccess
     {
         $this->addFolders($paths);
 
-        if ($environment) {
+        if (!empty($environment)) {
             $this->setEnvironment($environment);
         }
     }
@@ -171,10 +171,10 @@ class Config implements \ArrayAccess
     {
         if (is_array($name)) {
             $this->items = array_replace($this->items, $name);
-        } elseif ($name) {
-            $this->items[$name] = $value;
-        } else {
+        } elseif ($name === null) {
             $this->items[] = $value;
+        } else {
+            $this->items[$name] = $value;
         }
 
         return $this;
