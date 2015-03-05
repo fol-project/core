@@ -1,12 +1,9 @@
 <?php
+use Fol\Container\Container;
+
 /**
- * Fol\Fol.
- *
  * Manages global data
  */
-
-namespace Fol;
-
 class Fol
 {
     private static $variables = [];
@@ -23,7 +20,7 @@ class Fol
     {
         self::$basePath = self::fixPath(str_replace('\\', '/', $basePath));
 
-        self::$container = new Container\Container();
+        self::$container = new Container();
 
         self::$container->set('composer', require self::getPath('vendor/autoload.php'));
 
@@ -50,9 +47,21 @@ class Fol
     }
 
     /**
+     * Returns a service
+     * 
+     * @see Fol\Container\Container::get()
+     *
+     * @return mixed
+     */
+    public static function get()
+    {
+        return self::services()->get($name);
+    }
+
+    /**
      * Returns the global service container.
      *
-     * @return Container\Container
+     * @return Container
      */
     public static function services()
     {

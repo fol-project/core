@@ -22,6 +22,9 @@
 		"container-interop/container-interop": "*"
 	},
 	"autoload": {
+		"psr-0": {
+			"Fol": "src/"
+		},
 		"psr-4": {
 			"Fol\\": "src/"
 		}
