@@ -7,6 +7,8 @@
 
 namespace Fol;
 
+use Fol as FolGlobal;
+
 class App extends Container\Container
 {
     private $providers = [];
@@ -70,7 +72,7 @@ class App extends Container\Container
             return $this->path;
         }
 
-        return Fol::fixPath($this->path.'/'.implode('/', func_get_args()));
+        return FolGlobal::fixPath($this->path.'/'.implode('/', func_get_args()));
     }
 
     /**
@@ -91,14 +93,14 @@ class App extends Container\Container
     public function getUrl()
     {
         if ($this->url === null) {
-            $this->url = Fol::getEnv('BASE_URL');
+            $this->url = FolGlobal::getEnv('BASE_URL');
         }
 
         if (func_num_args() === 0) {
             return $this->url;
         }
 
-        return $this->url.Fol::fixPath('/'.implode('/', func_get_args()));
+        return $this->url.FolGlobal::fixPath('/'.implode('/', func_get_args()));
     }
 
     /**
@@ -119,7 +121,7 @@ class App extends Container\Container
     public function getEnvironment()
     {
         if ($this->environment === null) {
-            $this->environment = Fol::getEnv('ENVIRONMENT');
+            $this->environment = FolGlobal::getEnv('ENVIRONMENT');
         }
 
         return $this->environment;

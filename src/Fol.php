@@ -47,25 +47,22 @@ class Fol
     }
 
     /**
-     * Returns a service
+     * Magic method to use Fol like a container
      * 
-     * @see Fol\Container\Container::get()
-     *
+     * @param string $name
+     * @param array  $arguments
+     * 
+     * @throws \BadMethodCallException
+     * 
      * @return mixed
      */
-    public static function get()
+    public static function __callStatic($name, array $arguments)
     {
-        return self::services()->get($name);
-    }
+        if (method_exists(self::$container, $name)) {
+            return call_user_func_array([self::$container, $name], $arguments);
+        }
 
-    /**
-     * Returns the global service container.
-     *
-     * @return Container
-     */
-    public static function services()
-    {
-        return self::$container;
+        throw new \BadMethodCallException("The method {$name} does not exists");
     }
 
     /**
