@@ -6,7 +6,6 @@ use Fol\Container\Container;
  */
 class Fol
 {
-    private static $variables = [];
     private static $container;
     private static $basePath;
 
@@ -14,36 +13,12 @@ class Fol
      * Init the fol basic operations.
      *
      * @param string $basePath The base path of the fol installation
-     * @param string $env_file The file with the environment variables
      */
-    public static function init($basePath, $env_file = 'env.php')
+    public static function init($basePath)
     {
         self::$basePath = self::fixPath(str_replace('\\', '/', $basePath));
-
         self::$container = new Container();
-
         self::$container->set('composer', require self::getPath('vendor/autoload.php'));
-
-        //Environment variables
-        if ($env_file && is_file(self::getPath($env_file))) {
-            $variables = require self::getPath($env_file);
-        } else {
-            $variables = [];
-        }
-
-        if (empty($variables['BASE_URL']) || php_sapi_name() === 'cli-server') {
-            $variables['BASE_URL'] = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http').'://'.(isset($_SERVER['SERVER_NAME']) ? $_SERVER['SERVER_NAME'] : 'localhost').':';
-
-            if (!empty($_SERVER['X_FORWARDED_PORT'])) {
-                $variables['BASE_URL'] .= $_SERVER['X_FORWARDED_PORT'];
-            } elseif (!empty($_SERVER['SERVER_PORT'])) {
-                $variables['BASE_URL'] .= $_SERVER['SERVER_PORT'];
-            } else {
-                $variables['BASE_URL'] .= 80;
-            }
-        }
-
-        self::$variables = $variables;
     }
 
     /**
@@ -63,27 +38,6 @@ class Fol
         }
 
         throw new \BadMethodCallException("The method {$name} does not exists");
-    }
-
-    /**
-     * Set an environmet variable.
-     *
-     * @param string $name
-     * @param mixed  $value
-     */
-    public static function setEnv($name, $value)
-    {
-        self::$variables[$name] = $value;
-    }
-
-    /**
-     * Get an environmet variable.
-     *
-     * @param string $name The name of the variable
-     */
-    public static function getEnv($name)
-    {
-        return isset(self::$variables[$name]) ? self::$variables[$name] : null;
     }
 
     /**

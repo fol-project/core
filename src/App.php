@@ -92,10 +92,6 @@ class App extends Container\Container
      */
     public function getUrl()
     {
-        if ($this->url === null) {
-            $this->url = FolGlobal::getEnv('BASE_URL');
-        }
-
         if (func_num_args() === 0) {
             return $this->url;
         }
@@ -120,10 +116,6 @@ class App extends Container\Container
      */
     public function getEnvironment()
     {
-        if ($this->environment === null) {
-            $this->environment = FolGlobal::getEnv('ENVIRONMENT');
-        }
-
         return $this->environment;
     }
 
