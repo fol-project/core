@@ -49,9 +49,9 @@ class Fol
 
     /**
      * Search for an environment variable in different places and returns the first found
-     * 
+     *
      * @param string $name
-     * 
+     *
      * @return string|null
      */
     public static function getEnv($name)
@@ -67,7 +67,7 @@ class Fol
         if (array_key_exists($name, $_SERVER)) {
             return $_SERVER[$name];
         }
-        
+
         $value = getenv($name);
 
         return $value === false ? null : $value; // switch getenv default to null
@@ -75,12 +75,12 @@ class Fol
 
     /**
      * Magic method to use Fol like a container
-     * 
+     *
      * @param string $name
      * @param array  $arguments
-     * 
+     *
      * @throws \BadMethodCallException
-     * 
+     *
      * @return mixed
      */
     public static function __callStatic($name, array $arguments)
