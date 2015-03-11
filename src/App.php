@@ -18,6 +18,23 @@ class App extends Container\Container
     private $environment;
 
     /**
+     * Init the app
+     */
+    final public function __construct()
+    {
+        $this->config = new Config($this->getPath('config'), $this->getEnvironment());
+
+        $this->init();
+    }
+
+    /**
+     * Init the app
+     */
+    protected function init()
+    {
+    }
+
+    /**
      * Register the providers.
      *
      * @param array $providers
@@ -92,6 +109,19 @@ class App extends Container\Container
      */
     public function getUrl()
     {
+        if ($this->url === null) {
+            $config = $this->config->get('app', [
+                'server_cli_port' => 80,
+                'base_url' => 'http://localhost',
+            ]);
+
+            if (php_sapi_name() === 'cli-server') {
+                $this->setUrl('http://127.0.0.1:'.$config['server_cli_port']);
+            } else {
+                $this->setUrl($config['base_url']);
+            }
+        }
+
         if (func_num_args() === 0) {
             return $this->url;
         }
@@ -107,6 +137,7 @@ class App extends Container\Container
     public function setEnvironment($name)
     {
         $this->environment = $name;
+        $this->config->setEnvironment($name);
     }
 
     /**
@@ -116,6 +147,10 @@ class App extends Container\Container
      */
     public function getEnvironment()
     {
+        if ($this->environment === null) {
+            $this->environment = FolGlobal::getEnv('ENVIRONMENT') ?: 'development';
+        }
+
         return $this->environment;
     }
 

@@ -8,6 +8,7 @@ class Fol
 {
     private static $container;
     private static $basePath;
+    private static $env = [];
 
     /**
      * Init the fol basic operations.
@@ -17,8 +18,59 @@ class Fol
     public static function init($basePath)
     {
         self::$basePath = self::fixPath(str_replace('\\', '/', $basePath));
+
         self::$container = new Container();
         self::$container->set('composer', require self::getPath('vendor/autoload.php'));
+
+        //Load .env variables
+        if (is_file(self::getPath('.env'))) {
+            self::$env = parse_ini_file(self::getPath('.env'));
+        }
+    }
+
+    /**
+     * Init as remote fol installation
+     *
+     * @param string $basePath The base path of the fol installation
+     */
+    public static function initAsRemote($basePath)
+    {
+        $basePath = self::fixPath(str_replace('\\', '/', $basePath));
+
+        require self::fixPath("{$basePath}/vendor/autoload.php");
+
+        //Load .env variables
+        $envFile = self::fixPath("{$basePath}/.env");
+
+        if (is_file($envFile)) {
+            self::$env += parse_ini_file($envFile);
+        }
+    }
+
+    /**
+     * Search for an environment variable in different places and returns the first found
+     * 
+     * @param string $name
+     * 
+     * @return string|null
+     */
+    public static function getEnv($name)
+    {
+        if (array_key_exists($name, self::$env)) {
+            return self::$env[$name];
+        }
+
+        if (array_key_exists($name, $_ENV)) {
+            return $_ENV[$name];
+        }
+
+        if (array_key_exists($name, $_SERVER)) {
+            return $_SERVER[$name];
+        }
+        
+        $value = getenv($name);
+
+        return $value === false ? null : $value; // switch getenv default to null
     }
 
     /**

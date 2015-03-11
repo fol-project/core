@@ -8,21 +8,23 @@
 
 namespace Fol;
 
-class Config implements \ArrayAccess
+use ArrayAccess;
+
+class Config implements ArrayAccess
 {
     protected $items = [];
-    protected $configPaths = [];
+    protected $paths = [];
     protected $environment;
 
     /**
-     * Constructor method. You must define the base folder where the config files are stored.
+     * Constructor method.
      *
-     * @param string|array $paths       The base folder paths
-     * @param null|string  $environment The environment
+     * @param string      $path        The base folder paths
+     * @param null|string $environment The environment
      */
-    public function __construct($paths, $environment = null)
+    public function __construct($path, $environment = null)
     {
-        $this->addFolders($paths);
+        $this->addPath($path);
 
         if (!empty($environment)) {
             $this->setEnvironment($environment);
@@ -32,13 +34,14 @@ class Config implements \ArrayAccess
     /**
      * Changes the environment name.
      *
-     * @param string $environment The new environment name
+     * @param string $environment
      *
      * @return $this
      */
     public function setEnvironment($environment)
     {
         $this->environment = $environment;
+        $this->items = [];
 
         return $this;
     }
@@ -46,57 +49,71 @@ class Config implements \ArrayAccess
     /**
      * Adds new base folders where search for the config files.
      *
-     * @param string|array $paths   The base folder paths
-     * @param boolean      $prepend If it's true, insert the new folder at begining of the array.
+     * @param string  $path
+     * @param boolean $prepend
      *
      * @return $this
      */
-    public function addFolders($paths, $prepend = true)
+    public function addPath($path, $prepend = true)
     {
-        $paths = (array) $paths;
-
         if ($prepend === true) {
-            $this->configPaths = array_merge($paths, $this->configPaths);
+            array_unshift($this->paths, $path);
         } else {
-            $this->configPaths = array_merge($this->configPaths, $paths);
+            $this->paths[] = $path;
         }
 
         return $this;
     }
 
     /**
-     * Read data from php file (that returns the value).
+     * Read data from php file
      *
-     * @param string $name The name of the data (must be the name of the files where the data are stored)
+     * @param string $name
      *
-     * @return mixed The data or null if doesn't exists
+     * @return mixed
      */
     public function read($name)
     {
-        if (substr($name, -4) !== '.php') {
-            $name .= '.php';
-        }
-
-        foreach ($this->configPaths as $path) {
-            if ($this->environment && is_file("{$path}/{$this->environment}/{$name}")) {
-                return include "{$path}/{$this->environment}/{$name}";
-            }
-
-            if (is_file("{$path}/{$name}")) {
-                return include "{$path}/{$name}";
+        foreach ($this->getPathsFor($name) as $path) {
+            if (is_file($path)) {
+                return include $path;
             }
         }
     }
 
     /**
-     * Gets the data. Loads automatically the data if it has not been loaded.
-     * If no name is defined, returns all loaded data.
+     * Returns the possible paths for a value
      *
-     * @param string $name The name of the data
+     * @param string $name
      *
-     * @return mixed The data or null
+     * @return array
      */
-    public function get($name = null)
+    public function getPathsFor($name)
+    {
+        $paths = [];
+
+        if ($this->environment) {
+            foreach ($this->paths as $path) {
+                $paths[] = "{$path}/{$this->environment}/{$name}.php";
+            }
+        }
+
+        foreach ($this->paths as $path) {
+            $paths[] = "{$path}/{$name}.php";
+        }
+
+        return $paths;
+    }
+
+    /**
+     * Gets the data. Loads automatically the data if it has not been loaded.
+     *
+     * @param string $name
+     * @param array  $defaults
+     *
+     * @return mixed
+     */
+    public function get($name = null, array $defaults = null)
     {
         if (func_num_args() === 0) {
             return $this->items;
@@ -106,27 +123,40 @@ class Config implements \ArrayAccess
             $this->items[$name] = $this->read($name);
         }
 
+        if ($defaults !== null) {
+            return array_replace_recursive($defaults, (array) $this->items[$name]);
+        }
+
         return $this->items[$name];
     }
 
     /**
-     * ArrayAcces interface methods.
+     * @see ArrayAccess
      */
     public function offsetExists($offset)
     {
         return $this->has($offset);
     }
 
+    /**
+     * @see ArrayAccess
+     */
     public function offsetGet($offset)
     {
         return $this->get($offset);
     }
 
+    /**
+     * @see ArrayAccess
+     */
     public function offsetSet($offset, $value)
     {
         $this->set($offset, $value);
     }
 
+    /**
+     * @see ArrayAccess
+     */
     public function offsetUnset($offset)
     {
         $this->delete($offset);
@@ -163,17 +193,15 @@ class Config implements \ArrayAccess
     /**
      * Sets one parameter or various new parameters.
      *
-     * @param string|array $name  The parameter name. You can define an array with name => value to insert various parameters
-     * @param mixed        $value The parameter value.
+     * @param string|array $name
+     * @param mixed        $value
      *
      * @return $this
      */
-    public function set($name = null, $value = null)
+    public function set($name, $value = null)
     {
         if (is_array($name)) {
             $this->items = array_replace($this->items, $name);
-        } elseif ($name === null) {
-            $this->items[] = $value;
         } else {
             $this->items[$name] = $value;
         }
