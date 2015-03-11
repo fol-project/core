@@ -11,6 +11,8 @@ use Fol as FolGlobal;
 
 class App extends Container\Container
 {
+    public $config;
+
     private $providers = [];
     private $namespace;
     private $path;
@@ -18,11 +20,11 @@ class App extends Container\Container
     private $environment;
 
     /**
-     * Init the app
+     * Constructor.
      */
-    final public function __construct()
+    final public function __construct(Config $config = null)
     {
-        $this->config = new Config($this->getPath('config'), $this->getEnvironment());
+        $this->config = ($config === null) ? new Config($this->getPath('config')) : $config;
 
         $this->init();
     }
@@ -127,31 +129,6 @@ class App extends Container\Container
         }
 
         return $this->url.FolGlobal::fixPath('/'.implode('/', func_get_args()));
-    }
-
-    /**
-     * Set the app environment name.
-     *
-     * @param string $name
-     */
-    public function setEnvironment($name)
-    {
-        $this->environment = $name;
-        $this->config->setEnvironment($name);
-    }
-
-    /**
-     * Returns the app environment name.
-     *
-     * @return string
-     */
-    public function getEnvironment()
-    {
-        if ($this->environment === null) {
-            $this->environment = FolGlobal::getEnv('ENVIRONMENT') ?: 'development';
-        }
-
-        return $this->environment;
     }
 
     /**

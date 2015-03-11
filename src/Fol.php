@@ -22,9 +22,9 @@ class Fol
         self::$container = new Container();
         self::$container->set('composer', require self::getPath('vendor/autoload.php'));
 
-        //Load .env variables
-        if (is_file(self::getPath('.env'))) {
-            self::$env = parse_ini_file(self::getPath('.env'));
+        //Load env variables
+        if (is_file(self::getPath('env.php'))) {
+            self::$env = require self::getPath('env.php');
         }
     }
 

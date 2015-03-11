@@ -8,6 +8,7 @@
 
 namespace Fol;
 
+use Fol as FolGlobal;
 use ArrayAccess;
 
 class Config implements ArrayAccess
@@ -20,13 +21,15 @@ class Config implements ArrayAccess
      * Constructor method.
      *
      * @param string      $path        The base folder paths
-     * @param null|string $environment The environment
+     * @param null|string $environment The environment name
      */
     public function __construct($path, $environment = null)
     {
         $this->addPath($path);
 
-        if (!empty($environment)) {
+        if ($environment === null) {
+            $this->setEnvironment(FolGlobal::getEnv('ENVIRONMENT') ?: 'development');
+        } else {
             $this->setEnvironment($environment);
         }
     }
@@ -44,6 +47,16 @@ class Config implements ArrayAccess
         $this->items = [];
 
         return $this;
+    }
+
+    /**
+     * Returns the environment name.
+     *
+     * @return string|null
+     */
+    public function getEnvironment()
+    {
+        return $this->environment;
     }
 
     /**
