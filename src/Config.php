@@ -91,7 +91,7 @@ class Config extends Bag
 
     /**
      * Load the configuration in lazy mode
-     * 
+     *
      * @see ArrayAccess
      */
     public function offsetGet($offset)

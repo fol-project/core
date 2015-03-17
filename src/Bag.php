@@ -133,9 +133,9 @@ class Bag implements ArrayAccess, Iterator, Countable, JsonSerializable
 
             foreach ($names as $n) {
                 if (!isset($item[$n])) {
-                    return null;
+                    return;
                 }
-                
+
                 $item = $item[$n];
             }
 
@@ -257,13 +257,13 @@ class Bag implements ArrayAccess, Iterator, Countable, JsonSerializable
                 if (!isset($item[$n])) {
                     return false;
                 }
-                
+
                 $item = $item[$n];
             }
 
             return true;
         }
-        
+
         return isset($this[$name]);
     }
 

@@ -20,7 +20,7 @@ class BagTest extends PHPUnit_Framework_TestCase
         //array
         $bag->set([
             'dous' => 2,
-            'tres' => 3
+            'tres' => 3,
         ]);
 
         $this->assertEquals(2, $bag['dous']);
@@ -52,7 +52,7 @@ class BagTest extends PHPUnit_Framework_TestCase
         //nested array
         $bag->set([
             'cinco[seis]' => 56,
-            'seis[sete]' => 67
+            'seis[sete]' => 67,
         ]);
 
         $this->assertEquals(56, $bag['cinco']['seis']);
@@ -107,6 +107,6 @@ class BagTest extends PHPUnit_Framework_TestCase
         $bag->delete();
         $this->assertCount(0, $bag->get());
         $this->assertEquals(json_encode($bag), '[]');
-        $this->assertEquals((string)$bag, json_encode($bag));
+        $this->assertEquals((string) $bag, json_encode($bag));
     }
 }
