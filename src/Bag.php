@@ -153,7 +153,7 @@ class Bag implements ArrayAccess, Iterator, Countable, JsonSerializable
      *
      * @return $this
      */
-    public function set($name = null, $value = null)
+    public function set($name, $value = null)
     {
         if (is_array($name)) {
             foreach ($name as $n => $v) {
