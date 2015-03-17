@@ -112,10 +112,10 @@ class App extends Container\Container
     public function getUrl()
     {
         if ($this->url === null) {
-            $config = $this->config->get('app', [
+            $config = $this->config['app'] ?: [
                 'server_cli_port' => 80,
                 'base_url' => 'http://localhost',
-            ]);
+            ];
 
             if (php_sapi_name() === 'cli-server') {
                 $this->setUrl('http://127.0.0.1:'.$config['server_cli_port']);

@@ -190,7 +190,6 @@ class Bag implements ArrayAccess, Iterator, Countable, JsonSerializable
      * delete data
      *
      * @param mixed $name
-     * @param mixed $value
      *
      * @return $this
      */
@@ -203,8 +202,8 @@ class Bag implements ArrayAccess, Iterator, Countable, JsonSerializable
         }
 
         if (is_array($name)) {
-            foreach ($name as $n => $v) {
-                $this->delete($n, $v);
+            foreach ($name as $n) {
+                $this->delete($n);
             }
 
             return $this;
