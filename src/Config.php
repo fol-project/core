@@ -78,15 +78,19 @@ class Config extends Bag
      *
      * @param string $name
      *
-     * @return mixed
+     * @return array
      */
     public function read($name)
     {
+        $config = [];
+
         foreach ($this->getPathsFor($name) as $path) {
             if (is_file($path)) {
-                return include $path;
+                $config += include $path;
             }
         }
+
+        return $config;
     }
 
     /**
