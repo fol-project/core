@@ -11,9 +11,9 @@ abstract class ServiceProvider
     /**
      * Set the app.
      *
-     * @param App $app
+     * @param \Fol $app
      */
-    public function __construct(App $app)
+    public function __construct(\Fol $app)
     {
         $this->app = $app;
     }
