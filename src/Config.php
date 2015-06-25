@@ -1,96 +1,22 @@
 <?php
 namespace Fol;
 
-use Fol as FolGlobal;
-
 /**
  * This is a simple class to load configuration data from php files
  * You must define a base folder and the class search for the files inside automatically.
  */
 class Config extends Bag
 {
-    protected $paths = [];
-    protected $environment;
+    protected $path;
 
     /**
      * Constructor method.
      *
-     * @param string      $path        The base folder paths
-     * @param null|string $environment The environment name
+     * @param string $path The base folder paths
      */
-    public function __construct($path, $environment = null)
+    public function __construct($path)
     {
-        $this->addPath($path);
-
-        if ($environment === null) {
-            $this->setEnvironment(FolGlobal::getEnv('ENVIRONMENT') ?: 'development');
-        } else {
-            $this->setEnvironment($environment);
-        }
-    }
-
-    /**
-     * Changes the environment name.
-     *
-     * @param string $environment
-     *
-     * @return $this
-     */
-    public function setEnvironment($environment)
-    {
-        $this->environment = $environment;
-        $this->delete();
-
-        return $this;
-    }
-
-    /**
-     * Returns the environment name.
-     *
-     * @return string|null
-     */
-    public function getEnvironment()
-    {
-        return $this->environment;
-    }
-
-    /**
-     * Adds new base folders where search for the config files.
-     *
-     * @param string  $path
-     * @param boolean $prepend
-     *
-     * @return $this
-     */
-    public function addPath($path, $prepend = true)
-    {
-        if ($prepend === true) {
-            array_unshift($this->paths, $path);
-        } else {
-            $this->paths[] = $path;
-        }
-
-        return $this;
-    }
-
-    /**
-     * Read data from php file
-     *
-     * @param string $name
-     *
-     * @return array
-     */
-    public function read($name)
-    {
-        $config = [];
-
-        foreach ($this->getPathsFor($name) as $path) {
-            if (is_file($path)) {
-                $config += include $path;
-            }
-        }
-
-        return $config;
+        $this->path = $path;
     }
 
     /**
@@ -104,30 +30,22 @@ class Config extends Bag
             $this->items[$offset] = $this->read($offset);
         }
 
-        return isset($this->items[$offset]) ? $this->items[$offset] : null;
+        return $this->items[$offset];
     }
 
     /**
-     * Returns the possible paths for a value
+     * Read data from php file
      *
      * @param string $name
      *
-     * @return array
+     * @return array|null
      */
-    public function getPathsFor($name)
+    protected function read($name)
     {
-        $paths = [];
+        $path = "{$this->path}/{$name}.php";
 
-        if ($this->environment) {
-            foreach ($this->paths as $path) {
-                $paths[] = "{$path}/{$this->environment}/{$name}.php";
-            }
+        if (is_file($path)) {
+            return include $path;
         }
-
-        foreach ($this->paths as $path) {
-            $paths[] = "{$path}/{$name}.php";
-        }
-
-        return $paths;
     }
 }

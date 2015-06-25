@@ -7,33 +7,38 @@
 
 namespace Fol;
 
-use Fol as FolGlobal;
-
 class App extends Container\Container
 {
+    protected static $globalContainer;
+
     public $config;
 
     private $providers = [];
     private $namespace;
     private $path;
     private $url;
-    private $environment;
 
     /**
-     * Constructor.
+     * Magic method to access to the global container
+     *
+     * @param string $name
+     * @param array  $arguments
+     *
+     * @throws \BadMethodCallException
+     *
+     * @return mixed
      */
-    final public function __construct(Config $config = null)
+    public static function __callStatic($name, array $arguments)
     {
-        $this->config = ($config === null) ? new Config($this->getPath('config')) : $config;
+        if (substr($name, -6) === 'Global') {
+            $name = substr($name, 0, -6);
 
-        $this->init();
-    }
+            if (method_exists(static::$globalContainer, $name)) {
+                return call_user_func_array([static::$globalContainer, $name], $arguments);
+            }
+        }
 
-    /**
-     * Init the app
-     */
-    protected function init()
-    {
+        throw new \BadMethodCallException("The method {$name} does not exists");
     }
 
     /**
@@ -91,7 +96,7 @@ class App extends Container\Container
             return $this->path;
         }
 
-        return FolGlobal::fixPath($this->path.'/'.implode('/', func_get_args()));
+        return static::fixPath($this->path.'/'.implode('/', func_get_args()));
     }
 
     /**
@@ -101,6 +106,10 @@ class App extends Container\Container
      */
     public function setUrl($url)
     {
+        if (!filter_var($url, FILTER_VALIDATE_URL)) {
+            throw new \InvalidArgumentException("No valid url: '$url'");
+        }
+
         $this->url = $url;
     }
 
@@ -112,23 +121,14 @@ class App extends Container\Container
     public function getUrl()
     {
         if ($this->url === null) {
-            $config = $this->config['app'] ?: [
-                'server_cli_port' => 80,
-                'base_url' => 'http://localhost',
-            ];
-
-            if (php_sapi_name() === 'cli-server') {
-                $this->setUrl('http://127.0.0.1:'.$config['server_cli_port']);
-            } else {
-                $this->setUrl($config['base_url']);
-            }
+            $this->setUrl((php_sapi_name() === 'cli-server') ? getenv('APP_CLI_SERVER_URL') : getenv('APP_URL'));
         }
 
         if (func_num_args() === 0) {
             return $this->url;
         }
 
-        return $this->url.FolGlobal::fixPath('/'.implode('/', func_get_args()));
+        return $this->url.static::fixPath('/'.implode('/', func_get_args()));
     }
 
     /**
@@ -160,5 +160,23 @@ class App extends Container\Container
         }
 
         return (new \ReflectionClass($className))->newInstanceArgs(array_slice(func_get_args(), 1));
+    }
+
+    /**
+     * static function to fix paths '//' or '/./' or '/foo/../' in a path.
+     *
+     * @param string $path Path to resolve
+     *
+     * @return string
+     */
+    public static function fixPath($path)
+    {
+        $replace = ['#(/\.?/)#', '#/(?!\.\.)[^/]+/\.\./#'];
+
+        do {
+            $path = preg_replace($replace, '/', $path, -1, $n);
+        } while ($n > 0);
+
+        return $path;
     }
 }
