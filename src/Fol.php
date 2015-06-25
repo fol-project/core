@@ -5,9 +5,7 @@
  * Manages an app
  */
 
-namespace Fol;
-
-class App extends Container\Container
+class Fol extends Fol\Container\Container
 {
     protected static $globalContainer;
 
@@ -30,6 +28,10 @@ class App extends Container\Container
      */
     public static function __callStatic($name, array $arguments)
     {
+        if (!isset(static::$globalContainer)) {
+            static::$globalContainer = new Fol\Container\Container();
+        }
+
         if (substr($name, -6) === 'Global') {
             $name = substr($name, 0, -6);
 
@@ -38,7 +40,7 @@ class App extends Container\Container
             }
         }
 
-        throw new \BadMethodCallException("The method {$name} does not exists");
+        throw new BadMethodCallException("The method {$name} does not exists");
     }
 
     /**
@@ -51,8 +53,8 @@ class App extends Container\Container
         foreach ($providers as $class) {
             $provider = new $class($this);
 
-            if (!($provider instanceof ServiceProvider)) {
-                throw new \InvalidArgumentException("This provider is not valid");
+            if (!($provider instanceof Fol\ServiceProvider)) {
+                throw new InvalidArgumentException("This provider is not valid");
             }
 
             if ($provider->provides() === false) {
@@ -71,7 +73,7 @@ class App extends Container\Container
     public function getNamespace($namespace = null)
     {
         if ($this->namespace === null) {
-            $this->namespace = (new \ReflectionClass($this))->getNameSpaceName();
+            $this->namespace = (new ReflectionClass($this))->getNameSpaceName();
         }
 
         if ($namespace === null) {
@@ -107,7 +109,7 @@ class App extends Container\Container
     public function setUrl($url)
     {
         if (!filter_var($url, FILTER_VALIDATE_URL)) {
-            throw new \InvalidArgumentException("No valid url: '$url'");
+            throw new InvalidArgumentException("No valid url defined: '$url'");
         }
 
         $this->url = $url;
@@ -152,14 +154,14 @@ class App extends Container\Container
         $className = $this->getNamespace($id);
 
         if (!class_exists($className)) {
-            throw new Container\NotFoundException("{$id} has not found and '$className' does not exists");
+            throw new Fol\Container\NotFoundException("{$id} has not found and '$className' does not exists");
         }
 
         if (func_num_args() === 1) {
             return new $className();
         }
 
-        return (new \ReflectionClass($className))->newInstanceArgs(array_slice(func_get_args(), 1));
+        return (new ReflectionClass($className))->newInstanceArgs(array_slice(func_get_args(), 1));
     }
 
     /**
