@@ -80,6 +80,10 @@ class Fol extends Fol\Container\Container
             return $this->namespace;
         }
 
+        if ($this->namespace === '') {
+            return $namespace;
+        }
+
         return $this->namespace.(($namespace[0] === '\\') ? '' : '\\').$namespace;
     }
 
