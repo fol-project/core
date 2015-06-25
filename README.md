@@ -3,8 +3,7 @@
 
 Clases básicas que conforman o núcleo de FOL:
 
-* `Fol\Fol` Xestiona variables e servizos globais
-* `Fol\App` Xestiona a aplicación web.
+* `Fol` Xestiona a aplicación.
 * `Fol\Bag` Clase xenérica para gardar valores
 * `Fol\Config` Xestiona os valores de configuración
 * `Fol\Container` Colector de dependencias moi básico, que soporta a interface [container-interop](https://github.com/container-interop/container-interop)
