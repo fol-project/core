@@ -27,6 +27,7 @@
 		},
 		"psr-4": {
 			"Fol\\": "src/"
-		}
+		},
+		"files": ["src/helpers.php"]
 	}
 }
