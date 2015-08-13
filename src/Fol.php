@@ -1,10 +1,7 @@
 <?php
 /**
- * Fol\App.
- *
  * Manages an app
  */
-
 class Fol extends Fol\Container\Container
 {
     protected static $globalContainer;
