@@ -3,12 +3,13 @@ if (!function_exists('env')) {
     /**
      * Gets the value of an environment variable
      * Converts the type of values like "true", "false" or "null"
-     * 
+     *
      * @param string $name The value name
-     * 
+     *
      * @return mixed
      */
-    function env($name) {
+    function env($name)
+    {
         $value = getenv($name);
 
         switch (strtolower($value)) {

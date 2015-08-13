@@ -14,7 +14,8 @@ class Fol extends Fol\Container\Container
     private $providers = [];
     private $namespace;
     private $path;
-    private $url;
+    private $urlHost;
+    private $urlPath;
 
     /**
      * Magic method to access to the global container
@@ -116,7 +117,39 @@ class Fol extends Fol\Container\Container
             throw new InvalidArgumentException("No valid url defined: '$url'");
         }
 
-        $this->url = $url;
+        $this->initUrl($url);
+    }
+
+    /**
+     * Returns the url host of the app
+     *
+     * @return string
+     */
+    public function getUrlHost()
+    {
+        if ($this->urlHost === null) {
+            $this->initUrl();
+        }
+
+        return $this->urlHost;
+    }
+
+    /**
+     * Returns the url path of the app
+     *
+     * @return string
+     */
+    public function getUrlPath()
+    {
+        if ($this->urlPath === null) {
+            $this->initUrl();
+        }
+
+        if (func_num_args() === 0) {
+            return $this->urlPath;
+        }
+
+        return $this->urlPath.static::fixPath('/'.implode('/', func_get_args()));
     }
 
     /**
@@ -126,15 +159,7 @@ class Fol extends Fol\Container\Container
      */
     public function getUrl()
     {
-        if ($this->url === null) {
-            $this->setUrl((php_sapi_name() === 'cli-server') ? getenv('APP_CLI_SERVER_URL') : getenv('APP_URL'));
-        }
-
-        if (func_num_args() === 0) {
-            return $this->url;
-        }
-
-        return $this->url.static::fixPath('/'.implode('/', func_get_args()));
+        return $this->getUrlHost().call_user_func_array([$this, 'getUrlPath'], func_get_args());
     }
 
     /**
@@ -184,5 +209,20 @@ class Fol extends Fol\Container\Container
         } while ($n > 0);
 
         return $path;
+    }
+
+    /**
+     * Initialize the url of the app
+     */
+    protected function initUrl($url = null)
+    {
+        if ($url === null) {
+            $url = (php_sapi_name() === 'cli-server') ? getenv('APP_CLI_SERVER_URL') : getenv('APP_URL');
+        }
+
+        $url = parse_url($url);
+
+        $this->urlHost = $url['scheme'].'://'.$url['host'].(isset($url['port']) ? ':'.$url['port'] : '');
+        $this->urlPath = isset($url['path']) ? $url['path'] : '';
     }
 }
