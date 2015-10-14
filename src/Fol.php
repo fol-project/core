@@ -7,7 +7,6 @@ class Fol extends Fol\Container
 {
     protected static $globalContainer;
 
-    private $providers = [];
     private $namespace;
     private $path;
     private $urlHost;
@@ -38,28 +37,6 @@ class Fol extends Fol\Container
         }
 
         throw new BadMethodCallException("The method {$name} does not exists");
-    }
-
-    /**
-     * Register the providers.
-     *
-     * @param array $providers
-     */
-    public function addProviders(array $providers)
-    {
-        foreach ($providers as $class) {
-            $provider = new $class($this);
-
-            if (!($provider instanceof Fol\ServiceProvider)) {
-                throw new InvalidArgumentException('This provider is not valid');
-            }
-
-            if ($provider->provides() === false) {
-                $provider->register();
-            } else {
-                $this->providers[] = $provider;
-            }
-        }
     }
 
     /**
@@ -167,15 +144,6 @@ class Fol extends Fol\Container
             return parent::get($id);
         }
 
-        foreach ($this->providers as $k => $provider) {
-            if (in_array($id, $provider->provides())) {
-                $provider->register();
-                unset($this->providers[$k]);
-
-                return parent::get($id);
-            }
-        }
-
         $className = $this->getNamespace($id);
 
         if (!class_exists($className)) {
@@ -213,7 +181,7 @@ class Fol extends Fol\Container
     protected function initUrl($url = null)
     {
         if ($url === null) {
-            $url = (php_sapi_name() === 'cli-server') ? getenv('APP_CLI_SERVER_URL') : getenv('APP_URL');
+            $url = (php_sapi_name() === 'cli-server') ? env('APP_CLI_SERVER_URL') : env('APP_URL');
         }
 
         $url = parse_url($url);

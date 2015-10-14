@@ -14,6 +14,7 @@ class Container implements ContainerInterface
     private $containers = [];
     private $registry = [];
     private $services = [];
+    private $providers = [];
 
     /**
      * Register new services.
@@ -25,6 +26,28 @@ class Container implements ContainerInterface
     public function register($id, \Closure $resolver = null, $single = true)
     {
         $this->registry[$id] = [$resolver, $single];
+    }
+
+    /**
+     * Register the providers.
+     *
+     * @param array $providers
+     */
+    public function addProviders(array $providers)
+    {
+        foreach ($providers as $class) {
+            $provider = new $class($this);
+
+            if (!($provider instanceof Fol\ServiceProvider)) {
+                throw new InvalidArgumentException('This provider is not valid');
+            }
+
+            if ($provider->provides() === false) {
+                $provider->register();
+            } else {
+                $this->providers[] = $provider;
+            }
+        }
     }
 
     /**
@@ -66,6 +89,15 @@ class Container implements ContainerInterface
 
         if (($service = $this->getFromRegistry($id)) !== false) {
             return $service;
+        }
+
+        foreach ($this->providers as $k => $provider) {
+            if (in_array($id, $provider->provides())) {
+                $provider->register();
+                unset($this->providers[$k]);
+
+                return $this->get($id);
+            }
         }
 
         foreach ($this->containers as $container) {

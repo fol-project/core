@@ -2,6 +2,8 @@
 
 namespace Fol;
 
+use Interop\Container\ContainerInterface;
+
 /**
  * An abstract class to register services in a app.
  */
@@ -12,9 +14,9 @@ abstract class ServiceProvider
     /**
      * Set the app.
      *
-     * @param \Fol $app
+     * @param ContainerInterface $app
      */
-    public function __construct(\Fol $app)
+    public function __construct(ContainerInterface $app)
     {
         $this->app = $app;
     }
