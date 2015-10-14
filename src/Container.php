@@ -38,7 +38,7 @@ class Container implements ContainerInterface
         foreach ($providers as $class) {
             $provider = new $class($this);
 
-            if (!($provider instanceof Fol\ServiceProvider)) {
+            if (!($provider instanceof ServiceProvider)) {
                 throw new InvalidArgumentException('This provider is not valid');
             }
 
