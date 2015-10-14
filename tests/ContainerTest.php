@@ -1,4 +1,5 @@
 <?php
+
 use Fol\Container;
 
 class ContainerTest extends PHPUnit_Framework_TestCase

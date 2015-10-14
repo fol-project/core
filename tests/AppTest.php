@@ -1,4 +1,5 @@
 <?php
+
 use Fol\Config;
 
 class AppTest extends PHPUnit_Framework_TestCase

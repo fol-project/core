@@ -1,8 +1,9 @@
 <?php
+
 if (!function_exists('env')) {
     /**
      * Gets the value of an environment variable
-     * Converts the type of values like "true", "false" or "null"
+     * Converts the type of values like "true", "false" or "null".
      *
      * @param string $name The value name
      *

@@ -1,6 +1,7 @@
 <?php
+
 /**
- * Manages an app
+ * Manages an app.
  */
 class Fol extends Fol\Container
 {
@@ -13,7 +14,7 @@ class Fol extends Fol\Container
     private $urlPath;
 
     /**
-     * Magic method to access to the global container
+     * Magic method to access to the global container.
      *
      * @param string $name
      * @param array  $arguments
@@ -50,7 +51,7 @@ class Fol extends Fol\Container
             $provider = new $class($this);
 
             if (!($provider instanceof Fol\ServiceProvider)) {
-                throw new InvalidArgumentException("This provider is not valid");
+                throw new InvalidArgumentException('This provider is not valid');
             }
 
             if ($provider->provides() === false) {
@@ -116,7 +117,7 @@ class Fol extends Fol\Container
     }
 
     /**
-     * Returns the url host of the app
+     * Returns the url host of the app.
      *
      * @return string
      */
@@ -130,7 +131,7 @@ class Fol extends Fol\Container
     }
 
     /**
-     * Returns the url path of the app
+     * Returns the url path of the app.
      *
      * @return string
      */
@@ -207,7 +208,7 @@ class Fol extends Fol\Container
     }
 
     /**
-     * Initialize the url of the app
+     * Initialize the url of the app.
      */
     protected function initUrl($url = null)
     {

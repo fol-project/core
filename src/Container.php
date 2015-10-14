@@ -1,4 +1,5 @@
 <?php
+
 namespace Fol;
 
 use Interop\Container\ContainerInterface;
@@ -17,9 +18,9 @@ class Container implements ContainerInterface
     /**
      * Register new services.
      *
-     * @param integer|string $id       The service id
-     * @param \Closure       $resolver A function that returns a service instance
-     * @param boolean        $single   Whether the same instance should be return each time
+     * @param int|string $id       The service id
+     * @param \Closure   $resolver A function that returns a service instance
+     * @param bool       $single   Whether the same instance should be return each time
      */
     public function register($id, \Closure $resolver = null, $single = true)
     {
@@ -79,8 +80,8 @@ class Container implements ContainerInterface
     /**
      * Set manually new services.
      *
-     * @param integer|string $id
-     * @param mixed          $service
+     * @param int|string $id
+     * @param mixed      $service
      */
     public function set($id, $service)
     {
@@ -90,7 +91,7 @@ class Container implements ContainerInterface
     /**
      * Deletes a service.
      *
-     * @param integer|string $id
+     * @param int|string $id
      */
     public function delete($id)
     {
