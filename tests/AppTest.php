@@ -10,10 +10,10 @@ class AppTest extends PHPUnit_Framework_TestCase
         $app->setUrl('http://domain.com/www');
 
         $app->register('config', function () {
-            return new Config(__DIR__.'/configtest');
+            return [1];
         });
 
-        $this->assertInstanceOf('Fol\\Config', $app->get('config'));
+        $this->assertSame([1], $app->get('config'));
 
         $this->assertEquals('http://domain.com/www', $app->getUrl());
         $this->assertEquals('http://domain.com/www/these/more/subdirectories', $app->getUrl('these/are', '../more/', '/subdirectories'));

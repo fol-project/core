@@ -1,7 +1,5 @@
 <?php
-use Fol\Container\Container;
-use Fol\Container\ContainerException;
-use Fol\Container\NotFoundException;
+use Fol\Container;
 
 class ContainerTest extends PHPUnit_Framework_TestCase
 {

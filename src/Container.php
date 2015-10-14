@@ -1,5 +1,5 @@
 <?php
-namespace Fol\Container;
+namespace Fol;
 
 use Interop\Container\ContainerInterface;
 
@@ -73,7 +73,7 @@ class Container implements ContainerInterface
             }
         }
 
-        throw new NotFoundException("{$id} has not found");
+        throw new ContainerNotFoundException("{$id} has not found");
     }
 
     /**

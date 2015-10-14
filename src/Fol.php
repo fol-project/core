@@ -2,11 +2,9 @@
 /**
  * Manages an app
  */
-class Fol extends Fol\Container\Container
+class Fol extends Fol\Container
 {
     protected static $globalContainer;
-
-    public $config;
 
     private $providers = [];
     private $namespace;
@@ -27,7 +25,7 @@ class Fol extends Fol\Container\Container
     public static function __callStatic($name, array $arguments)
     {
         if (!isset(static::$globalContainer)) {
-            static::$globalContainer = new Fol\Container\Container();
+            static::$globalContainer = new Fol\Container();
         }
 
         if (substr($name, -6) === 'Global') {
