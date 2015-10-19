@@ -69,6 +69,12 @@ class Container implements ContainerInterface
             return true;
         }
 
+        foreach ($this->providers as $k => $provider) {
+            if (in_array($id, $provider->provides())) {
+                return true;
+            }
+        }
+
         foreach ($this->containers as $container) {
             if ($container->has($id)) {
                 return true;
