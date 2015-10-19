@@ -147,7 +147,7 @@ class Fol extends Fol\Container
         $className = $this->getNamespace($id);
 
         if (!class_exists($className)) {
-            throw new Fol\Container\NotFoundException("{$id} has not found and '$className' does not exists");
+            throw new Fol\ContainerNotFoundException("{$id} has not found and '$className' does not exists");
         }
 
         if (func_num_args() === 1) {
