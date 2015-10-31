@@ -71,7 +71,7 @@ class AppTest extends PHPUnit_Framework_TestCase
 
         //Combined
         $substract = $app->get('now-yesterday');
-        $this->assertEquals(3600*24, $substract);
+        $this->assertEquals(3600 * 24, $substract);
     }
 
     /**

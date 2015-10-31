@@ -157,7 +157,7 @@ class Fol implements ContainerInterface, ArrayAccess
      * @param string $id
      * @param mixed  $value
      */
-    public function get($id, $value)
+    public function set($id, $value)
     {
         $this->offsetSet($id, $value);
     }
