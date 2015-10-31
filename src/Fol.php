@@ -1,42 +1,188 @@
 <?php
 
+use Interop\Container\ContainerInterface;
+use Fol\NotFoundException;
+use Fol\ContainerException;
+
 /**
  * Manages an app.
  */
-class Fol extends Fol\Container
+class Fol implements ContainerInterface, ArrayAccess
 {
-    protected static $globalContainer;
+    private static $globals = [];
 
+    private $containers = [];
+    private $services = [];
     private $namespace;
     private $path;
     private $urlHost;
     private $urlPath;
 
     /**
-     * Magic method to access to the global container.
-     *
-     * @param string $name
-     * @param array  $arguments
-     *
-     * @throws \BadMethodCallException
-     *
-     * @return mixed
+     * Check whether a value exists.
+     * 
+     * @see ArrayAccess
+     * 
+     * @param string $id
      */
-    public static function __callStatic($name, array $arguments)
+    public function offsetExists($id)
     {
-        if (!isset(static::$globalContainer)) {
-            static::$globalContainer = new Fol\Container();
+        if (isset($this->services[$id])) {
+            return true;
         }
 
-        if (substr($name, -6) === 'Global') {
-            $name = substr($name, 0, -6);
-
-            if (method_exists(static::$globalContainer, $name)) {
-                return call_user_func_array([static::$globalContainer, $name], $arguments);
+        foreach ($this->containers as $container) {
+            if ($container->has($id)) {
+                return true;
             }
         }
 
-        throw new BadMethodCallException("The method {$name} does not exists");
+        return false;
+    }
+
+    /**
+     * Returns a value.
+     * 
+     * @see ArrayAccess
+     * 
+     * @param string $id
+     */
+    public function offsetGet($id)
+    {
+        if (isset($this->services[$id])) {
+            $value = $this->services[$id];
+
+            if ($value instanceof Closure) {
+                try {
+                    return $this->services[$id] = $value($this);
+                } catch (Exception $exception) {
+                    throw new ContainerException("Error retrieving {$id}: {$exception->getMessage()}");
+                }
+            }
+
+            return $value;
+        }
+
+        foreach ($this->containers as $container) {
+            if ($container->has($id)) {
+                return $container->get($id);
+            }
+        }
+
+        throw new NotFoundException("Identifier {$id} is not defined");
+    }
+
+    /**
+     * Set a new value.
+     * 
+     * @see ArrayAccess
+     * 
+     * @param string $id
+     * @param mixed  $value
+     */
+    public function offsetSet($id, $value)
+    {
+        $this->services[$id] = $value;
+    }
+
+    /**
+     * Removes a value.
+     * 
+     * @see ArrayAccess
+     * 
+     * @param string $id
+     */
+    public function offsetUnset($id)
+    {
+        unset($this->services[$id]);
+    }
+
+    /**
+     * Register new service provider.
+     *
+     * @param ServiceProviderInterface $provider
+     */
+    public function register(ServiceProviderInterface $provider)
+    {
+        $provider->register($this);
+    }
+
+    /**
+     * Add new containers.
+     *
+     * @param ContainerInterface $container
+     */
+    public function add(ContainerInterface $container)
+    {
+        $this->containers[] = $container;
+    }
+
+    /**
+     * @see ContainerInterface
+     * 
+     * {@inheritdoc}
+     */
+    public function has($id)
+    {
+        return $this->offsetExists($id);
+    }
+
+    /**
+     * @see ContainerInterface
+     * 
+     * {@inheritdoc}
+     */
+    public function get($id)
+    {
+        if ($this->offsetExists($id)) {
+            return $this->offsetGet($id);
+        }
+
+        $class = $this->getNamespace($id);
+
+        if (class_exists($class)) {
+            if (func_num_args() === 1) {
+                return new $class();
+            }
+
+            return (new ReflectionClass($class))->newInstanceArgs(array_slice(func_get_args(), 1));
+        }
+
+        throw new NotFoundException("Identifier {$id} is not defined");
+    }
+
+    /**
+     * Set a variable
+     * 
+     * @param string $id
+     * @param mixed  $value
+     */
+    public function get($id, $value)
+    {
+        $this->offsetSet($id, $value);
+    }
+
+    /**
+     * Set a global variable.
+     * 
+     * @param string $id
+     * @param mixed  $value
+     */
+    public static function setGlobal($id, $value)
+    {
+        self::$globals[$id] = $value;
+    }
+
+    /**
+     * Get a global variable.
+     * 
+     * @param string $id
+     * 
+     * @return null|mixed
+     */
+    public static function getGlobal($id)
+    {
+        return isset(self::$globals[$id]) ? self::$globals[$id] : null;
     }
 
     /**
@@ -136,35 +282,13 @@ class Fol extends Fol\Container
     }
 
     /**
-     * {@inheritdoc}
-     */
-    public function get($id)
-    {
-        if ($this->has($id)) {
-            return parent::get($id);
-        }
-
-        $className = $this->getNamespace($id);
-
-        if (!class_exists($className)) {
-            throw new Fol\ContainerNotFoundException("{$id} has not found and '$className' does not exists");
-        }
-
-        if (func_num_args() === 1) {
-            return new $className();
-        }
-
-        return (new ReflectionClass($className))->newInstanceArgs(array_slice(func_get_args(), 1));
-    }
-
-    /**
-     * static function to fix paths '//' or '/./' or '/foo/../' in a path.
+     * helper function to fix paths '//' or '/./' or '/foo/../' in a path.
      *
      * @param string $path Path to resolve
      *
      * @return string
      */
-    public static function fixPath($path)
+    private static function fixPath($path)
     {
         $replace = ['#(/\.?/)#', '#/(?!\.\.)[^/]+/\.\./#'];
 
