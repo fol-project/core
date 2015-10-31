@@ -3,6 +3,7 @@
 use Interop\Container\ContainerInterface;
 use Fol\NotFoundException;
 use Fol\ContainerException;
+use Fol\ServiceProviderInterface;
 
 /**
  * Manages an app.
