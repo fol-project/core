@@ -222,7 +222,7 @@ class Fol implements ContainerInterface, ArrayAccess
             return $this->path;
         }
 
-        return static::fixPath($this->path.'/'.implode('/', func_get_args()));
+        return self::fixPath($this->path.'/'.implode('/', func_get_args()));
     }
 
     /**
@@ -268,7 +268,7 @@ class Fol implements ContainerInterface, ArrayAccess
             return $this->urlPath;
         }
 
-        return $this->urlPath.static::fixPath('/'.implode('/', func_get_args()));
+        return $this->urlPath.self::fixPath('/'.implode('/', func_get_args()));
     }
 
     /**
