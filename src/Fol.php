@@ -16,8 +16,7 @@ class Fol implements ContainerInterface, ArrayAccess
     private $services = [];
     private $namespace;
     private $path;
-    private $urlHost;
-    private $urlPath;
+    private $url;
 
     /**
      * Check whether a value exists.
@@ -244,13 +243,15 @@ class Fol implements ContainerInterface, ArrayAccess
     public function setUrl($url)
     {
         if (!filter_var($url, FILTER_VALIDATE_URL)) {
-            throw new InvalidArgumentException("No valid url defined: '$url'");
+            throw new InvalidArgumentException(sprintf('No valid url defined (%s)', $url));
         }
 
         $url = parse_url($url);
 
-        $this->urlHost = $url['scheme'].'://'.$url['host'].(isset($url['port']) ? ':'.$url['port'] : '');
-        $this->urlPath = isset($url['path']) ? $url['path'] : '';
+        $this->url = [
+            sprintf('%s://%s%s', $url['scheme'], $url['host'], (isset($url['port']) ? ':'.$url['port'] : '')),
+            isset($url['path']) ? $url['path'] : ''
+        ];
     }
 
     /**
@@ -260,11 +261,11 @@ class Fol implements ContainerInterface, ArrayAccess
      */
     public function getUrlHost()
     {
-        if ($this->urlHost === null) {
+        if ($this->url === null) {
             throw new RuntimeException('No url provided');
         }
 
-        return $this->urlHost;
+        return $this->url[0];
     }
 
     /**
@@ -274,15 +275,15 @@ class Fol implements ContainerInterface, ArrayAccess
      */
     public function getUrlPath()
     {
-        if ($this->urlHost === null) {
+        if ($this->url === null) {
             throw new RuntimeException('No url provided');
         }
 
         if (func_num_args() === 0) {
-            return $this->urlPath;
+            return $this->url[1];
         }
 
-        return $this->urlPath.self::fixPath('/'.implode('/', func_get_args()));
+        return $this->url[1].self::fixPath('/'.implode('/', func_get_args()));
     }
 
     /**
