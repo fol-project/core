@@ -153,7 +153,7 @@ class Fol implements ContainerInterface, ArrayAccess
     }
 
     /**
-     * Set a variable
+     * Set a variable.
      * 
      * @param string $id
      * @param mixed  $value
@@ -209,6 +209,16 @@ class Fol implements ContainerInterface, ArrayAccess
     }
 
     /**
+     * Set the absolute path of the app.
+     * 
+     * @param string $path
+     */
+    public function setPath($path)
+    {
+        $this->path = $path;
+    }
+
+    /**
      * Returns the absolute path of the app.
      *
      * @return string
@@ -251,7 +261,7 @@ class Fol implements ContainerInterface, ArrayAccess
     public function getUrlHost()
     {
         if ($this->urlHost === null) {
-            throw new RuntimeException("No url provided");
+            throw new RuntimeException('No url provided');
         }
 
         return $this->urlHost;
@@ -265,7 +275,7 @@ class Fol implements ContainerInterface, ArrayAccess
     public function getUrlPath()
     {
         if ($this->urlHost === null) {
-            throw new RuntimeException("No url provided");
+            throw new RuntimeException('No url provided');
         }
 
         if (func_num_args() === 0) {
