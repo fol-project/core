@@ -237,7 +237,10 @@ class Fol implements ContainerInterface, ArrayAccess
             throw new InvalidArgumentException("No valid url defined: '$url'");
         }
 
-        $this->initUrl($url);
+        $url = parse_url($url);
+
+        $this->urlHost = $url['scheme'].'://'.$url['host'].(isset($url['port']) ? ':'.$url['port'] : '');
+        $this->urlPath = isset($url['path']) ? $url['path'] : '';
     }
 
     /**
@@ -248,7 +251,7 @@ class Fol implements ContainerInterface, ArrayAccess
     public function getUrlHost()
     {
         if ($this->urlHost === null) {
-            $this->initUrl();
+            throw new RuntimeException("No url provided");
         }
 
         return $this->urlHost;
@@ -261,8 +264,8 @@ class Fol implements ContainerInterface, ArrayAccess
      */
     public function getUrlPath()
     {
-        if ($this->urlPath === null) {
-            $this->initUrl();
+        if ($this->urlHost === null) {
+            throw new RuntimeException("No url provided");
         }
 
         if (func_num_args() === 0) {
@@ -298,20 +301,5 @@ class Fol implements ContainerInterface, ArrayAccess
         } while ($n > 0);
 
         return $path;
-    }
-
-    /**
-     * Initialize the url of the app.
-     */
-    protected function initUrl($url = null)
-    {
-        if ($url === null) {
-            $url = (php_sapi_name() === 'cli-server') ? env('APP_CLI_SERVER_URL') : env('APP_URL');
-        }
-
-        $url = parse_url($url);
-
-        $this->urlHost = $url['scheme'].'://'.$url['host'].(isset($url['port']) ? ':'.$url['port'] : '');
-        $this->urlPath = isset($url['path']) ? $url['path'] : '';
     }
 }
