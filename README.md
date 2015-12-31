@@ -73,7 +73,6 @@ $app->getUrlHost(); // http://localhost
 //Tamén podes engadirlle pezas:
 $app->getUrl('post/1', 'ver'); // http://localhost/o-meu-sitio/post/1/ver
 
-//Tamén podes engadirlle pezas:
 $app->getUrlPath('post/1', 'ver'); // /o-meu-sitio/post/1/ver
 ```
 
