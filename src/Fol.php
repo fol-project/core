@@ -10,8 +10,6 @@ use Fol\ServiceProviderInterface;
  */
 class Fol implements ContainerInterface, ArrayAccess
 {
-    private static $globals = [];
-
     private $containers = [];
     private $services = [];
     private $namespace;
@@ -163,29 +161,6 @@ class Fol implements ContainerInterface, ArrayAccess
     }
 
     /**
-     * Set a global variable.
-     * 
-     * @param string $id
-     * @param mixed  $value
-     */
-    public static function setGlobal($id, $value)
-    {
-        self::$globals[$id] = $value;
-    }
-
-    /**
-     * Get a global variable.
-     * 
-     * @param string $id
-     * 
-     * @return null|mixed
-     */
-    public static function getGlobal($id)
-    {
-        return isset(self::$globals[$id]) ? self::$globals[$id] : null;
-    }
-
-    /**
      * Returns the namespace of the app.
      *
      * @param string $namespace Optional namespace to append
@@ -250,7 +225,7 @@ class Fol implements ContainerInterface, ArrayAccess
 
         $this->url = [
             sprintf('%s://%s%s', $url['scheme'], $url['host'], (isset($url['port']) ? ':'.$url['port'] : '')),
-            isset($url['path']) ? $url['path'] : ''
+            isset($url['path']) ? $url['path'] : '',
         ];
     }
 
